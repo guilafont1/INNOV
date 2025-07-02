@@ -1,41 +1,256 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inscription{% endblock %}
+{% block title %}Inscription - JEAI Learn{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="max-width: 500px;">
-    <h2 class="mb-4 text-center">📝 Créer un compte</h2>
-
-    {% for flash_error in app.flashes('verify_email_error') %}
-        <div class="alert alert-danger">{{ flash_error }}</div>
-    {% endfor %}
-
-    {{ form_start(registrationForm) }}
-
-        <div class="mb-3">
-            {{ form_label(registrationForm.email) }}
-            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(registrationForm.email) }}
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card shadow">
+        <div class="card-header text-center bg-primary text-white">
+            <h2 class="mb-0">📝 Créer un compte</h2>
+            <p class="mb-0 mt-2">Rejoignez notre plateforme d'apprentissage</p>
         </div>
+        <div class="card-body p-4">
+            <!-- Messages flash améliorés -->
+            {% for flash_error in app.flashes('verify_email_error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ flash_error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
 
-        <div class="mb-3">
-            {{ form_label(registrationForm.plainPassword, 'Mot de passe') }}
-            {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(registrationForm.plainPassword) }}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {{ form_start(registrationForm) }}
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(registrationForm.nom, 'Nom *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(registrationForm.nom) }}
+                        {{ form_errors(registrationForm.nom) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(registrationForm.prenom, 'Prénom *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(registrationForm.prenom) }}
+                        {{ form_errors(registrationForm.prenom) }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.email, 'Adresse email *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(registrationForm.email, {'attr': {'id': 'email-input'}}) }}
+                    {{ form_errors(registrationForm.email) }}
+                    <div id="email-feedback" class="form-text" style="display: none;">
+                        <small id="email-check-message"></small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.roleChoice, 'Type de compte *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(registrationForm.roleChoice) }}
+                    {{ form_errors(registrationForm.roleChoice) }}
+                    <div class="form-text">
+                        <small>
+                            <strong>Étudiant :</strong> Accès aux cours et modules d'apprentissage<br>
+                            <strong>Enseignant :</strong> Création et gestion de cours
+                        </small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(registrationForm.plainPassword.first) }}
+                        {{ form_errors(registrationForm.plainPassword.first) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(registrationForm.plainPassword.second) }}
+                        {{ form_errors(registrationForm.plainPassword.second) }}
+                    </div>
+                </div>
+
+                {{ form_errors(registrationForm.plainPassword) }}
+                
+                <div class="form-text mb-3">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        Le mot de passe doit contenir au moins 8 caractères
+                    </small>
+                </div>
+
+                <div class="form-check mb-4">
+                    {{ form_widget(registrationForm.agreeTerms) }}
+                    {{ form_label(registrationForm.agreeTerms, 'J\'accepte les conditions d\'utilisation et la politique de confidentialité *', {'label_attr': {'class': 'form-check-label'}}) }}
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus-fill me-2"></i>Créer mon compte
+                    </button>
+                </div>
+
+            {{ form_end(registrationForm) }}
+
+            <div class="text-center mt-4">
+                <hr>
+                <p class="mb-0">
+                    <small>Déjà un compte ? 
+                        <a href="{{ path('app_login') }}" class="text-decoration-none fw-bold">
+                            Connectez-vous ici
+                        </a>
+                    </small>
+                </p>
+            </div>
         </div>
-
-        <div class="form-check mb-3">
-            {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-            {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}}) }}
-            {{ form_errors(registrationForm.agreeTerms) }}
-        </div>
-
-        <button type="submit" class="btn btn-success w-100">S'inscrire</button>
-
-    {{ form_end(registrationForm) }}
-
+    </div>
+    
     <div class="text-center mt-3">
-        <small>Déjà un compte ? <a href="{{ path('app_login') }}">Connectez-vous</a></small>
+        <small class="text-muted">
+            <i class="bi bi-shield-check me-1"></i>
+            Vos données sont protégées et sécurisées
+        </small>
     </div>
 </div>
+
+<style>
+.alert {
+    border-left: 4px solid;
+}
+.alert-danger {
+    border-left-color: #dc3545;
+}
+.alert-success {
+    border-left-color: #198754;
+}
+.card {
+    border: none;
+    border-radius: 15px;
+}
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+.btn-primary {
+    border-radius: 8px;
+}
+.form-control, .form-select {
+    border-radius: 8px;
+}
+.email-valid {
+    border-color: #198754 !important;
+}
+.email-invalid {
+    border-color: #dc3545 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email-input');
+    const emailFeedback = document.getElementById('email-feedback');
+    const emailMessage = document.getElementById('email-check-message');
+    const submitButton = document.querySelector('button[type="submit"]');
+    let emailTimeout;
+
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            clearTimeout(emailTimeout);
+            const email = this.value.trim();
+            
+            if (email.length === 0) {
+                hideEmailFeedback();
+                return;
+            }
+
+            // Validation basique du format email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showEmailFeedback('Format d\'email invalide', 'text-danger');
+                emailInput.classList.add('email-invalid');
+                emailInput.classList.remove('email-valid');
+                return;
+            }
+
+            // Vérification avec délai pour éviter trop de requêtes
+            emailTimeout = setTimeout(() => {
+                checkEmailAvailability(email);
+            }, 500);
+        });
+    }
+
+    function checkEmailAvailability(email) {
+        showEmailFeedback('Vérification de l\'email...', 'text-info');
+        emailInput.classList.remove('email-invalid', 'email-valid');
+        
+        // Vérification AJAX réelle
+        fetch('{{ path('app_check_email') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'email=' + encodeURIComponent(email)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                showEmailFeedback(data.message, 'text-success');
+                emailInput.classList.add('email-valid');
+                emailInput.classList.remove('email-invalid');
+            } else {
+                showEmailFeedback(data.message, 'text-danger');
+                emailInput.classList.add('email-invalid');
+                emailInput.classList.remove('email-valid');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la vérification:', error);
+            showEmailFeedback('Erreur lors de la vérification', 'text-warning');
+        });
+    }
+
+    function showEmailFeedback(message, className) {
+        emailMessage.textContent = message;
+        emailMessage.className = className;
+        emailFeedback.style.display = 'block';
+    }
+
+    function hideEmailFeedback() {
+        emailFeedback.style.display = 'none';
+        emailInput.classList.remove('email-invalid', 'email-valid');
+    }
+
+    // Validation du formulaire avant soumission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const requiredFields = this.querySelectorAll('input[required], select[required]');
+        let allValid = true;
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                allValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!allValid) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs obligatoires.');
+        }
+    });
+});
+</script>
 {% endblock %}

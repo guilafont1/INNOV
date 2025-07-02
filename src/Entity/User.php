@@ -65,6 +65,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100)]
     private ?string $nom = null;
 
+    #[ORM\Column(length: 100)]
+    private ?string $prenom = null;
+
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $passwordUpdatedAt = null;
 
@@ -277,6 +280,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
 
         return $this;
     }

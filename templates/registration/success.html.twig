@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription réussie - JEAI Learn{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card shadow border-success">
+        <div class="card-header text-center bg-success text-white">
+            <h2 class="mb-0">🎉 Inscription réussie !</h2>
+        </div>
+        <div class="card-body p-5 text-center">
+            <div class="mb-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            </div>
+            
+            <h3 class="text-success mb-3">Bienvenue sur JEAI Learn !</h3>
+            
+            <p class="lead mb-4">
+                Votre compte a été créé avec succès. Vous pouvez maintenant accéder à tous nos cours et modules d'apprentissage.
+            </p>
+            
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Prochaines étapes :</strong>
+                <ul class="list-unstyled mt-2 mb-0">
+                    <li>✓ Connectez-vous avec vos identifiants</li>
+                    <li>✓ Explorez les cours disponibles</li>
+                    <li>✓ Commencez votre apprentissage</li>
+                </ul>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ path('app_login') }}" class="btn btn-success btn-lg me-md-2">
+                    <i class="bi bi-key-fill me-2"></i>Se connecter
+                </a>
+                <a href="{{ path('app_home') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-house-fill me-2"></i>Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <small class="text-muted">
+            <i class="bi bi-envelope-fill me-1"></i>
+            Un email de confirmation pourrait être envoyé prochainement
+        </small>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+.btn {
+    border-radius: 8px;
+}
+</style>
+{% endblock %}
