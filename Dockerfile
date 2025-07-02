@@ -19,7 +19,10 @@ WORKDIR /app
 COPY . .
 
 # Installe les dépendances
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
+
+RUN test -f vendor/symfony/runtime/composer.json
+
 
 RUN php bin/console cache:clear --env=prod
 
