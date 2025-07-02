@@ -19,7 +19,7 @@ WORKDIR /app
 COPY . .
 
 # Installe les dépendances
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-dev --optimize-autoloader
 
 RUN php bin/console cache:clear --env=prod
 
