@@ -1,7 +1,6 @@
 services:
   - type: web
     name: innov-app
-    env: php
     plan: free
     buildCommand: |
       composer install --no-dev --optimize-autoloader
