@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bienvenue sur JEAI Learn{% endblock %}
+
+{% block body %}
+<div class="container text-center mt-5">
+    <h1 class="mb-3">🎓 Bienvenue sur <strong>JEAI Learn</strong></h1>
+    <p class="lead mb-4">Une plateforme intuitive pour apprendre, partager et progresser.</p>
+
+    {% if not app.user %}
+        <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg me-2">S'inscrire</a>
+        <a href="{{ path('app_login') }}" class="btn btn-outline-secondary btn-lg">Se connecter</a>
+    {% else %}
+        <a href="{{ path('app_cours') }}" class="btn btn-success btn-lg">Voir les cours</a>
+    {% endif %}
+</div>
+{% endblock %}

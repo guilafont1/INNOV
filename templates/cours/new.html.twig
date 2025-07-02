@@ -1,0 +1,22 @@
+{# templates/cours/new.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un nouveau cours{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">➕ Nouveau cours</h2>
+
+        {{ form_start(form) }}
+            <div class="mb-3">
+                {{ form_label(form.titre, 'Titre du cours') }}
+                {{ form_widget(form.titre, { 'attr': { 'class': 'form-control' } }) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.description, 'Description') }}
+                {{ form_widget(form.description, { 'attr': { 'class': 'form-control', 'rows': 5 } }) }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Créer le cours</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

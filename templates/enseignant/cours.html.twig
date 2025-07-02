@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Cours{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">📚 Gestion des cours</h2>
+
+    <a href="{{ path('app_cours_new') }}" class="btn btn-success mb-3">➕ Créer un nouveau cours</a>
+
+    <div class="row">
+        {% for c in cours %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ c.titre }}</h5>
+                        <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
+                        <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">Voir</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>Aucun cours disponible.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

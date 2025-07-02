@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ cours.titre }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2>{{ cours.titre }}</h2>
+    <p class="text-muted">{{ cours.description }}</p>
+
+    <h4 class="mt-4">📦 Modules</h4>
+    {% for module in modules %}
+        <div class="card mb-3">
+            <div class="card-header">{{ module.titre }}</div>
+            <ul class="list-group list-group-flush">
+                {% for chapitre in module.chapitres %}
+                    <li class="list-group-item">📄 {{ chapitre.titre }}</li>
+                {% else %}
+                    <li class="list-group-item text-muted">Aucun chapitre</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <p>Aucun module pour ce cours.</p>
+    {% endfor %}
+
+    <a href="{{ path('app_cours') }}" class="btn btn-secondary mt-3">← Retour aux cours</a>
+</div>
+{% endblock %}

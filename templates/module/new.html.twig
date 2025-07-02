@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Module{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">➕ Nouveau module</h1>
+
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button class="btn btn-primary">Créer le module</button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

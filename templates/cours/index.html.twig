@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tous les cours{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="mb-4">📚 Tous les cours</h2>
+
+    <div class="row">
+        {% for c in cours %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ c.titre }}</h5>
+                        <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
+                        <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">Voir le cours</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>Aucun cours trouvé.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

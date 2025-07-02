@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un chapitre{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width: 600px;">
+    <h2 class="mb-4 text-center">➕ Nouveau chapitre pour le module "{{ module.titre }}"</h2>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {{ form_start(form) }}
+        {{ form_row(form.titre) }}
+        {{ form_row(form.contenu) }}
+        {{ form_row(form.fichierMedia) }}
+        <div class="d-flex justify-content-between mt-3">
+            <a href="{{ path('app_cours_show', {'id': module.cours.id}) }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter le chapitre
+            </button>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

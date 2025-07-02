@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord Enseignant{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">🎓 Tableau de bord</h2>
+
+    <a href="{{ path('app_cours_new') }}" class="btn btn-success mb-4">➕ Créer un cours</a>
+
+    {% for c in cours %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="card-title">{{ c.titre }}</h4>
+                <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
+                <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">Voir</a>
+                <a href="{{ path('app_module_new', {id: c.id}) }}" class="btn btn-outline-secondary">➕ Ajouter un module</a>
+            </div>
+            {% if c.modules|length > 0 %}
+                <ul class="list-group list-group-flush">
+                    {% for m in c.modules %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            📦 {{ m.titre }}
+                            <a href="{{ path('app_chapitre_new', {id: m.id}) }}" class="btn btn-sm btn-outline-success">➕ Chapitre</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="card-footer text-muted">Aucun module</div>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>Aucun cours pour l’instant.</p>
+    {% endfor %}
+</div>
+{% endblock %}
