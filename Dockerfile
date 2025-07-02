@@ -19,7 +19,9 @@ WORKDIR /app
 COPY . .
 
 # Installe les dépendances
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+RUN php bin/console cache:clear --env=prod
 
 # Expose le port
 EXPOSE 10000
