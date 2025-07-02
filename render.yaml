@@ -10,4 +10,4 @@ services:
       - key: APP_ENV
         value: prod
       - key: DATABASE_URL
-        fromEnvVar: DATABASE_URL
+        value: ${DATABASE_URL}
