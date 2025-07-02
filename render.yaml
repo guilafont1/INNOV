@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: innov-app
+    plan: free
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php bin/console doctrine:migrations:migrate --no-interaction
+    startCommand: php -S 0.0.0.0:10000 -t public
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: DATABASE_URL
+        fromEnvVar: DATABASE_URL
