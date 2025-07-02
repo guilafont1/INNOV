@@ -18,11 +18,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
+ENV APP_ENV=prod
+
 # Installe les dépendances
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 
 RUN test -f vendor/symfony/runtime/composer.json
-
 
 RUN php bin/console cache:clear --env=prod
 
