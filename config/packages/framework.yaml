@@ -4,7 +4,6 @@ framework:
 
     csrf_protection:
         enabled: true
-        same_site: lax
 
     trusted_proxies: '%env(TRUSTED_PROXIES)%'
     trusted_hosts: '%env(TRUSTED_HOSTS)%'
