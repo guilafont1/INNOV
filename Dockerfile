@@ -22,12 +22,11 @@ COPY . .
 
 ENV APP_ENV=prod
 
-# Compile les variables d'environnement pour Symfony
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer dump-env prod
-
-# Installe les dépendances
+# ⬇️ Installe les dépendances (y compris symfony/flex, qui fournit "dump-env")
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 
+# ⬇️ Maintenant que symfony/flex est installé, cette commande fonctionne
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer dump-env prod
 
 # Vérifie la présence de symfony/runtime (optionnel mais sécurisant)
 RUN test -f vendor/symfony/runtime/composer.json
