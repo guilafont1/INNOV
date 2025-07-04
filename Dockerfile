@@ -14,21 +14,29 @@ RUN apt-get update && apt-get install -y \
 # Installe Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copie ton projet
+# Crée un dossier de travail
 WORKDIR /app
+
+# Copie tout le projet
 COPY . .
 
+# Définit l'environnement Symfony
 ENV APP_ENV=prod
 
-# Installe les dépendances
+# Prépare les variables d’environnement compilées
+RUN composer dump-env prod
+
+# Installe les dépendances (sans les devs)
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 
+# Vérifie la présence de symfony/runtime (optionnel mais sécurisant)
 RUN test -f vendor/symfony/runtime/composer.json
 
-RUN php bin/console cache:clear --env=prod
+# Vide le cache proprement
+RUN php bin/console cache:clear --no-warmup --env=prod
 
-# Expose le port
+# Expose un port HTTP pour php -S
 EXPOSE 10000
 
-# Commande de démarrage
+# Lancement du serveur PHP interne
 CMD php -S 0.0.0.0:10000 -t public
