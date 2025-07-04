@@ -20,14 +20,14 @@ WORKDIR /app
 # Copie tout le projet
 COPY . .
 
-# Définit l'environnement Symfony
 ENV APP_ENV=prod
 
-# Prépare les variables d’environnement compilées
-RUN composer dump-env prod
+# Compile les variables d'environnement pour Symfony
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer dump-env prod
 
-# Installe les dépendances (sans les devs)
+# Installe les dépendances
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
+
 
 # Vérifie la présence de symfony/runtime (optionnel mais sécurisant)
 RUN test -f vendor/symfony/runtime/composer.json
