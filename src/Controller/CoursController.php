@@ -23,15 +23,20 @@ final class CoursController extends AbstractController
             // Si l'utilisateur est admin, récupérer tous les cours
             if ($this->isGranted('ROLE_ADMIN')) {
                 $cours = $coursRepository->findAll();
+            } elseif ($this->isGranted('ROLE_ENSEIGNANT')) {
+                // Si c'est un enseignant, récupérer tous les cours (car pas de relation createdBy pour l'instant)
+                $cours = $coursRepository->findForEnseignant($user);
             } else {
-                // Sinon, récupérer uniquement les cours de l'utilisateur connecté
+                // Sinon, récupérer uniquement les cours où l'utilisateur a une progression
                 $cours = $coursRepository->findByUser($user);
             }
             
             if (empty($cours)) {
                 $message = $this->isGranted('ROLE_ADMIN') 
                     ? 'Aucun cours disponible pour le moment.'
-                    : 'Vous n\'êtes inscrit à aucun cours pour le moment.';
+                    : ($this->isGranted('ROLE_ENSEIGNANT') 
+                        ? 'Aucun cours disponible pour le moment.'
+                        : 'Vous n\'êtes inscrit à aucun cours pour le moment.');
                 $this->addFlash('info', $message);
             }
             
@@ -43,8 +48,27 @@ final class CoursController extends AbstractController
     }
 
     #[Route('/cours/{id}', name: 'app_cours_show', requirements: ['id' => '\d+'])]
-    public function show(Cours $cours): Response
+    public function show(Cours $cours, CoursRepository $coursRepository): Response
     {
+        // Si l'utilisateur n'est pas admin ou enseignant, vérifier qu'il a accès au cours
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_ENSEIGNANT')) {
+            $user = $this->getUser();
+            $userCours = $coursRepository->findByUser($user);
+            
+            $hasAccess = false;
+            foreach ($userCours as $userCour) {
+                if ($userCour->getId() === $cours->getId()) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+            
+            if (!$hasAccess) {
+                $this->addFlash('error', 'Vous n\'avez pas accès à ce cours.');
+                return $this->redirectToRoute('app_cours');
+            }
+        }
+        
         return $this->render('cours/show.html.twig', [
             'cours' => $cours,
             'modules' => $cours->getModules(),

@@ -32,6 +32,18 @@ class CoursRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Récupère tous les cours pour un enseignant (incluant ceux qu'il a créés)
+     * Pour l'instant retourne tous les cours car il n'y a pas de relation createdBy
+     * @return Cours[] Returns an array of Cours objects
+     */
+    public function findForEnseignant(User $user): array
+    {
+        // Pour l'instant, on retourne tous les cours pour les enseignants
+        // car il n'y a pas de relation directe createdBy
+        return $this->findAll();
+    }
+
 //    /**
 //     * @return Cours[] Returns an array of Cours objects
 //     */

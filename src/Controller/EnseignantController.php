@@ -21,14 +21,14 @@ class EnseignantController extends AbstractController
             if ($this->isGranted('ROLE_ADMIN')) {
                 $cours = $coursRepository->findAll();
             } else {
-                // Sinon, récupérer les cours auxquels l'enseignant a accès
-                $cours = $coursRepository->findByUser($user);
+                // Pour les enseignants, récupérer tous les cours
+                $cours = $coursRepository->findForEnseignant($user);
             }
 
             if (empty($cours)) {
                 $message = $this->isGranted('ROLE_ADMIN') 
                     ? 'Aucun cours disponible pour le moment.'
-                    : 'Vous n\'avez accès à aucun cours pour le moment.';
+                    : 'Aucun cours disponible pour le moment.';
                 $this->addFlash('info', $message);
             }
 
@@ -53,8 +53,8 @@ class EnseignantController extends AbstractController
             if ($this->isGranted('ROLE_ADMIN')) {
                 $cours = $coursRepository->findAll();
             } else {
-                // Sinon, récupérer les cours auxquels l'enseignant a accès
-                $cours = $coursRepository->findByUser($user);
+                // Pour les enseignants, récupérer tous les cours
+                $cours = $coursRepository->findForEnseignant($user);
             }
 
             $this->addFlash('info', 'Bienvenue sur votre tableau de bord enseignant.');
