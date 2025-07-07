@@ -15,10 +15,21 @@ class EnseignantController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
         try {
-            $cours = $coursRepository->findAll(); // 🟡 Optionnel : filtrer par créateur si besoin
+            $user = $this->getUser();
+            
+            // Si l'utilisateur est admin, récupérer tous les cours
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $cours = $coursRepository->findAll();
+            } else {
+                // Sinon, récupérer les cours auxquels l'enseignant a accès
+                $cours = $coursRepository->findByUser($user);
+            }
 
             if (empty($cours)) {
-                $this->addFlash('info', 'Aucun cours disponible pour le moment.');
+                $message = $this->isGranted('ROLE_ADMIN') 
+                    ? 'Aucun cours disponible pour le moment.'
+                    : 'Vous n\'avez accès à aucun cours pour le moment.';
+                $this->addFlash('info', $message);
             }
 
             return $this->render('enseignant/cours.html.twig', [
@@ -36,7 +47,15 @@ class EnseignantController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
         try {
-            $cours = $coursRepository->findAll(); // ou filtré par enseignant si lié
+            $user = $this->getUser();
+            
+            // Si l'utilisateur est admin, récupérer tous les cours
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $cours = $coursRepository->findAll();
+            } else {
+                // Sinon, récupérer les cours auxquels l'enseignant a accès
+                $cours = $coursRepository->findByUser($user);
+            }
 
             $this->addFlash('info', 'Bienvenue sur votre tableau de bord enseignant.');
 

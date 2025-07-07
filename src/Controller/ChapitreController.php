@@ -17,18 +17,55 @@ class ChapitreController extends AbstractController
     #[Route('/chapitre', name: 'app_chapitre_index')]
     public function index(ChapitreRepository $chapitreRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
-        
-        $chapitres = $chapitreRepository->findAll();
-        
-        return $this->render('chapitre/index.html.twig', [
-            'chapitres' => $chapitres,
-        ]);
+        try {
+            $user = $this->getUser();
+            
+            // Si l'utilisateur est admin, récupérer tous les chapitres
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $chapitres = $chapitreRepository->findAll();
+            } else {
+                // Sinon, récupérer uniquement les chapitres des cours de l'utilisateur connecté
+                $chapitres = $chapitreRepository->findByUser($user);
+            }
+            
+            if (empty($chapitres)) {
+                $message = $this->isGranted('ROLE_ADMIN') 
+                    ? 'Aucun chapitre disponible pour le moment.'
+                    : 'Vous n\'avez accès à aucun chapitre pour le moment.';
+                $this->addFlash('info', $message);
+            }
+            
+            return $this->render('chapitre/index.html.twig', [
+                'chapitres' => $chapitres,
+            ]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors du chargement des chapitres.');
+            return $this->render('chapitre/index.html.twig', ['chapitres' => []]);
+        }
     }
 
     #[Route('/chapitre/{id}', name: 'app_chapitre_show', requirements: ['id' => '\d+'])]
-    public function show(Chapitre $chapitre): Response
+    public function show(Chapitre $chapitre, ChapitreRepository $chapitreRepository): Response
     {
+        // Si l'utilisateur n'est pas admin, vérifier qu'il a accès au chapitre
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $user = $this->getUser();
+            $userChapitres = $chapitreRepository->findByUser($user);
+            
+            $hasAccess = false;
+            foreach ($userChapitres as $userChapitre) {
+                if ($userChapitre->getId() === $chapitre->getId()) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+            
+            if (!$hasAccess) {
+                $this->addFlash('error', 'Vous n\'avez pas accès à ce chapitre.');
+                return $this->redirectToRoute('app_chapitre_index');
+            }
+        }
+        
         return $this->render('chapitre/show.html.twig', [
             'chapitre' => $chapitre,
         ]);
@@ -37,10 +74,7 @@ class ChapitreController extends AbstractController
     #[Route('/module/{id}/chapitre/new', name: 'app_chapitre_new')]
     public function addChapitre(Request $request, Module $module, EntityManagerInterface $em): Response
     {
-        if (!in_array('ROLE_ENSEIGNANT', $this->getUser()->getRoles())) {
-            $this->addFlash('error', 'Accès réservé aux enseignants.');
-            throw $this->createAccessDeniedException('Accès réservé aux enseignants.');
-        }
+        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
         $chapitre = new Chapitre();
         $chapitre->setModule($module);
@@ -69,10 +103,7 @@ class ChapitreController extends AbstractController
     #[Route('/chapitre/{id}/edit', name: 'app_chapitre_edit', requirements: ['id' => '\d+'])]
     public function edit(Request $request, Chapitre $chapitre, EntityManagerInterface $em): Response
     {
-        if (!in_array('ROLE_ENSEIGNANT', $this->getUser()->getRoles())) {
-            $this->addFlash('error', 'Accès réservé aux enseignants.');
-            throw $this->createAccessDeniedException('Accès réservé aux enseignants.');
-        }
+        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
         $form = $this->createForm(ChapitreType::class, $chapitre);
         $form->handleRequest($request);
@@ -97,10 +128,7 @@ class ChapitreController extends AbstractController
     #[Route('/chapitre/{id}/delete', name: 'app_chapitre_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Chapitre $chapitre, EntityManagerInterface $em): Response
     {
-        if (!in_array('ROLE_ENSEIGNANT', $this->getUser()->getRoles())) {
-            $this->addFlash('error', 'Accès réservé aux enseignants.');
-            throw $this->createAccessDeniedException('Accès réservé aux enseignants.');
-        }
+        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
         if ($this->isCsrfTokenValid('delete'.$chapitre->getId(), $request->request->get('_token'))) {
             try {

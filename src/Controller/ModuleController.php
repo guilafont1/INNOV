@@ -16,13 +16,22 @@ class ModuleController extends AbstractController
     #[Route('/module', name: 'app_module_index')]
     public function index(ModuleRepository $moduleRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
-        
         try {
-            $modules = $moduleRepository->findAll();
+            $user = $this->getUser();
+            
+            // Si l'utilisateur est admin, récupérer tous les modules
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $modules = $moduleRepository->findAll();
+            } else {
+                // Sinon, récupérer uniquement les modules des cours de l'utilisateur connecté
+                $modules = $moduleRepository->findByUser($user);
+            }
             
             if (empty($modules)) {
-                $this->addFlash('info', 'Aucun module disponible pour le moment.');
+                $message = $this->isGranted('ROLE_ADMIN') 
+                    ? 'Aucun module disponible pour le moment.'
+                    : 'Vous n\'avez accès à aucun module pour le moment.';
+                $this->addFlash('info', $message);
             }
             
             return $this->render('module/index.html.twig', [
@@ -35,8 +44,27 @@ class ModuleController extends AbstractController
     }
 
     #[Route('/module/{id}', name: 'app_module_show', requirements: ['id' => '\d+'])]
-    public function show(Module $module): Response
+    public function show(Module $module, ModuleRepository $moduleRepository): Response
     {
+        // Si l'utilisateur n'est pas admin, vérifier qu'il a accès au module
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $user = $this->getUser();
+            $userModules = $moduleRepository->findByUser($user);
+            
+            $hasAccess = false;
+            foreach ($userModules as $userModule) {
+                if ($userModule->getId() === $module->getId()) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+            
+            if (!$hasAccess) {
+                $this->addFlash('error', 'Vous n\'avez pas accès à ce module.');
+                return $this->redirectToRoute('app_module_index');
+            }
+        }
+        
         return $this->render('module/show.html.twig', [
             'module' => $module,
         ]);

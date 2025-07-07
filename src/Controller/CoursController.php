@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\CoursRepository;
 use App\Entity\Cours;
 use App\Form\CoursType;
+use Symfony\Component\Security\Core\Security;
 
 final class CoursController extends AbstractController
 {
@@ -17,10 +18,21 @@ final class CoursController extends AbstractController
     public function index(CoursRepository $coursRepository): Response
     {
         try {
-            $cours = $coursRepository->findAll();
+            $user = $this->getUser();
+            
+            // Si l'utilisateur est admin, récupérer tous les cours
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $cours = $coursRepository->findAll();
+            } else {
+                // Sinon, récupérer uniquement les cours de l'utilisateur connecté
+                $cours = $coursRepository->findByUser($user);
+            }
             
             if (empty($cours)) {
-                $this->addFlash('info', 'Aucun cours disponible pour le moment.');
+                $message = $this->isGranted('ROLE_ADMIN') 
+                    ? 'Aucun cours disponible pour le moment.'
+                    : 'Vous n\'êtes inscrit à aucun cours pour le moment.';
+                $this->addFlash('info', $message);
             }
             
             return $this->render('cours/index.html.twig', ['cours' => $cours]);
