@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le cours - {{ cours.titre }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">✏️ Modifier le cours</h3>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('enseignant_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('enseignant_cours') }}">Mes cours</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_cours_show', {id: cours.id}) }}">{{ cours.titre }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+                        </ol>
+                    </nav>
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le titre du cours'}}) }}
+                            {{ form_errors(form.titre) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez le contenu et les objectifs du cours'}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> ✏️ Modifier le cours
+                            </button>
+                            <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 🚫 Annuler
+                            </a>
+                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list"></i> 📚 Retour à mes cours
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Informations supplémentaires -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Informations sur le cours</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Créé le :</strong> {{ cours.createdAt|date('d/m/Y à H:i') }}</p>
+                            <p><strong>Nombre de modules :</strong> {{ cours.modules|length }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Nombre d'étudiants inscrits :</strong> {{ cours.progressions|length }}</p>
+                            <p><strong>ID du cours :</strong> #{{ cours.id }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if cours.modules|length > 0 %}
+                        <hr>
+                        <h6>📦 Modules associés :</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for module in cours.modules %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ module.titre }}
+                                    <span class="badge bg-primary rounded-pill">{{ module.chapitres|length }} chapitre(s)</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Zone de danger -->
+            <div class="card mt-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">⚠️ Zone de danger</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-danger">
+                        <strong>Attention :</strong> La suppression d'un cours est irréversible et supprimera également tous les modules, chapitres et progressions associés.
+                    </p>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        🗑️ Supprimer ce cours
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer le cours <strong>"{{ cours.titre }}"</strong> ?
+                <br><br>
+                <div class="alert alert-warning">
+                    ⚠️ Cette action est irréversible et supprimera :
+                    <ul class="mb-0 mt-2">
+                        <li>Le cours et toutes ses informations</li>
+                        <li>Tous les modules associés ({{ cours.modules|length }})</li>
+                        <li>Tous les chapitres des modules</li>
+                        <li>Toutes les progressions des étudiants ({{ cours.progressions|length }})</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">🚫 Annuler</button>
+                <form method="post" action="{{ path('app_cours_delete', {id: cours.id}) }}" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cours.id) }}">
+                    <button type="submit" class="btn btn-danger">🗑️ Supprimer définitivement</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

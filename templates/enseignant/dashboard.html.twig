@@ -1,6 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord Enseignant{% endblock %}
+{%        </div>
+
+        <!-- Modal de confirmation de suppression -->
+        <div class="modal fade" id="deleteModal{{ c.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ c.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel{{ c.id }}">Confirmer la suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Êtes-vous sûr de vouloir supprimer le cours <strong>"{{ c.titre }}"</strong> ?
+                        <br><br>
+                        <div class="alert alert-warning">
+                            ⚠️ Cette action est irréversible et supprimera également tous les modules et chapitres associés.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <form method="post" action="{{ path('app_cours_delete', {id: c.id}) }}" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
+                            <button type="submit" class="btn btn-danger">🗑️ Supprimer définitivement</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucun cours pour l'instant.</p>
+    {% endfor %}ck title %}Tableau de bord Enseignant{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
@@ -13,8 +42,14 @@
             <div class="card-body">
                 <h4 class="card-title">{{ c.titre }}</h4>
                 <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
-                <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">Voir</a>
-                <a href="{{ path('app_module_new', {id: c.id}) }}" class="btn btn-outline-secondary">➕ Ajouter un module</a>
+                <div class="d-flex gap-2 mb-3">
+                    <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">👁️ Voir</a>
+                    <a href="{{ path('app_cours_edit', {id: c.id}) }}" class="btn btn-warning">✏️ Modifier</a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}">
+                        🗑️ Supprimer
+                    </button>
+                    <a href="{{ path('app_module_new', {id: c.id}) }}" class="btn btn-outline-secondary">➕ Ajouter un module</a>
+                </div>
             </div>
             {% if c.modules|length > 0 %}
                 <ul class="list-group list-group-flush">

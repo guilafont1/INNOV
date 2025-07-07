@@ -15,7 +15,39 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ c.titre }}</h5>
                         <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
-                        <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">Voir</a>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary btn-sm">👁️ Voir</a>
+                            <a href="{{ path('app_cours_edit', {id: c.id}) }}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de confirmation de suppression -->
+            <div class="modal fade" id="deleteModal{{ c.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ c.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel{{ c.id }}">Confirmer la suppression</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Êtes-vous sûr de vouloir supprimer le cours <strong>"{{ c.titre }}"</strong> ?
+                            <br><br>
+                            <div class="alert alert-warning">
+                                ⚠️ Cette action est irréversible et supprimera également tous les modules et chapitres associés.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <form method="post" action="{{ path('app_cours_delete', {id: c.id}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
+                                <button type="submit" class="btn btn-danger">🗑️ Supprimer définitivement</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

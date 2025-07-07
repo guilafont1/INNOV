@@ -1,22 +1,74 @@
-{# templates/cours/new.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Créer un nouveau cours{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">➕ Nouveau cours</h2>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">➕ Créer un nouveau cours</h3>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('enseignant_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('enseignant_cours') }}">Mes cours</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Nouveau cours</li>
+                        </ol>
+                    </nav>
 
-        {{ form_start(form) }}
-            <div class="mb-3">
-                {{ form_label(form.titre, 'Titre du cours') }}
-                {{ form_widget(form.titre, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le titre du cours'}}) }}
+                            {{ form_errors(form.titre) }}
+                            <div class="form-text">Choisissez un titre clair et descriptif pour votre cours.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez le contenu et les objectifs du cours'}}) }}
+                            {{ form_errors(form.description) }}
+                            <div class="form-text">Présentez les objectifs, le contenu et les prérequis de votre cours.</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> ➕ Créer le cours
+                            </button>
+                            <a href="{{ path('enseignant_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 🚫 Annuler
+                            </a>
+                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list"></i> 📚 Mes cours
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
             </div>
-            <div class="mb-3">
-                {{ form_label(form.description, 'Description') }}
-                {{ form_widget(form.description, { 'attr': { 'class': 'form-control', 'rows': 5 } }) }}
+
+            <!-- Informations sur les prochaines étapes -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 Prochaines étapes</h5>
+                </div>
+                <div class="card-body">
+                    <p>Une fois votre cours créé, vous pourrez :</p>
+                    <ul>
+                        <li>📦 <strong>Ajouter des modules</strong> pour structurer votre contenu</li>
+                        <li>📄 <strong>Créer des chapitres</strong> dans chaque module</li>
+                        <li>👥 <strong>Inscrire des étudiants</strong> à votre cours</li>
+                        <li>📊 <strong>Suivre leur progression</strong> depuis votre dashboard</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i> 
+                        <strong>Conseil :</strong> Commencez par structurer votre cours en modules thématiques avant d'ajouter le contenu détaillé.
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Créer le cours</button>
-        {{ form_end(form) }}
+        </div>
     </div>
+</div>
 {% endblock %}
