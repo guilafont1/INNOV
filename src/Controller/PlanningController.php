@@ -128,21 +128,94 @@ class PlanningController extends AbstractController
         $calendrier->setCours($cours);
 
         if ($request->isMethod('POST')) {
+            // Debug - Enregistrer l'ensemble de la requête
+            error_log('=============== DÉBUT DEBUG CRÉATION ÉVÉNEMENT ===============');
+            error_log('Méthode de requête: ' . $request->getMethod());
+            error_log('Content-Type: ' . $request->headers->get('Content-Type'));
+            
+            // Enregistrer tous les paramètres reçus
+            error_log('TOUS LES PARAMÈTRES POST: ' . print_r($request->request->all(), true));
+            
+            // Récupération des valeurs
             $titre = $request->request->get('titre');
             $description = $request->request->get('description');
-            $type = $request->request->get('type') ?: 'cours';  // Valeur par défaut: cours
+            $type = $request->request->get('type');
+            
+            // ALTERNATIVE: essayer d'autres méthodes pour récupérer le type
+            error_log('Type via request->get(): ' . ($type ?? 'null'));
+            
+            // Essayer de récupérer directement depuis $_POST
+            if (isset($_POST['type'])) {
+                error_log('Type via $_POST: ' . $_POST['type']);
+                if (!$type) {
+                    $type = $_POST['type'];
+                    error_log('Type récupéré depuis $_POST');
+                }
+            } else {
+                error_log('Type non présent dans $_POST');
+            }
+            
+            // Essayer de récupérer via une requête SQL pour comprendre le problème
+            try {
+                $conn = $entityManager->getConnection();
+                $lastEvent = $conn->fetchAssociative(
+                    'SELECT id, type FROM calendrier ORDER BY id DESC LIMIT 1'
+                );
+                if ($lastEvent) {
+                    error_log('Dernier événement en base - ID: ' . $lastEvent['id'] . ', Type: ' . $lastEvent['type']);
+                }
+            } catch (\Exception $e) {
+                error_log('Erreur SQL: ' . $e->getMessage());
+            }
+            
             $dateDebut = $request->request->get('dateDebut');
             $dateFin = $request->request->get('dateFin');
+            
+            error_log('Date début reçue: ' . ($dateDebut ?? 'null'));
+            error_log('Date fin reçue: ' . ($dateFin ?? 'null'));
 
             if ($titre && $description && $dateDebut && $dateFin) {
                 $calendrier->setTitre($titre);
                 $calendrier->setDescription($description);
+                
+                // Debug - Vérifier la valeur du type avant et après l'assignation
+                error_log('Setting type to: ' . $type);
                 $calendrier->setType($type);
+                error_log('Type after setting: ' . $calendrier->getType());
+                
                 $calendrier->setDateDebut(new \DateTime($dateDebut));
                 $calendrier->setDateFin(new \DateTime($dateFin));
 
                 $entityManager->persist($calendrier);
+                error_log('Avant flush - Type de l\'événement: ' . $calendrier->getType());
                 $entityManager->flush();
+                error_log('Après flush - Type de l\'événement: ' . $calendrier->getType());
+                error_log('ID de l\'événement créé: ' . $calendrier->getId());
+                
+                // Récupération des informations complètes sur l'événement qui vient d'être créé
+                error_log('============ VÉRIFICATION DE L\'ÉVÉNEMENT CRÉÉ ============');
+                $newEventId = $calendrier->getId();
+                try {
+                    // Récupérer toutes les colonnes de l'événement créé
+                    $conn = $entityManager->getConnection();
+                    $sqlQuery = "SELECT * FROM calendrier WHERE id = :id";
+                    $stmt = $conn->prepare($sqlQuery);
+                    $stmt->bindValue('id', $newEventId);
+                    $result = $stmt->executeQuery();
+                    $eventData = $result->fetchAssociative();
+                    
+                    if ($eventData) {
+                        error_log('Événement récupéré en base de données :');
+                        foreach ($eventData as $key => $value) {
+                            error_log("  $key: " . ($value !== null ? $value : 'NULL'));
+                        }
+                    } else {
+                        error_log('Événement non trouvé en base de données !');
+                    }
+                } catch (\Exception $e) {
+                    error_log('Erreur lors de la vérification en base de données: ' . $e->getMessage());
+                }
+                error_log('=============== FIN DEBUG CRÉATION ÉVÉNEMENT ===============');
 
                 $this->addFlash('success', 'Événement ajouté avec succès.');
                 return $this->redirectToRoute('enseignant_planning_cours', ['id' => $cours->getId()]);
@@ -168,9 +241,31 @@ class PlanningController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            // Debug - Enregistrer l'ensemble de la requête
+            error_log('=============== DÉBUT DEBUG ÉDITION ÉVÉNEMENT ===============');
+            error_log('Méthode de requête: ' . $request->getMethod());
+            error_log('Content-Type: ' . $request->headers->get('Content-Type'));
+            
+            // Enregistrer tous les paramètres reçus
+            error_log('TOUS LES PARAMÈTRES POST (ÉDITION): ' . print_r($request->request->all(), true));
+            
+            // Récupération des valeurs
             $titre = $request->request->get('titre');
             $description = $request->request->get('description');
-            $type = $request->request->get('type') ?: 'cours';  // Valeur par défaut: cours
+            $type = $request->request->get('type');
+            
+            // Debug des valeurs individuelles
+            error_log('Titre reçu (édition): ' . ($titre ?? 'null'));
+            error_log('Type reçu (édition): ' . ($type ?? 'null') . ' (type PHP: ' . gettype($type) . ')');
+            
+            // S'assurer que le type est bien défini
+            if (!$type) {
+                $type = 'cours';  // Valeur par défaut
+                error_log('Type était vide en édition, utilisation de la valeur par défaut: cours');
+            }
+            
+            error_log('Type utilisé (édition): ' . $type);
+            
             $dateDebut = $request->request->get('dateDebut');
             $dateFin = $request->request->get('dateFin');
 
@@ -181,7 +276,11 @@ class PlanningController extends AbstractController
                 $calendrier->setDateDebut(new \DateTime($dateDebut));
                 $calendrier->setDateFin(new \DateTime($dateFin));
 
+                error_log('Avant flush (édition) - Type de l\'événement: ' . $calendrier->getType());
                 $entityManager->flush();
+                error_log('Après flush (édition) - Type de l\'événement: ' . $calendrier->getType());
+                error_log('ID de l\'événement modifié: ' . $calendrier->getId());
+                error_log('=============== FIN DEBUG ÉDITION ÉVÉNEMENT ===============');
 
                 $this->addFlash('success', 'Événement modifié avec succès.');
                 return $this->redirectToRoute('enseignant_planning_cours', ['id' => $calendrier->getCours()->getId()]);

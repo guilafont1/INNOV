@@ -114,7 +114,17 @@ class Calendrier
 
     public function setType(string $type): static
     {
+        // Debug pour tracer les appels à setType
+        error_log('Calendrier::setType appelé avec la valeur: "' . $type . '"');
+        
+        // Vérification de la valeur et traçage
+        if (!in_array($type, ['cours', 'examen', 'reunion', 'autre'])) {
+            error_log('ATTENTION: Type invalide reçu: "' . $type . '", utilisation de "cours" comme valeur par défaut');
+            $type = 'cours'; // Protection contre les valeurs invalides
+        }
+        
         $this->type = $type;
+        error_log('Type défini dans l\'entité: "' . $this->type . '"');
 
         return $this;
     }

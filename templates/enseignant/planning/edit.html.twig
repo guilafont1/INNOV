@@ -113,6 +113,45 @@
                             </button>
                         </div>
                     </form>
+                    
+                    <!-- Script pour le débogage -->
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Vérifier l'état initial du select
+                            const typeSelect = document.getElementById('type');
+                            console.log('État initial du select type (edit):', {
+                                value: typeSelect.value,
+                                selectedIndex: typeSelect.selectedIndex,
+                                options: Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text, selected: opt.selected }))
+                            });
+                            
+                            document.querySelector('form').addEventListener('submit', function(e) {
+                                // Récupérer la valeur du type juste avant soumission
+                                const typeValue = document.getElementById('type').value;
+                                console.log('Type sélectionné au moment du submit (edit):', typeValue);
+                                
+                                // Inspecter le formulaire et les données qui seront envoyées
+                                const formData = new FormData(this);
+                                const formDataEntries = {};
+                                for (let [key, value] of formData.entries()) {
+                                    formDataEntries[key] = value;
+                                }
+                                console.log('Données FormData qui seront envoyées (edit):', formDataEntries);
+                                
+                                // Ne pas bloquer le formulaire, laisser la soumission se poursuivre
+                            });
+                            
+                            // Logguer le type au changement
+                            typeSelect.addEventListener('change', function() {
+                                console.log('Type changé pour (edit):', this.value);
+                                console.log('État après changement (edit):', {
+                                    value: this.value,
+                                    selectedIndex: this.selectedIndex,
+                                    selectedOption: this.options[this.selectedIndex].text
+                                });
+                            });
+                        });
+                    </script>
                 </div>
             </div>
         </div>

@@ -82,12 +82,33 @@
                             <label for="type" class="form-label">
                                 <i class="fas fa-tag"></i> Type d'événement
                             </label>
-                            <select class="form-control" id="type" name="type" required>
-                                <option value="cours">Cours</option>
-                                <option value="examen">Examen</option>
-                                <option value="reunion">Réunion</option>
-                                <option value="autre">Autre</option>
-                            </select>
+                            <!-- Essai avec un champ input type radio pour voir si le problème vient du select -->
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="typeCours" value="cours" checked>
+                                <label class="form-check-label" for="typeCours">
+                                    Cours
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="typeExamen" value="examen">
+                                <label class="form-check-label" for="typeExamen">
+                                    Examen
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="typeReunion" value="reunion">
+                                <label class="form-check-label" for="typeReunion">
+                                    Réunion
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="typeAutre" value="autre">
+                                <label class="form-check-label" for="typeAutre">
+                                    Autre
+                                </label>
+                            </div>
+                            <!-- Champ caché pour compatibilité avec le code JavaScript existant -->
+                            <input type="hidden" id="type" value="cours">
                         </div>
 
                         <div class="mb-4">
@@ -114,6 +135,74 @@
                             </button>
                         </div>
                     </form>
+                    
+                    <!-- Script pour le débogage amélioré -->
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Le champ caché utilisé pour compatibilité
+                            const typeHidden = document.getElementById('type');
+                            
+                            // Les boutons radio
+                            const radioInputs = document.querySelectorAll('input[name="type"]');
+                            console.log('Nombre de boutons radio:', radioInputs.length);
+                            
+                            // Écouter les changements sur tous les boutons radio
+                            radioInputs.forEach(radio => {
+                                radio.addEventListener('change', function() {
+                                    if (this.checked) {
+                                        console.log('Radio changé pour:', this.value);
+                                        // Mettre à jour le champ caché
+                                        typeHidden.value = this.value;
+                                    }
+                                });
+                            });
+                            
+                            // Loguer l'état initial des boutons radio
+                            console.log('État initial des boutons radio:', Array.from(radioInputs).map(r => ({
+                                id: r.id,
+                                value: r.value,
+                                checked: r.checked
+                            })));
+                            
+                            // Ajout d'un champ supplémentaire pour le test
+                            const testInput = document.createElement('input');
+                            testInput.type = 'hidden';
+                            testInput.name = 'type_test';
+                            testInput.value = 'test_value';
+                            document.querySelector('form').appendChild(testInput);
+                            console.log('Champ de test ajouté au formulaire');
+                            
+                            document.querySelector('form').addEventListener('submit', function(e) {
+                                // Trouver la valeur du type radio sélectionné
+                                let selectedType = '';
+                                document.querySelectorAll('input[name="type"]').forEach(r => {
+                                    if (r.checked) selectedType = r.value;
+                                });
+                                
+                                console.log('Type radio sélectionné au moment du submit:', selectedType);
+                                
+                                // Inspecter le formulaire et les données qui seront envoyées
+                                const formData = new FormData(this);
+                                const formDataEntries = {};
+                                for (let [key, value] of formData.entries()) {
+                                    formDataEntries[key] = value;
+                                }
+                                console.log('Données FormData qui seront envoyées:', formDataEntries);
+                                
+                                // Vérifier tous les champs du formulaire
+                                console.log('Valeurs des champs au submit:', {
+                                    titre: document.getElementById('titre').value,
+                                    description: document.getElementById('description').value,
+                                    typeRadio: selectedType,
+                                    typeHidden: typeHidden.value,
+                                    dateDebut: document.getElementById('dateDebut').value,
+                                    dateFin: document.getElementById('dateFin').value
+                                });
+                                
+                                // Ne pas bloquer le formulaire, laisser la soumission se poursuivre
+                            });
+                        });
+                    </script>
                 </div>
             </div>
         </div>
