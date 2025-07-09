@@ -1,19 +1,139 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des utilisateurs - JEAI Learn{% endblock %}
+{% block title %}Gestion des Utilisateurs - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .admin-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        .admin-header {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .user-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .btn-admin {
+            background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+        .stats-badge {
+            background: rgba(111, 66, 193, 0.1);
+            color: #6f42c1;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .stat-label {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            color: #6c757d;
+        }
+        .stat-card.total {
+            background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+            color: white;
+        }
+        .stat-card.etudiants {
+            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+            color: white;
+        }
+        .stat-card.enseignants {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+        }
+        .stat-card.admins {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+        }
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            border-radius: 30px;
+        }
+        .role-admin {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        .role-enseignant {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #fd7e14;
+        }
+        .role-etudiant {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-users"></i> Gestion des utilisateurs</h1>
-                <div>
-                    <a href="{{ path('admin_users_new') }}" class="btn btn-primary">
-                        <i class="fas fa-user-plus"></i> Nouvel utilisateur
+    <!-- En-tête -->
+    <div class="admin-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">👥 Gestion des Utilisateurs</h1>
+                <p class="mb-0">Gérez tous les utilisateurs de la plateforme</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex justify-content-md-end gap-2">
+                    <a href="{{ path('admin_users_new') }}" class="btn btn-light">
+                        <i class="fas fa-user-plus"></i> Nouvel Utilisateur
                     </a>
-                    <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour au dashboard
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left"></i> Retour
                     </a>
                 </div>
             </div>
@@ -27,57 +147,49 @@
         {% set admins = users|filter(u => 'ROLE_ADMIN' in u.roles) %}
 
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3>{{ users|length }}</h3>
-                    <p class="mb-0">Total utilisateurs</p>
-                </div>
+            <div class="stat-card total">
+                <div class="stat-number">{{ users|length }}</div>
+                <div class="stat-label">Total Utilisateurs</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3>{{ etudiants|length }}</h3>
-                    <p class="mb-0">Étudiants</p>
-                </div>
+            <div class="stat-card etudiants">
+                <div class="stat-number">{{ etudiants|length }}</div>
+                <div class="stat-label">Étudiants</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <h3>{{ enseignants|length }}</h3>
-                    <p class="mb-0">Enseignants</p>
-                </div>
+            <div class="stat-card enseignants">
+                <div class="stat-number">{{ enseignants|length }}</div>
+                <div class="stat-label">Enseignants</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                    <h3>{{ admins|length }}</h3>
-                    <p class="mb-0">Administrateurs</p>
-                </div>
+            <div class="stat-card admins">
+                <div class="stat-number">{{ admins|length }}</div>
+                <div class="stat-label">Administrateurs</div>
             </div>
         </div>
     </div>
 
     <!-- Liste des utilisateurs -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-list"></i> Liste des utilisateurs
-            </h5>
+    <div class="card admin-card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">📋 Liste des utilisateurs</h5>
+            <a href="{{ path('admin_users_new') }}" class="btn btn-admin">
+                <i class="fas fa-user-plus"></i> Nouvel utilisateur
+            </a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Utilisateur</th>
                             <th>Email</th>
-                            <th>Nom</th>
-                            <th>Prénom</th>
                             <th>Rôle</th>
-                            <th>Inscription</th>
+                            <th>Dernière connexion</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -85,25 +197,50 @@
                         {% for user in users %}
                             <tr>
                                 <td>{{ user.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2">
+                                            {% if 'ROLE_ADMIN' in user.roles %}
+                                                <i class="fas fa-user-shield text-danger"></i>
+                                            {% elseif 'ROLE_ENSEIGNANT' in user.roles %}
+                                                <i class="fas fa-chalkboard-teacher text-warning"></i>
+                                            {% elseif 'ROLE_ETUDIANT' in user.roles %}
+                                                <i class="fas fa-user-graduate text-success"></i>
+                                            {% else %}
+                                                <i class="fas fa-user text-secondary"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold">{{ user.nom ?? '' }} {{ user.prenom ?? '' }}</span>
+                                            {% if user.classe %}
+                                                <br><small class="text-muted">{{ user.classe.nom }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
                                 <td>{{ user.email }}</td>
-                                <td>{{ user.nom ?? '-' }}</td>
-                                <td>{{ user.prenom ?? '-' }}</td>
                                 <td>
                                     {% if 'ROLE_ADMIN' in user.roles %}
-                                        <span class="badge bg-danger">Administrateur</span>
+                                        <span class="badge role-badge role-admin">Administrateur</span>
                                     {% elseif 'ROLE_ENSEIGNANT' in user.roles %}
-                                        <span class="badge bg-warning">Enseignant</span>
+                                        <span class="badge role-badge role-enseignant">Enseignant</span>
                                     {% elseif 'ROLE_ETUDIANT' in user.roles %}
-                                        <span class="badge bg-success">Étudiant</span>
+                                        <span class="badge role-badge role-etudiant">Étudiant</span>
                                     {% else %}
                                         <span class="badge bg-secondary">Utilisateur</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ user.id }}</td>
+                                <td>
+                                    {% if user.derniereConnexion %}
+                                        <small class="text-success">{{ user.derniereConnexion|date('d/m/Y H:i') }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Jamais connecté</small>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-cog"></i>
+                                            <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li><h6 class="dropdown-header">Changer le rôle</h6></li>
@@ -138,6 +275,10 @@
                                                 </li>
                                             {% endif %}
                                             <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="{{ path('admin_users_show', {id: user.id}) }}">
+                                                <i class="fas fa-eye"></i> Voir détails
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                                     <button type="submit" class="dropdown-item text-danger">
@@ -147,11 +288,30 @@
                                             </li>
                                         </ul>
                                     </div>
+                                    <div class="btn-group btn-group-sm ms-2">
+                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if not app.user or user.id != app.user.id %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ user.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center text-muted">Aucun utilisateur trouvé</td>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <i class="fas fa-users fa-3x text-muted"></i>
+                                        <h3>Aucun utilisateur trouvé</h3>
+                                        <p>Commencez par ajouter votre premier utilisateur</p>
+                                        <a href="{{ path('admin_users_new') }}" class="btn btn-admin">
+                                            <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -160,4 +320,17 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmDelete(userId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/users/${userId}/delete`;
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 {% endblock %}

@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class EtudiantController extends AbstractController
 {
     #[Route('/etudiant/dashboard', name: 'etudiant_dashboard')]
-    public function dashboard(CoursRepository $coursRepository, CalendrierRepository $calendrierRepository): Response
+    public function dashboard(CoursRepository $coursRepository, CalendrierRepository $calendrierRepository, \App\Repository\ClasseRepository $classeRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
 
@@ -36,7 +36,10 @@ class EtudiantController extends AbstractController
             // Récupérer les événements à venir pour l'étudiant
             $evenementsAvenir = [];
             try {
-                foreach ($user->getClasses() as $classe) {
+                // Utiliser le repository pour récupérer les classes de l'étudiant
+                $classes = $classeRepository->findByEtudiant($user);
+                
+                foreach ($classes as $classe) {
                     foreach ($classe->getCours() as $cours) {
                         $calendriers = $calendrierRepository->findUpcomingByCours($cours);
                         foreach ($calendriers as $calendrier) {

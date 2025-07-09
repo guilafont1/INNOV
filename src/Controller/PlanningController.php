@@ -199,7 +199,7 @@ class PlanningController extends AbstractController
     }
 
     #[Route('/etudiant/planning', name: 'etudiant_planning')]
-    public function etudiantIndex(CalendrierRepository $calendrierRepository, CoursRepository $coursRepository): Response
+    public function etudiantIndex(CalendrierRepository $calendrierRepository, CoursRepository $coursRepository, ClasseRepository $classeRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
 
@@ -208,7 +208,10 @@ class PlanningController extends AbstractController
         // Récupérer tous les cours des classes de l'étudiant
         $planning = [];
         try {
-            foreach ($user->getClasses() as $classe) {
+            // Solution alternative: utiliser le repository pour récupérer les classes de l'étudiant
+            $classes = $classeRepository->findByEtudiant($user);
+            
+            foreach ($classes as $classe) {
                 foreach ($classe->getCours() as $cours) {
                     $calendriers = $calendrierRepository->findBy(['cours' => $cours], ['dateHeure' => 'ASC']);
                     foreach ($calendriers as $calendrier) {
