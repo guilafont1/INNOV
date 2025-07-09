@@ -77,6 +77,18 @@
                             <textarea class="form-control" id="description" name="description" rows="4" required>{{ calendrier.description }}</textarea>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="type" class="form-label">
+                                <i class="fas fa-tag"></i> Type d'événement
+                            </label>
+                            <select class="form-control" id="type" name="type" required>
+                                <option value="cours" {% if calendrier.type == 'cours' %}selected{% endif %}>Cours</option>
+                                <option value="examen" {% if calendrier.type == 'examen' %}selected{% endif %}>Examen</option>
+                                <option value="reunion" {% if calendrier.type == 'reunion' %}selected{% endif %}>Réunion</option>
+                                <option value="autre" {% if calendrier.type == 'autre' %}selected{% endif %}>Autre</option>
+                            </select>
+                        </div>
+
                         <div class="mb-4">
                             <label for="dateDebut" class="form-label">
                                 <i class="fas fa-calendar-alt"></i> Date et heure de début

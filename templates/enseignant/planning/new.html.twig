@@ -78,6 +78,18 @@
                                       placeholder="Décrivez le contenu de cet événement..." required></textarea>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="type" class="form-label">
+                                <i class="fas fa-tag"></i> Type d'événement
+                            </label>
+                            <select class="form-control" id="type" name="type" required>
+                                <option value="cours">Cours</option>
+                                <option value="examen">Examen</option>
+                                <option value="reunion">Réunion</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+
                         <div class="mb-4">
                             <label for="dateDebut" class="form-label">
                                 <i class="fas fa-calendar-alt"></i> Date et heure de début

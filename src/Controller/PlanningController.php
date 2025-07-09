@@ -130,12 +130,14 @@ class PlanningController extends AbstractController
         if ($request->isMethod('POST')) {
             $titre = $request->request->get('titre');
             $description = $request->request->get('description');
+            $type = $request->request->get('type') ?: 'cours';  // Valeur par défaut: cours
             $dateDebut = $request->request->get('dateDebut');
             $dateFin = $request->request->get('dateFin');
 
             if ($titre && $description && $dateDebut && $dateFin) {
                 $calendrier->setTitre($titre);
                 $calendrier->setDescription($description);
+                $calendrier->setType($type);
                 $calendrier->setDateDebut(new \DateTime($dateDebut));
                 $calendrier->setDateFin(new \DateTime($dateFin));
 
@@ -168,12 +170,14 @@ class PlanningController extends AbstractController
         if ($request->isMethod('POST')) {
             $titre = $request->request->get('titre');
             $description = $request->request->get('description');
+            $type = $request->request->get('type') ?: 'cours';  // Valeur par défaut: cours
             $dateDebut = $request->request->get('dateDebut');
             $dateFin = $request->request->get('dateFin');
 
             if ($titre && $description && $dateDebut && $dateFin) {
                 $calendrier->setTitre($titre);
                 $calendrier->setDescription($description);
+                $calendrier->setType($type);
                 $calendrier->setDateDebut(new \DateTime($dateDebut));
                 $calendrier->setDateFin(new \DateTime($dateFin));
 
