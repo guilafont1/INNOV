@@ -55,6 +55,12 @@ class Cours
     #[ORM\OneToMany(targetEntity: Calendrier::class, mappedBy: 'cours')]
     private Collection $calendriers;
 
+    /**
+     * @var Collection<int, Classe>
+     */
+    #[ORM\ManyToMany(targetEntity: Classe::class, mappedBy: 'cours')]
+    private Collection $classes;
+
     #[ORM\ManyToOne(inversedBy: 'coursCreated')]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $createdBy = null;
@@ -66,6 +72,7 @@ class Cours
         $this->progressions = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
         $this->calendriers = new ArrayCollection();
+        $this->classes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -254,6 +261,33 @@ class Cours
             if ($calendrier->getCours() === $this) {
                 $calendrier->setCours(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Classe>
+     */
+    public function getClasses(): Collection
+    {
+        return $this->classes;
+    }
+
+    public function addClasse(Classe $classe): static
+    {
+        if (!$this->classes->contains($classe)) {
+            $this->classes->add($classe);
+            $classe->addCours($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClasse(Classe $classe): static
+    {
+        if ($this->classes->removeElement($classe)) {
+            $classe->removeCours($this);
         }
 
         return $this;

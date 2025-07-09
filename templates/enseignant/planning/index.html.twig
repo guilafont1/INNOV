@@ -400,9 +400,9 @@
                         {% if event.cours %}
                         coursId: {{ event.cours.id }},
                         coursTitle: "{{ event.cours.titre }}",
-                            {% if event.cours.classe %}
-                        classeId: {{ event.cours.classe.id }},
-                        classeTitle: "{{ event.cours.classe.nom }}",
+                            {% if event.cours.classes is defined and event.cours.classes.count > 0 %}
+                        classeId: {{ event.cours.classes.first.id }},
+                        classeTitle: "{{ event.cours.classes.first.nom }}",
                             {% endif %}
                         {% endif %}
                         {% if event.classe %}
