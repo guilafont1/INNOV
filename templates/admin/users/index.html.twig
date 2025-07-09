@@ -34,7 +34,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
         .btn-admin {
-            background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
             border: none;
             border-radius: 8px;
             padding: 0.75rem 1.5rem;
@@ -73,7 +73,7 @@
             color: #6c757d;
         }
         .stat-card.total {
-            background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+            background: linear-gradient(135deg, #6f42c1 0%, #8540c9 100%);
             color: white;
         }
         .stat-card.etudiants {
@@ -146,25 +146,25 @@
         {% set enseignants = users|filter(u => 'ROLE_ENSEIGNANT' in u.roles) %}
         {% set admins = users|filter(u => 'ROLE_ADMIN' in u.roles) %}
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card total">
                 <div class="stat-number">{{ users|length }}</div>
                 <div class="stat-label">Total Utilisateurs</div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card etudiants">
                 <div class="stat-number">{{ etudiants|length }}</div>
                 <div class="stat-label">Étudiants</div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card enseignants">
                 <div class="stat-number">{{ enseignants|length }}</div>
                 <div class="stat-label">Enseignants</div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card admins">
                 <div class="stat-number">{{ admins|length }}</div>
                 <div class="stat-label">Administrateurs</div>
@@ -182,15 +182,15 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table">
-                    <thead>
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <th>ID</th>
-                            <th>Utilisateur</th>
-                            <th>Email</th>
-                            <th>Rôle</th>
-                            <th>Dernière connexion</th>
-                            <th>Actions</th>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 25%;">Utilisateur</th>
+                            <th style="width: 25%;">Email</th>
+                            <th style="width: 15%;">Rôle</th>
+                            <th style="width: 15%;">Dernière connexion</th>
+                            <th style="width: 15%;" class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -212,8 +212,13 @@
                                         </div>
                                         <div>
                                             <span class="fw-bold">{{ user.nom ?? '' }} {{ user.prenom ?? '' }}</span>
-                                            {% if user.classes and user.classes|length > 0 %}
-                                                <br><small class="text-muted">{{ user.classes|first.nom }}</small>
+                                            {% if user.classes is defined and user.classes|length > 0 %}
+                                                <br><small class="text-muted">
+                                                    <i class="fas fa-school me-1"></i>
+                                                    {{ user.classes|first.nom }}
+                                                </small>
+                                            {% elseif 'ROLE_ETUDIANT' in user.roles %}
+                                                <br><small class="text-muted fst-italic">Non assigné à une classe</small>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -232,17 +237,26 @@
                                 </td>
                                 <td>
                                     {% if user.derniereConnexion %}
-                                        <small class="text-success">{{ user.derniereConnexion|date('d/m/Y H:i') }}</small>
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            {{ user.derniereConnexion|date('d/m/Y H:i') }}
+                                        </span>
                                     {% else %}
-                                        <small class="text-muted">Jamais connecté</small>
+                                        <span class="text-muted">
+                                            <i class="fas fa-times-circle me-1"></i>
+                                            Jamais connecté
+                                        </span>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
                                         </button>
-                                        <ul class="dropdown-menu">
+                                        <ul class="dropdown-menu dropdown-menu-end">
                                             <li><h6 class="dropdown-header">Changer le rôle</h6></li>
                                             {% if 'ROLE_ETUDIANT' not in user.roles %}
                                                 <li>
@@ -288,16 +302,11 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <div class="btn-group btn-group-sm ms-2">
-                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {% if not app.user or user.id != app.user.id %}
-                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ user.id }})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        {% endif %}
-                                    </div>
+                                    {% if not app.user or user.id != app.user.id %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ user.id }}, '{{ csrf_token('delete' ~ user.id) }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% else %}
@@ -322,12 +331,18 @@
 </div>
 
 <script>
-function confirmDelete(userId) {
+function confirmDelete(userId, csrfToken) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/admin/users/${userId}/delete`;
         
+        const token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = '_token';
+        token.value = csrfToken;
+        
+        form.appendChild(token);
         document.body.appendChild(form);
         form.submit();
     }
