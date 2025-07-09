@@ -38,18 +38,7 @@ class AdminController extends AbstractController
         ];
 
         $recentClasses = $classeRepository->findBy([], ['createdAt' => 'DESC'], 5);
-        // Récupérer les utilisateurs récemment connectés - utiliser createQueryBuilder pour le filtrage IS NOT NULL
-        $recentUsers = $userRepository->createQueryBuilder('u')
-            ->where('u.derniereConnexion IS NOT NULL')
-            ->orderBy('u.derniereConnexion', 'DESC')
-            ->setMaxResults(5)
-            ->getQuery()
-            ->getResult();
-        
-        // Si pas d'utilisateurs récemment connectés, récupérer les derniers inscrits
-        if (empty($recentUsers)) {
-            $recentUsers = $userRepository->findBy([], ['id' => 'DESC'], 5);
-        }
+        $recentUsers = $userRepository->findBy([], ['id' => 'DESC'], 5);
 
         return $this->render('admin/dashboard.html.twig', [
             'stats' => $stats,

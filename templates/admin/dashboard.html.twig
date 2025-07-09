@@ -173,9 +173,9 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    {% if recent_classes|length > 0 %}
+                    {% if classesRecentes|length > 0 %}
                         <div class="row">
-                            {% for classe in recent_classes %}
+                            {% for classe in classesRecentes %}
                                 <div class="col-md-6 mb-3">
                                     <div class="card border">
                                         <div class="card-body p-3">
@@ -206,7 +206,7 @@
                                                             <i class="fas fa-edit"></i> Modifier
                                                         </a></li>
                                                         <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ classe.id }}, '{{ csrf_token('delete' ~ classe.id) }}')">
+                                                        <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ classe.id }})">
                                                             <i class="fas fa-trash"></i> Supprimer
                                                         </a></li>
                                                     </ul>
@@ -231,47 +231,29 @@
             </div>
         </div>
 
-        <!-- Utilisateurs récents -->
+        <!-- Activité récente -->
         <div class="col-lg-4">
             <div class="card admin-card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">👥 Utilisateurs Récents</h5>
-                    <a href="{{ path('admin_users') }}" class="btn btn-sm btn-outline-primary">
-                        Tous les utilisateurs
-                    </a>
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">📊 Activité Récente</h5>
                 </div>
                 <div class="card-body">
-                    {% if recent_users|length > 0 %}
-                        {% for user in recent_users %}
+                    {% if activiteRecente|length > 0 %}
+                        {% for activite in activiteRecente %}
                             <div class="activity-item">
                                 <div class="d-flex align-items-center">
-                                    <span class="me-2">
-                                        {% if 'ROLE_ADMIN' in user.roles %}
-                                            <i class="fas fa-user-shield text-danger"></i>
-                                        {% elseif 'ROLE_ENSEIGNANT' in user.roles %}
-                                            <i class="fas fa-chalkboard-teacher text-warning"></i>
-                                        {% elseif 'ROLE_ETUDIANT' in user.roles %}
-                                            <i class="fas fa-user-graduate text-primary"></i>
-                                        {% else %}
-                                            <i class="fas fa-user text-secondary"></i>
-                                        {% endif %}
-                                    </span>
+                                    <span class="me-2">{{ activite.icon }}</span>
                                     <div>
-                                        <div class="fw-bold">{{ user.nom }} {{ user.prenom }}</div>
-                                        <small class="text-muted">{{ user.email }}</small>
-                                        {% if user.derniereConnexion %}
-                                            <small class="d-block text-success">
-                                                <i class="fas fa-clock"></i> Connecté le {{ user.derniereConnexion|date('d/m/Y à H:i') }}
-                                            </small>
-                                        {% endif %}
+                                        <div class="fw-bold">{{ activite.message }}</div>
+                                        <small class="text-muted">{{ activite.date.format('d/m/Y H:i') }}</small>
                                     </div>
                                 </div>
                             </div>
                         {% endfor %}
                     {% else %}
                         <div class="text-center py-3">
-                            <i class="fas fa-users fa-2x text-muted"></i>
-                            <p class="text-muted mt-2">Aucun utilisateur récent</p>
+                            <i class="fas fa-history fa-2x text-muted"></i>
+                            <p class="text-muted mt-2">Aucune activité récente</p>
                         </div>
                     {% endif %}
                 </div>
@@ -308,16 +290,16 @@
 </div>
 
 <script>
-function confirmDelete(classeId, csrfToken) {
+function confirmDelete(classeId) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Cette action est irréversible.')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/admin/classes/${classeId}/delete`;
+        form.action = `/admin/classe/${classeId}/delete`;
         
         const token = document.createElement('input');
         token.type = 'hidden';
         token.name = '_token';
-        token.value = csrfToken;
+        token.value = '{{ csrf_token("delete" ~ classe.id) }}';
         
         form.appendChild(token);
         document.body.appendChild(form);
