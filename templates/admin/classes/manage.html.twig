@@ -155,9 +155,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="action" value="remove_professeur">
-                                                        <input type="hidden" name="professeur_id" value="{{ professeur.id }}">
+                                                    <form method="POST" action="{{ path('admin_classes_remove_teacher', {id: classe.id, teacherId: professeur.id}) }}" style="display: inline;">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger" 
                                                                 onclick="return confirm('Retirer ce professeur de la classe ?')">
                                                             <i class="fas fa-user-minus"></i>
@@ -185,8 +183,8 @@
                             <h5 class="section-title mb-0">➕ Ajouter un Professeur</h5>
                         </div>
                         <div class="card-body">
-                            {% if professeursDisponibles|length > 0 %}
-                                {% for professeur in professeursDisponibles %}
+                            {% if available_enseignants|length > 0 %}
+                                {% for professeur in available_enseignants %}
                                     <div class="user-card card">
                                         <div class="card-body p-3">
                                             <div class="row align-items-center">
@@ -202,9 +200,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="action" value="add_professeur">
-                                                        <input type="hidden" name="professeur_id" value="{{ professeur.id }}">
+                                                    <form method="POST" action="{{ path('admin_classes_add_teacher', {id: classe.id}) }}" style="display: inline;">
+                                                        <input type="hidden" name="teacher_id" value="{{ professeur.id }}">
                                                         <button type="submit" class="btn btn-sm btn-outline-success">
                                                             <i class="fas fa-user-plus"></i>
                                                         </button>
@@ -253,9 +250,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="action" value="remove_etudiant">
-                                                        <input type="hidden" name="etudiant_id" value="{{ etudiant.id }}">
+                                                    <form method="POST" action="{{ path('admin_classes_remove_student', {id: classe.id, studentId: etudiant.id}) }}" style="display: inline;">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger" 
                                                                 onclick="return confirm('Retirer cet étudiant de la classe ?')">
                                                             <i class="fas fa-user-minus"></i>
@@ -283,8 +278,8 @@
                             <h5 class="section-title mb-0">➕ Ajouter un Étudiant</h5>
                         </div>
                         <div class="card-body">
-                            {% if etudiantsDisponibles|length > 0 %}
-                                {% for etudiant in etudiantsDisponibles %}
+                            {% if available_etudiants|length > 0 %}
+                                {% for etudiant in available_etudiants %}
                                     <div class="user-card card">
                                         <div class="card-body p-3">
                                             <div class="row align-items-center">
@@ -300,9 +295,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="action" value="add_etudiant">
-                                                        <input type="hidden" name="etudiant_id" value="{{ etudiant.id }}">
+                                                    <form method="POST" action="{{ path('admin_classes_add_student', {id: classe.id}) }}" style="display: inline;">
+                                                        <input type="hidden" name="student_id" value="{{ etudiant.id }}">
                                                         <button type="submit" class="btn btn-sm btn-outline-success">
                                                             <i class="fas fa-user-plus"></i>
                                                         </button>
@@ -347,9 +341,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="action" value="remove_cours">
-                                                        <input type="hidden" name="cours_id" value="{{ cours.id }}">
+                                                    <form method="POST" action="{{ path('admin_classes_remove_course', {id: classe.id, courseId: cours.id}) }}" style="display: inline;">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger" 
                                                                 onclick="return confirm('Retirer ce cours de la classe ?')">
                                                             <i class="fas fa-minus"></i>
@@ -377,8 +369,8 @@
                             <h5 class="section-title mb-0">➕ Ajouter un Cours</h5>
                         </div>
                         <div class="card-body">
-                            {% if coursDisponibles|length > 0 %}
-                                {% for cours in coursDisponibles %}
+                            {% if available_cours|length > 0 %}
+                                {% for cours in available_cours %}
                                     <div class="user-card card">
                                         <div class="card-body p-3">
                                             <div class="row align-items-center">
@@ -390,9 +382,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="action" value="add_cours">
-                                                        <input type="hidden" name="cours_id" value="{{ cours.id }}">
+                                                    <form method="POST" action="{{ path('admin_classes_add_course', {id: classe.id}) }}" style="display: inline;">
+                                                        <input type="hidden" name="course_id" value="{{ cours.id }}">
                                                         <button type="submit" class="btn btn-sm btn-outline-success">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
