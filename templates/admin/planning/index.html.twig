@@ -1,130 +1,305 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Planning Global - JEAI Learn{% endblock %}
+{% block title %}Emploi du Temps - JEAI Learn{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .timetable {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+        }
+        .timetable th {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+            font-weight: 500;
+        }
+        .timetable td {
+            height: 75px;
+            vertical-align: top;
+            padding: 0;
+            border: 1px solid #eee;
+            background-color: #fdfdfd;
+        }
+        .time-label {
+            width: 70px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #6c757d;
+            padding: 10px 5px;
+            vertical-align: middle;
+        }
+        .event-card {
+            margin: 0;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .event-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .event-card.cours {
+            background: linear-gradient(135deg, rgba(25, 135, 84, 0.9) 0%, rgba(40, 167, 69, 0.9) 100%);
+            color: white;
+        }
+        .event-card.examen {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.9) 0%, rgba(255, 107, 107, 0.9) 100%);
+            color: white;
+        }
+        .event-card.reunion {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.9) 0%, rgba(255, 153, 0, 0.9) 100%);
+            color: white;
+        }
+        .event-card.autre {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.9) 0%, rgba(73, 80, 87, 0.9) 100%);
+            color: white;
+        }
+        .event-title {
+            font-weight: 500;
+            font-size: 0.8rem;
+            padding: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0;
+        }
+        .event-info {
+            font-size: 0.7rem;
+            padding: 0 5px 5px;
+        }
+        .day-header {
+            text-align: center;
+            font-weight: 500;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px 5px 0 0;
+        }
+        .empty-cell {
+            background-color: #f8f9fa;
+            text-align: center;
+            color: #adb5bd;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .navigation-buttons button {
+            margin: 0 5px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-week-label {
+            font-size: 1rem;
+            display: inline-block;
+            width: 200px;
+            text-align: center;
+            color: #4e73df;
+        }
+        .today {
+            background-color: rgba(25, 135, 84, 0.1);
+        }
+        .calendar-filters {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-calendar-alt"></i> Planning Global</h1>
-                <div>
-                    <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour au dashboard
-                    </a>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+    <!-- En-tête -->
+    <div class="admin-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2"><i class="fas fa-calendar-alt"></i> Emploi du Temps</h1>
+                <p class="mb-0">Planification des cours et événements pour les classes</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex justify-content-md-end gap-2">
+                    <button class="btn btn-light px-3" data-bs-toggle="modal" data-bs-target="#addEventModal">
                         <i class="fas fa-plus"></i> Nouvel événement
                     </button>
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-light px-3">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtres -->
+    <!-- Filtres et navigation -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card admin-card">
                 <div class="card-body">
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="date_start" class="form-label">Date de début</label>
-                            <input type="date" class="form-control" id="date_start" name="date_start" value="{{ app.request.get('date_start') }}">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <form method="GET" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="classe" class="form-label">Classe</label>
+                                    <select class="form-select" id="classe" name="classe">
+                                        <option value="">Toutes les classes</option>
+                                        {% for classe in classes %}
+                                            <option value="{{ classe.id }}" {% if app.request.get('classe') == classe.id %}selected{% endif %}>{{ classe.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="enseignant" class="form-label">Enseignant</label>
+                                    <select class="form-select" id="enseignant" name="enseignant">
+                                        <option value="">Tous les enseignants</option>
+                                        {% for prof in enseignants %}
+                                            <option value="{{ prof.id }}" {% if app.request.get('enseignant') == prof.id %}selected{% endif %}>{{ prof.prenom }} {{ prof.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="type" class="form-label">Type</label>
+                                    <select class="form-select" id="type" name="type">
+                                        <option value="">Tous les types</option>
+                                        <option value="cours" {% if app.request.get('type') == 'cours' %}selected{% endif %}>Cours</option>
+                                        <option value="examen" {% if app.request.get('type') == 'examen' %}selected{% endif %}>Examen</option>
+                                        <option value="reunion" {% if app.request.get('type') == 'reunion' %}selected{% endif %}>Réunion</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary px-3">
+                                            <i class="fas fa-filter"></i> Filtrer
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="col-md-3">
-                            <label for="date_end" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control" id="date_end" name="date_end" value="{{ app.request.get('date_end') }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="type" class="form-label">Type d'événement</label>
-                            <select class="form-select" id="type" name="type">
-                                <option value="">Tous les types</option>
-                                <option value="cours" {% if app.request.get('type') == 'cours' %}selected{% endif %}>Cours</option>
-                                <option value="examen" {% if app.request.get('type') == 'examen' %}selected{% endif %}>Examen</option>
-                                <option value="reunion" {% if app.request.get('type') == 'reunion' %}selected{% endif %}>Réunion</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <i class="fas fa-filter"></i> Filtrer
+                        <div class="col-md-4">
+                            <div class="navigation-buttons">
+                                <form method="GET" id="navigationForm">
+                                    <input type="hidden" id="date_start" name="date_start">
+                                    <input type="hidden" id="date_end" name="date_end">
+                                    <input type="hidden" name="classe" value="{{ app.request.get('classe') }}">
+                                    <input type="hidden" name="enseignant" value="{{ app.request.get('enseignant') }}">
+                                    <input type="hidden" name="type" value="{{ app.request.get('type') }}">
+                                </form>
+                                <button onclick="navigateWeek('previous')" class="btn btn-outline-secondary" style="width: 40px;">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button onclick="navigateWeek('current')" class="btn btn-outline-primary mx-2 px-3">
+                                    Aujourd'hui
+                                </button>
+                                <span class="nav-week-label fw-bold">
+                                    {{ dateStart|date('d/m/Y') }} - {{ dateEnd|date('d/m/Y') }}
+                                </span>
+                                <button onclick="navigateWeek('next')" class="btn btn-outline-secondary" style="width: 40px;">
+                                    <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Événements -->
+    <!-- Emploi du temps hebdomadaire -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
+            <div class="card admin-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-calendar-check"></i> Événements planifiés
+                        <i class="fas fa-calendar-week"></i> Semaine du {{ dateStart|date('d/m/Y') }}
                     </h5>
+                    <div>
+                        <button class="btn btn-outline-secondary px-3" onclick="window.print()">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    {% if events %}
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Heure</th>
-                                        <th>Titre</th>
-                                        <th>Type</th>
-                                        <th>Description</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for event in events %}
-                                        <tr>
-                                            <td>{{ event.dateDebut|date('d/m/Y') }}</td>
-                                            <td>
-                                                {{ event.dateDebut|date('H:i') }}
-                                                {% if event.dateFin %}
-                                                    - {{ event.dateFin|date('H:i') }}
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ event.titre }}</td>
-                                            <td>
-                                                {% if event.type == 'cours' %}
-                                                    <span class="badge bg-primary">Cours</span>
-                                                {% elseif event.type == 'examen' %}
-                                                    <span class="badge bg-danger">Examen</span>
-                                                {% elseif event.type == 'reunion' %}
-                                                    <span class="badge bg-warning">Réunion</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">{{ event.type|title }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ event.description|slice(0, 50) }}{% if event.description|length > 50 %}...{% endif %}</td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <button class="btn btn-sm btn-outline-primary" onclick="editEvent({{ event.id }})">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEvent({{ event.id }})">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                    <div class="table-responsive">
+                        <table class="timetable">
+                            <thead>
+                                <tr>
+                                    <th class="time-label"></th>
+                                    {% for dayKey, day in weekDays %}
+                                        <th class="{{ day.date|date('Y-m-d') == currentDate|date('Y-m-d') ? 'today' : '' }}">
+                                            <div class="day-name">{{ day.date|date('l')|trans }}</div>
+                                            <div class="day-date">{{ day.date|date('d/m/Y') }}</div>
+                                        </th>
                                     {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Aucun événement planifié</h5>
-                            <p class="text-muted">Créez votre premier événement en cliquant sur "Nouvel événement"</p>
-                        </div>
-                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for time in timeSlots %}
+                                    <tr>
+                                        <td class="time-label">{{ time }}</td>
+                                        {% for dayKey, day in weekDays %}
+                                            <td class="{{ day.date|date('Y-m-d') == currentDate|date('Y-m-d') ? 'today' : '' }}" data-date="{{ day.date|date('Y-m-d') }}" data-time="{{ time }}">
+                                                {% set hasEvent = false %}
+                                                {% for event in day.events %}
+                                                    {% if event.dateDebut|date('H:i') == time %}
+                                                        {% set hasEvent = true %}
+                                                        <div class="event-card {{ event.type }}" onclick="showEventDetails({{ event.id }})">
+                                                            <div class="event-title">{{ event.titre }}</div>
+                                                            <div class="event-info">
+                                                                <div>
+                                                                    <i class="fas fa-clock"></i> 
+                                                                    {{ event.dateDebut|date('H:i') }}
+                                                                    {% if event.dateFin %}
+                                                                        - {{ event.dateFin|date('H:i') }}
+                                                                    {% endif %}
+                                                                </div>
+                                                                {% if event.lieu %}
+                                                                    <div><i class="fas fa-map-marker-alt"></i> {{ event.lieu }}</div>
+                                                                {% endif %}
+                                                                {% if event.classe %}
+                                                                    <div><i class="fas fa-users"></i> {{ event.classe.nom }}</div>
+                                                                {% endif %}
+                                                                {% if event.enseignant %}
+                                                                    <div><i class="fas fa-chalkboard-teacher"></i> {{ event.enseignant.nom }}</div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                
+                                                {% if not hasEvent %}
+                                                    <div class="empty-cell" ondblclick="createEventAt('{{ day.date|date('Y-m-d') }}', '{{ time }}')">
+                                                        <i class="fas fa-plus-circle text-muted" style="opacity: 0.2; font-size: 1.5rem;"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,41 +308,77 @@
 
 <!-- Modal pour ajouter un événement -->
 <div class="modal fade" id="addEventModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Nouvel événement</h5>
+                <h5 class="modal-title" id="modalTitle">Nouvel événement</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="eventForm">
-                    <div class="mb-3">
-                        <label for="titre" class="form-label">Titre <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="titre" name="titre" required>
-                    </div>
+                    <input type="hidden" id="event_id" name="event_id">
                     
-                    <div class="mb-3">
-                        <label for="type" class="form-label">Type</label>
-                        <select class="form-select" id="type" name="type">
-                            <option value="cours">Cours</option>
-                            <option value="examen">Examen</option>
-                            <option value="reunion">Réunion</option>
-                            <option value="autre">Autre</option>
-                        </select>
-                    </div>
-
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="date_debut" class="form-label">Date de début <span class="text-danger">*</span></label>
-                                <input type="datetime-local" class="form-control" id="date_debut" name="date_debut" required>
-                            </div>
+                            <label for="titre" class="form-label">Titre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="titre" name="titre" required>
                         </div>
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="date_fin" class="form-label">Date de fin</label>
-                                <input type="datetime-local" class="form-control" id="date_fin" name="date_fin">
-                            </div>
+                            <label for="type" class="form-label">Type</label>
+                            <select class="form-select" id="type" name="type">
+                                <option value="cours">Cours</option>
+                                <option value="examen">Examen</option>
+                                <option value="reunion">Réunion</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="date_debut" class="form-label">Date et heure de début <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="date_debut" name="date_debut" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date_fin" class="form-label">Date et heure de fin</label>
+                            <input type="datetime-local" class="form-control" id="date_fin" name="date_fin">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="enseignant_id" class="form-label">Enseignant</label>
+                            <select class="form-select" id="enseignant_id" name="enseignant_id">
+                                <option value="">Sélectionner un enseignant</option>
+                                {% for prof in enseignants %}
+                                    <option value="{{ prof.id }}">{{ prof.prenom }} {{ prof.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="classe_id" class="form-label">Classe</label>
+                            <select class="form-select" id="classe_id" name="classe_id">
+                                <option value="">Sélectionner une classe</option>
+                                {% for classe in classes %}
+                                    <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="cours_id" class="form-label">Cours associé</label>
+                            <select class="form-select" id="cours_id" name="cours_id">
+                                <option value="">Sélectionner un cours</option>
+                                {% for c in cours %}
+                                    <option value="{{ c.id }}">{{ c.titre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lieu" class="form-label">Lieu / Salle</label>
+                            <input type="text" class="form-control" id="lieu" name="lieu">
                         </div>
                     </div>
 
@@ -175,37 +386,189 @@
                         <label for="description" class="form-label">Description</label>
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="lieu" class="form-label">Lieu</label>
-                        <input type="text" class="form-control" id="lieu" name="lieu">
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" onclick="saveEvent()">Sauvegarder</button>
+                <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger me-auto d-none px-3" id="deleteEventBtn" onclick="deleteEvent()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+                <button type="button" class="btn btn-primary px-4" id="saveEventBtn" onclick="saveEvent()">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-function editEvent(id) {
-    // TODO: Implémenter l'édition d'événement
-    alert('Fonctionnalité d\'édition à implémenter');
+let eventModal;
+let currentEventId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    eventModal = new bootstrap.Modal(document.getElementById('addEventModal'));
+});
+
+function navigateWeek(direction) {
+    const startInput = document.getElementById('date_start');
+    const endInput = document.getElementById('date_end');
+    const form = document.getElementById('navigationForm');
+    
+    const currentStartDate = new Date('{{ dateStart|date('Y-m-d') }}');
+    const currentEndDate = new Date('{{ dateEnd|date('Y-m-d') }}');
+    
+    if (direction === 'previous') {
+        currentStartDate.setDate(currentStartDate.getDate() - 7);
+        currentEndDate.setDate(currentEndDate.getDate() - 7);
+    } else if (direction === 'next') {
+        currentStartDate.setDate(currentStartDate.getDate() + 7);
+        currentEndDate.setDate(currentEndDate.getDate() + 7);
+    } else if (direction === 'current') {
+        const today = new Date();
+        currentStartDate.setDate(today.getDate() - today.getDay() + 1); // Monday of current week
+        currentEndDate.setDate(currentStartDate.getDate() + 6); // Sunday of current week
+    }
+    
+    startInput.value = currentStartDate.toISOString().split('T')[0];
+    endInput.value = currentEndDate.toISOString().split('T')[0];
+    form.submit();
 }
 
-function deleteEvent(id) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
-        // TODO: Implémenter la suppression d'événement
-        alert('Fonctionnalité de suppression à implémenter');
-    }
+function createEventAt(date, time) {
+    document.getElementById('event_id').value = '';
+    document.getElementById('titre').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('type').value = 'cours';
+    document.getElementById('lieu').value = '';
+    document.getElementById('enseignant_id').value = '';
+    document.getElementById('classe_id').value = '';
+    document.getElementById('cours_id').value = '';
+    
+    const dateParts = date.split('-');
+    const timeParts = time.split(':');
+    const dateTimeStr = `${date}T${time}:00`;
+    
+    document.getElementById('date_debut').value = dateTimeStr;
+    
+    // Set default end time to +1 hour
+    const endDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1]);
+    endDate.setHours(endDate.getHours() + 1);
+    const endTimeStr = `${date}T${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}:00`;
+    document.getElementById('date_fin').value = endTimeStr;
+    
+    document.getElementById('deleteEventBtn').classList.add('d-none');
+    document.getElementById('modalTitle').textContent = 'Nouvel événement';
+    
+    eventModal.show();
+    currentEventId = null;
+}
+
+function showEventDetails(id) {
+    currentEventId = id;
+    
+    // Ici, nous ferions normalement une requête AJAX pour récupérer les détails de l'événement
+    // Pour ce prototype, nous allons simplement montrer une alerte
+    fetch(`/admin/planning/event/${id}/get-details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const event = data.event;
+                document.getElementById('event_id').value = event.id;
+                document.getElementById('titre').value = event.titre;
+                document.getElementById('description').value = event.description || '';
+                document.getElementById('type').value = event.type;
+                document.getElementById('lieu').value = event.lieu || '';
+                document.getElementById('enseignant_id').value = event.enseignant_id || '';
+                document.getElementById('classe_id').value = event.classe_id || '';
+                document.getElementById('cours_id').value = event.cours_id || '';
+                
+                document.getElementById('date_debut').value = formatDateTimeForInput(event.date_debut);
+                if (event.date_fin) {
+                    document.getElementById('date_fin').value = formatDateTimeForInput(event.date_fin);
+                } else {
+                    document.getElementById('date_fin').value = '';
+                }
+                
+                document.getElementById('deleteEventBtn').classList.remove('d-none');
+                document.getElementById('modalTitle').textContent = 'Modifier l\'événement';
+                
+                eventModal.show();
+            } else {
+                alert('Erreur lors du chargement des détails de l\'événement');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement des détails de l\'événement');
+        });
+}
+
+function formatDateTimeForInput(dateTimeStr) {
+    const date = new Date(dateTimeStr);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
 function saveEvent() {
-    // TODO: Implémenter la sauvegarde d'événement
-    alert('Fonctionnalité de sauvegarde à implémenter');
+    const eventId = document.getElementById('event_id').value;
+    const formData = {
+        titre: document.getElementById('titre').value,
+        description: document.getElementById('description').value,
+        type: document.getElementById('type').value,
+        lieu: document.getElementById('lieu').value,
+        date_debut: document.getElementById('date_debut').value,
+        date_fin: document.getElementById('date_fin').value,
+        enseignant_id: document.getElementById('enseignant_id').value,
+        classe_id: document.getElementById('classe_id').value,
+        cours_id: document.getElementById('cours_id').value
+    };
+    
+    const endpoint = eventId 
+        ? `/admin/planning/event/${eventId}/edit` 
+        : '/admin/planning/event/new';
+    
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            eventModal.hide();
+            window.location.reload();
+        } else {
+            alert(data.message || 'Erreur lors de l\'enregistrement de l\'événement');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'enregistrement de l\'événement');
+    });
+}
+
+function deleteEvent() {
+    if (!currentEventId) return;
+    
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+        fetch(`/admin/planning/event/${currentEventId}/delete`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                eventModal.hide();
+                window.location.reload();
+            } else {
+                alert(data.message || 'Erreur lors de la suppression de l\'événement');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression de l\'événement');
+        });
+    }
 }
 </script>
 {% endblock %}

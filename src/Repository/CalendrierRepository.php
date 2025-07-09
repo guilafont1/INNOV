@@ -24,10 +24,10 @@ class CalendrierRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.cours = :cours')
-            ->andWhere('c.dateHeure >= :now')
+            ->andWhere('c.dateDebut >= :now')
             ->setParameter('cours', $cours)
             ->setParameter('now', new \DateTime())
-            ->orderBy('c.dateHeure', 'ASC')
+            ->orderBy('c.dateDebut', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -39,12 +39,43 @@ class CalendrierRepository extends ServiceEntityRepository
     public function findByEnseignant($enseignant): array
     {
         return $this->createQueryBuilder('c')
-            ->innerJoin('c.cours', 'cours')
-            ->andWhere('cours.createdBy = :enseignant')
+            ->leftJoin('c.cours', 'cours')
+            ->where('c.enseignant = :enseignant OR cours.createdBy = :enseignant')
             ->setParameter('enseignant', $enseignant)
-            ->orderBy('c.dateHeure', 'ASC')
+            ->orderBy('c.dateDebut', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+    
+    /**
+     * Récupère les événements dans une période avec filtres optionnels
+     * @return Calendrier[] Returns an array of Calendrier objects
+     */
+    public function findByDateRange(\DateTime $dateStart, \DateTime $dateEnd, ?string $type = null, ?int $classeId = null, ?int $enseignantId = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->where('c.dateDebut >= :dateStart')
+            ->andWhere('c.dateDebut <= :dateEnd')
+            ->setParameter('dateStart', $dateStart->format('Y-m-d 00:00:00'))
+            ->setParameter('dateEnd', $dateEnd->format('Y-m-d 23:59:59'))
+            ->orderBy('c.dateDebut', 'ASC');
+        
+        if ($type) {
+            $qb->andWhere('c.type = :type')
+               ->setParameter('type', $type);
+        }
+        
+        if ($classeId) {
+            $qb->andWhere('c.classe = :classeId')
+               ->setParameter('classeId', $classeId);
+        }
+        
+        if ($enseignantId) {
+            $qb->andWhere('c.enseignant = :enseignantId')
+               ->setParameter('enseignantId', $enseignantId);
+        }
+        
+        return $qb->getQuery()->getResult();
     }
 
     /**

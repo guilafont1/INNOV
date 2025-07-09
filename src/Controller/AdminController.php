@@ -337,12 +337,269 @@ class AdminController extends AbstractController
     }
 
     #[Route('/planning', name: 'admin_planning')]
-    public function planning(CalendrierRepository $calendrierRepository): Response
+    public function planning(
+        Request $request,
+        CalendrierRepository $calendrierRepository,
+        UserRepository $userRepository,
+        ClasseRepository $classeRepository,
+        CoursRepository $coursRepository
+    ): Response
     {
-        $events = $calendrierRepository->findAll();
-
+        // Récupérer le filtre de date
+        $currentDate = new \DateTime();
+        $startOfWeek = clone $currentDate;
+        $startOfWeek->modify('this week monday');
+        
+        $endOfWeek = clone $startOfWeek;
+        $endOfWeek->modify('+6 days');
+        
+        $dateStart = $request->query->get('date_start') 
+            ? new \DateTime($request->query->get('date_start')) 
+            : $startOfWeek;
+            
+        $dateEnd = $request->query->get('date_end') 
+            ? new \DateTime($request->query->get('date_end')) 
+            : $endOfWeek;
+            
+        $type = $request->query->get('type');
+        $classeId = $request->query->get('classe') ? (int) $request->query->get('classe') : null;
+        $enseignantId = $request->query->get('enseignant') ? (int) $request->query->get('enseignant') : null;
+        
+        // Récupérer les événements filtrés
+        $events = $calendrierRepository->findByDateRange($dateStart, $dateEnd, $type, $classeId, $enseignantId);
+        
+        // Organiser les événements par jour et heure pour l'affichage en grille
+        $weekDays = [];
+        $currentDay = clone $dateStart;
+        
+        // Définir les horaires des créneaux (de 8h à 18h)
+        $timeSlots = [];
+        for ($hour = 8; $hour <= 18; $hour++) {
+            $timeSlots[] = sprintf('%02d:00', $hour);
+            if ($hour < 18) {
+                $timeSlots[] = sprintf('%02d:30', $hour);
+            }
+        }
+        
+        // Créer la structure de la semaine
+        while ($currentDay <= $dateEnd) {
+            $dayKey = $currentDay->format('Y-m-d');
+            $weekDays[$dayKey] = [
+                'date' => clone $currentDay,
+                'events' => [],
+            ];
+            $currentDay->modify('+1 day');
+        }
+        
+        // Répartir les événements dans la structure
+        foreach ($events as $event) {
+            $eventDay = $event->getDateDebut()->format('Y-m-d');
+            if (isset($weekDays[$eventDay])) {
+                $weekDays[$eventDay]['events'][] = $event;
+            }
+        }
+        
+        // Récupérer toutes les classes et enseignants pour les filtres et le formulaire
+        $classes = $classeRepository->findAll();
+        $enseignants = $userRepository->findByRole('ROLE_ENSEIGNANT');
+        $cours = $coursRepository->findAll();
+        
         return $this->render('admin/planning/index.html.twig', [
-            'events' => $events,
+            'weekDays' => $weekDays,
+            'timeSlots' => $timeSlots,
+            'dateStart' => $dateStart,
+            'dateEnd' => $dateEnd,
+            'classes' => $classes,
+            'enseignants' => $enseignants,
+            'cours' => $cours,
+            'currentDate' => $currentDate,
+        ]);
+    }
+    
+    #[Route('/planning/event/new', name: 'admin_planning_new_event', methods: ['POST'])]
+    public function newEvent(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        ClasseRepository $classeRepository,
+        CoursRepository $coursRepository
+    ): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            return $this->json(['success' => false, 'message' => 'Données invalides'], 400);
+        }
+        
+        $event = new Calendrier();
+        $event->setTitre($data['titre']);
+        $event->setDescription($data['description'] ?? null);
+        $event->setType($data['type'] ?? 'cours');
+        
+        // Date de début
+        $dateDebut = new \DateTime($data['date_debut']);
+        $event->setDateDebut($dateDebut);
+        
+        // Date de fin (optionnelle)
+        if (!empty($data['date_fin'])) {
+            $dateFin = new \DateTime($data['date_fin']);
+            $event->setDateFin($dateFin);
+        }
+        
+        // Lieu
+        if (!empty($data['lieu'])) {
+            $event->setLieu($data['lieu']);
+        }
+        
+        // Relations
+        if (!empty($data['enseignant_id'])) {
+            $enseignant = $userRepository->find($data['enseignant_id']);
+            if ($enseignant) {
+                $event->setEnseignant($enseignant);
+            }
+        }
+        
+        if (!empty($data['classe_id'])) {
+            $classe = $classeRepository->find($data['classe_id']);
+            if ($classe) {
+                $event->setClasse($classe);
+            }
+        }
+        
+        if (!empty($data['cours_id'])) {
+            $cours = $coursRepository->find($data['cours_id']);
+            if ($cours) {
+                $event->setCours($cours);
+            }
+        }
+        
+        $entityManager->persist($event);
+        $entityManager->flush();
+        
+        return $this->json([
+            'success' => true,
+            'message' => 'Événement créé avec succès',
+            'event' => [
+                'id' => $event->getId(),
+                'titre' => $event->getTitre(),
+                'date' => $event->getDateDebut()->format('d/m/Y H:i')
+            ]
+        ]);
+    }
+    
+    #[Route('/planning/event/{id}/edit', name: 'admin_planning_edit_event', methods: ['POST'])]
+    public function editEvent(
+        Calendrier $event,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        ClasseRepository $classeRepository,
+        CoursRepository $coursRepository
+    ): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            return $this->json(['success' => false, 'message' => 'Données invalides'], 400);
+        }
+        
+        $event->setTitre($data['titre']);
+        $event->setDescription($data['description'] ?? null);
+        $event->setType($data['type'] ?? 'cours');
+        
+        // Date de début
+        $dateDebut = new \DateTime($data['date_debut']);
+        $event->setDateDebut($dateDebut);
+        
+        // Date de fin (optionnelle)
+        if (!empty($data['date_fin'])) {
+            $dateFin = new \DateTime($data['date_fin']);
+            $event->setDateFin($dateFin);
+        } else {
+            $event->setDateFin(null);
+        }
+        
+        // Lieu
+        $event->setLieu($data['lieu'] ?? null);
+        
+        // Relations
+        if (!empty($data['enseignant_id'])) {
+            $enseignant = $userRepository->find($data['enseignant_id']);
+            if ($enseignant) {
+                $event->setEnseignant($enseignant);
+            }
+        } else {
+            $event->setEnseignant(null);
+        }
+        
+        if (!empty($data['classe_id'])) {
+            $classe = $classeRepository->find($data['classe_id']);
+            if ($classe) {
+                $event->setClasse($classe);
+            }
+        } else {
+            $event->setClasse(null);
+        }
+        
+        if (!empty($data['cours_id'])) {
+            $cours = $coursRepository->find($data['cours_id']);
+            if ($cours) {
+                $event->setCours($cours);
+            }
+        } else {
+            $event->setCours(null);
+        }
+        
+        $entityManager->flush();
+        
+        return $this->json([
+            'success' => true,
+            'message' => 'Événement modifié avec succès',
+            'event' => [
+                'id' => $event->getId(),
+                'titre' => $event->getTitre(),
+                'date' => $event->getDateDebut()->format('d/m/Y H:i')
+            ]
+        ]);
+    }
+    
+    #[Route('/planning/event/{id}/delete', name: 'admin_planning_delete_event', methods: ['POST'])]
+    public function deleteEvent(
+        Calendrier $event,
+        EntityManagerInterface $entityManager
+    ): Response
+    {
+        $entityManager->remove($event);
+        $entityManager->flush();
+        
+        return $this->json([
+            'success' => true,
+            'message' => 'Événement supprimé avec succès'
+        ]);
+    }
+    
+    #[Route('/planning/event/{id}/get-details', name: 'admin_planning_get_event_details', methods: ['GET'])]
+    public function getEventDetails(Calendrier $event): Response
+    {
+        $eventData = [
+            'id' => $event->getId(),
+            'titre' => $event->getTitre(),
+            'description' => $event->getDescription(),
+            'type' => $event->getType(),
+            'lieu' => $event->getLieu(),
+            'date_debut' => $event->getDateDebut()->format('Y-m-d H:i:s'),
+            'enseignant_id' => $event->getEnseignant() ? $event->getEnseignant()->getId() : null,
+            'classe_id' => $event->getClasse() ? $event->getClasse()->getId() : null,
+            'cours_id' => $event->getCours() ? $event->getCours()->getId() : null,
+        ];
+        
+        if ($event->getDateFin()) {
+            $eventData['date_fin'] = $event->getDateFin()->format('Y-m-d H:i:s');
+        }
+        
+        return $this->json([
+            'success' => true,
+            'event' => $eventData
         ]);
     }
 

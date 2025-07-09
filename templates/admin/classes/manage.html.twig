@@ -155,12 +155,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="POST" action="{{ path('admin_classes_remove_teacher', {id: classe.id, teacherId: professeur.id}) }}" style="display: inline;">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                                onclick="return confirm('Retirer ce professeur de la classe ?')">
-                                                            <i class="fas fa-user-minus"></i>
-                                                        </button>
-                                                    </form>
+                                                    <div class="d-flex gap-2 justify-content-end">
+                                                        <a href="{{ path('admin_users_show', {id: professeur.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_classes_remove_teacher', {id: classe.id, teacherId: professeur.id}) }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                    onclick="return confirm('Retirer ce professeur de la classe ?')">
+                                                                <i class="fas fa-user-minus"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -200,12 +205,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="POST" action="{{ path('admin_classes_add_teacher', {id: classe.id}) }}" style="display: inline;">
-                                                        <input type="hidden" name="teacher_id" value="{{ professeur.id }}">
-                                                        <button type="submit" class="btn btn-sm btn-outline-success">
-                                                            <i class="fas fa-user-plus"></i>
-                                                        </button>
-                                                    </form>
+                                                    <div class="d-flex gap-2 justify-content-end">
+                                                        <a href="{{ path('admin_users_show', {id: professeur.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_classes_add_teacher', {id: classe.id}) }}">
+                                                            <input type="hidden" name="teacher_id" value="{{ professeur.id }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-user-plus"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -250,12 +260,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="POST" action="{{ path('admin_classes_remove_student', {id: classe.id, studentId: etudiant.id}) }}" style="display: inline;">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                                onclick="return confirm('Retirer cet étudiant de la classe ?')">
-                                                            <i class="fas fa-user-minus"></i>
-                                                        </button>
-                                                    </form>
+                                                    <div class="d-flex gap-2 justify-content-end">
+                                                        <a href="{{ path('admin_users_show', {id: etudiant.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_classes_remove_student', {id: classe.id, studentId: etudiant.id}) }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                    onclick="return confirm('Retirer cet étudiant de la classe ?')">
+                                                                <i class="fas fa-user-minus"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -295,12 +310,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="POST" action="{{ path('admin_classes_add_student', {id: classe.id}) }}" style="display: inline;">
-                                                        <input type="hidden" name="student_id" value="{{ etudiant.id }}">
-                                                        <button type="submit" class="btn btn-sm btn-outline-success">
-                                                            <i class="fas fa-user-plus"></i>
-                                                        </button>
-                                                    </form>
+                                                    <div class="d-flex gap-2 justify-content-end">
+                                                        <a href="{{ path('admin_users_show', {id: etudiant.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_classes_add_student', {id: classe.id}) }}">
+                                                            <input type="hidden" name="student_id" value="{{ etudiant.id }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-user-plus"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -341,12 +361,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="POST" action="{{ path('admin_classes_remove_course', {id: classe.id, courseId: cours.id}) }}" style="display: inline;">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                                onclick="return confirm('Retirer ce cours de la classe ?')">
-                                                            <i class="fas fa-minus"></i>
-                                                        </button>
-                                                    </form>
+                                                    <div class="d-flex gap-2 justify-content-end">
+                                                        <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_classes_remove_course', {id: classe.id, courseId: cours.id}) }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                    onclick="return confirm('Retirer ce cours de la classe ?')">
+                                                                <i class="fas fa-minus"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -382,12 +407,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-md-end">
-                                                    <form method="POST" action="{{ path('admin_classes_add_course', {id: classe.id}) }}" style="display: inline;">
-                                                        <input type="hidden" name="course_id" value="{{ cours.id }}">
-                                                        <button type="submit" class="btn btn-sm btn-outline-success">
-                                                            <i class="fas fa-plus"></i>
-                                                        </button>
-                                                    </form>
+                                                    <div class="d-flex gap-2 justify-content-end">
+                                                        <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_classes_add_course', {id: classe.id}) }}">
+                                                            <input type="hidden" name="course_id" value="{{ cours.id }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

@@ -18,11 +18,26 @@ class Calendrier
     #[ORM\Column(length: 255)]
     private ?string $titre = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column]
-    private ?\DateTime $dateHeure = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateDebut = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateFin = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lieu = null;
+    
+    #[ORM\Column(length: 50)]
+    private ?string $type = 'cours';
+
+    #[ORM\ManyToOne]
+    private ?User $enseignant = null;
+    
+    #[ORM\ManyToOne]
+    private ?Classe $classe = null;
 
     #[ORM\ManyToOne(inversedBy: 'calendriers')]
     private ?Cours $cours = null;
@@ -56,14 +71,74 @@ class Calendrier
         return $this;
     }
 
-    public function getDateHeure(): ?\DateTime
+    public function getDateDebut(): ?\DateTimeInterface
     {
-        return $this->dateHeure;
+        return $this->dateDebut;
     }
 
-    public function setDateHeure(\DateTime $dateHeure): static
+    public function setDateDebut(\DateTimeInterface $dateDebut): static
     {
-        $this->dateHeure = $dateHeure;
+        $this->dateDebut = $dateDebut;
+
+        return $this;
+    }
+    
+    public function getDateFin(): ?\DateTimeInterface
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(?\DateTimeInterface $dateFin): static
+    {
+        $this->dateFin = $dateFin;
+
+        return $this;
+    }
+    
+    public function getLieu(): ?string
+    {
+        return $this->lieu;
+    }
+
+    public function setLieu(?string $lieu): static
+    {
+        $this->lieu = $lieu;
+
+        return $this;
+    }
+    
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+    
+    public function getEnseignant(): ?User
+    {
+        return $this->enseignant;
+    }
+
+    public function setEnseignant(?User $enseignant): static
+    {
+        $this->enseignant = $enseignant;
+
+        return $this;
+    }
+    
+    public function getClasse(): ?Classe
+    {
+        return $this->classe;
+    }
+
+    public function setClasse(?Classe $classe): static
+    {
+        $this->classe = $classe;
 
         return $this;
     }
