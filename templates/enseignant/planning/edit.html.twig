@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Événement - {{ calendrier.titre }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .cours-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card form-card">
+                <div class="form-header">
+                    <h2 class="mb-2">✏️ Modifier l'Événement</h2>
+                    <p class="mb-0">Modifiez les détails de votre événement</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Informations du cours -->
+                    <div class="cours-info">
+                        <h5 class="text-primary mb-2">
+                            <i class="fas fa-book"></i> {{ calendrier.cours.titre }}
+                        </h5>
+                        <p class="text-muted mb-0">{{ calendrier.cours.description }}</p>
+                    </div>
+
+                    <!-- Formulaire -->
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="titre" class="form-label">
+                                <i class="fas fa-heading"></i> Titre de l'événement
+                            </label>
+                            <input type="text" class="form-control" id="titre" name="titre" 
+                                   value="{{ calendrier.titre }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required>{{ calendrier.description }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="dateHeure" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Date et heure
+                            </label>
+                            <input type="datetime-local" class="form-control" id="dateHeure" name="dateHeure" 
+                                   value="{{ calendrier.dateHeure.format('Y-m-d\\TH:i') }}" required>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('enseignant_planning_cours', {id: calendrier.cours.id}) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-custom text-white">
+                                <i class="fas fa-save"></i> Sauvegarder les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\CoursRepository;
+use App\Repository\CalendrierRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,7 +38,7 @@ class EnseignantController extends AbstractController
     }
     
     #[Route('/enseignant/dashboard', name: 'enseignant_dashboard')]
-    public function dashboard(CoursRepository $coursRepository): Response
+    public function dashboard(CoursRepository $coursRepository, CalendrierRepository $calendrierRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
@@ -61,11 +62,15 @@ class EnseignantController extends AbstractController
             // Activité récente (simulée pour l'exemple)
             $activiteRecente = $this->getRecentActivity($cours);
 
+            // Récupérer les événements à venir
+            $evenementsAvenir = $calendrierRepository->findUpcomingByEnseignant($user);
+
             return $this->render('enseignant/dashboard.html.twig', [
                 'cours' => $coursLimites,
                 'totalCours' => count($cours),
                 'stats' => $stats,
                 'activiteRecente' => $activiteRecente,
+                'evenementsAvenir' => $evenementsAvenir,
             ]);
         } catch (\Exception $e) {
             // Log l'erreur pour le debugging
@@ -82,6 +87,7 @@ class EnseignantController extends AbstractController
                     'totalEtudiants' => 0,
                 ],
                 'activiteRecente' => [],
+                'evenementsAvenir' => [],
             ]);
         }
     }

@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Classes{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👥 Mes Classes</h2>
+    </div>
+
+    {% if classes|length > 0 %}
+        <div class="row">
+            {% for classe in classes %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">{{ classe.nom }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if classe.description %}
+                                <p class="card-text text-muted">{{ classe.description|slice(0, 100) }}...</p>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>{{ classe.etudiants|length }} étudiant(s)
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-book me-1"></i>{{ classe.cours|length }} cours
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ classe.createdAt.format('d/m/Y') }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                                <a href="{{ path('enseignant_classe_notes', {id: classe.id}) }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-clipboard-list"></i> Notes
+                                </a>
+                                <a href="{{ path('enseignant_classe_etudiants', {id: classe.id}) }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-user-plus"></i> Étudiants
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <h5>Aucune classe assignée</h5>
+            <p>Vous n'êtes professeur d'aucune classe pour le moment.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

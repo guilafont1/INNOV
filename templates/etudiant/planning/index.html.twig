@@ -1,0 +1,256 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Planning{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .planning-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .planning-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        .planning-card.upcoming {
+            border-left: 4px solid #28a745;
+        }
+        .planning-card.past {
+            border-left: 4px solid #6c757d;
+            opacity: 0.7;
+        }
+        .planning-card.today {
+            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+        }
+        .calendar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .time-badge {
+            background: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .cours-badge {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .filter-tabs {
+            margin-bottom: 2rem;
+        }
+        .filter-tabs .nav-link {
+            border-radius: 20px;
+            margin-right: 0.5rem;
+            color: #6c757d;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .filter-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- En-tête du planning -->
+    <div class="calendar-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">📅 Mon Planning</h1>
+                <p class="mb-0">Consultez vos cours et événements à venir</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex justify-content-md-end gap-2">
+                    <a href="{{ path('etudiant_dashboard') }}" class="btn btn-light">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <ul class="nav nav-pills filter-tabs" id="planningTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab">
+                <i class="fas fa-clock"></i> À venir
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="today-tab" data-bs-toggle="pill" data-bs-target="#today" type="button" role="tab">
+                <i class="fas fa-calendar-day"></i> Aujourd'hui
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
+                <i class="fas fa-calendar-alt"></i> Tout
+            </button>
+        </li>
+    </ul>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="planningTabsContent">
+        <!-- Événements à venir -->
+        <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+            {% set upcomingEvents = planning|filter(e => e.dateHeure > date()) %}
+            {% if upcomingEvents|length > 0 %}
+                <div class="row">
+                    {% for evenement in upcomingEvents %}
+                        <div class="col-12 mb-3">
+                            <div class="planning-card card upcoming">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-12">
+                                            <h5 class="card-title mb-2">
+                                                <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
+                                            </h5>
+                                            <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="cours-badge">
+                                                    <i class="fas fa-book"></i> {{ evenement.cours.titre }}
+                                                </span>
+                                                <span class="time-badge">
+                                                    <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('d/m/Y à H:i') }}
+                                                </span>
+                                                <span class="badge bg-success">À venir</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-plus"></i>
+                    <h3>Aucun événement à venir</h3>
+                    <p>Vous n'avez pas d'événements planifiés prochainement</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Événements d'aujourd'hui -->
+        <div class="tab-pane fade" id="today" role="tabpanel">
+            {% set todayEvents = planning|filter(e => e.dateHeure.format('Y-m-d') == "now"|date('Y-m-d')) %}
+            {% if todayEvents|length > 0 %}
+                <div class="row">
+                    {% for evenement in todayEvents %}
+                        <div class="col-12 mb-3">
+                            <div class="planning-card card today">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-12">
+                                            <h5 class="card-title mb-2">
+                                                <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
+                                            </h5>
+                                            <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="cours-badge">
+                                                    <i class="fas fa-book"></i> {{ evenement.cours.titre }}
+                                                </span>
+                                                <span class="time-badge">
+                                                    <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('H:i') }}
+                                                </span>
+                                                <span class="badge bg-primary">Aujourd'hui</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-day"></i>
+                    <h3>Aucun événement aujourd'hui</h3>
+                    <p>Vous n'avez pas d'événements planifiés aujourd'hui</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Tous les événements -->
+        <div class="tab-pane fade" id="all" role="tabpanel">
+            {% if planning|length > 0 %}
+                <div class="row">
+                    {% for evenement in planning %}
+                        {% set isToday = evenement.dateHeure.format('Y-m-d') == "now"|date('Y-m-d') %}
+                        {% set isPast = evenement.dateHeure < date() %}
+                        {% set isUpcoming = evenement.dateHeure > date() %}
+                        
+                        <div class="col-12 mb-3">
+                            <div class="planning-card card {{ isToday ? 'today' : (isPast ? 'past' : 'upcoming') }}">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-12">
+                                            <h5 class="card-title mb-2">
+                                                <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
+                                            </h5>
+                                            <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="cours-badge">
+                                                    <i class="fas fa-book"></i> {{ evenement.cours.titre }}
+                                                </span>
+                                                <span class="time-badge">
+                                                    <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('d/m/Y à H:i') }}
+                                                </span>
+                                                {% if isToday %}
+                                                    <span class="badge bg-primary">Aujourd'hui</span>
+                                                {% elseif isPast %}
+                                                    <span class="badge bg-secondary">Terminé</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">À venir</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>Aucun événement planifié</h3>
+                    <p>Vous n'avez pas d'événements dans votre planning</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+{% endblock %}

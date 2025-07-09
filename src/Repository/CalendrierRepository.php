@@ -16,6 +16,55 @@ class CalendrierRepository extends ServiceEntityRepository
         parent::__construct($registry, Calendrier::class);
     }
 
+    /**
+     * Récupère les événements à venir pour un cours
+     * @return Calendrier[] Returns an array of Calendrier objects
+     */
+    public function findUpcomingByCours($cours): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.cours = :cours')
+            ->andWhere('c.dateHeure >= :now')
+            ->setParameter('cours', $cours)
+            ->setParameter('now', new \DateTime())
+            ->orderBy('c.dateHeure', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère les événements pour un enseignant
+     * @return Calendrier[] Returns an array of Calendrier objects
+     */
+    public function findByEnseignant($enseignant): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.cours', 'cours')
+            ->andWhere('cours.createdBy = :enseignant')
+            ->setParameter('enseignant', $enseignant)
+            ->orderBy('c.dateHeure', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère les événements à venir pour un enseignant
+     * @return Calendrier[] Returns an array of Calendrier objects
+     */
+    public function findUpcomingByEnseignant($enseignant): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.cours', 'cours')
+            ->andWhere('cours.createdBy = :enseignant')
+            ->andWhere('c.dateHeure >= :now')
+            ->setParameter('enseignant', $enseignant)
+            ->setParameter('now', new \DateTime())
+            ->orderBy('c.dateHeure', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Calendrier[] Returns an array of Calendrier objects
     //     */

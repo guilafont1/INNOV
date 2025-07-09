@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard Enseignant{% endblock %}
+{% block title %}Dashboard Étudiant{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -17,7 +17,7 @@
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
             border-radius: 12px;
             padding: 1.5rem;
@@ -31,7 +31,7 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
         .stat-card.info {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .stat-number {
             font-size: 2rem;
@@ -67,7 +67,7 @@
             border-radius: 4px;
         }
         .welcome-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
             border-radius: 15px;
             padding: 1.5rem;
@@ -92,6 +92,17 @@
             height: 250px;
             margin: 1rem 0;
         }
+        .progression-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+        .cours-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
     </style>
 {% endblock %}
 
@@ -101,13 +112,13 @@
     <div class="welcome-section">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="mb-2">👋 Bienvenue sur votre Dashboard</h1>
-                <p class="mb-0">Gérez vos cours, suivez vos étudiants et analysez vos performances.</p>
+                <h1 class="mb-2">📚 Bienvenue sur votre Espace Étudiant</h1>
+                <p class="mb-0">Suivez vos cours, consultez vos progressions et continuez votre apprentissage.</p>
             </div>
             <div class="col-md-4 text-md-end">
                 <div class="action-buttons">
-                    <a href="{{ path('app_cours_new') }}" class="btn btn-light btn-custom">
-                        <i class="fas fa-plus"></i> Nouveau Cours
+                    <a href="{{ path('app_cours') }}" class="btn btn-light btn-custom">
+                        <i class="fas fa-search"></i> Découvrir les Cours
                     </a>
                 </div>
             </div>
@@ -119,7 +130,7 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card">
                 <div class="stat-number">{{ stats.totalCours ?? 0 }}</div>
-                <div class="stat-label">📚 Cours Total</div>
+                <div class="stat-label">📖 Cours Inscrits</div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
@@ -131,25 +142,25 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card warning">
                 <div class="stat-number">{{ stats.totalChapitres ?? 0 }}</div>
-                <div class="stat-label">📖 Chapitres</div>
+                <div class="stat-label">📚 Chapitres</div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card info">
-                <div class="stat-number">{{ stats.totalEtudiants ?? 0 }}</div>
-                <div class="stat-label">👨‍🎓 Étudiants</div>
+                <div class="stat-number">{{ stats.progressionMoyenne ?? 0 }}%</div>
+                <div class="stat-label">📊 Progression</div>
             </div>
         </div>
     </div>
 
     <div class="row">
-        <!-- Cours récents -->
+        <!-- Mes Cours -->
         <div class="col-lg-8">
             <div class="card dashboard-card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">📚 Mes Cours</h5>
                     {% if totalCours > 5 %}
-                        <a href="{{ path('enseignant_cours') }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ path('app_cours') }}" class="btn btn-sm btn-outline-primary">
                             Voir tous ({{ totalCours }})
                         </a>
                     {% endif %}
@@ -157,24 +168,16 @@
                 <div class="card-body">
                     {% if cours|length > 0 %}
                         <div class="row">
-                            {% for c in cours %}
+                            {% for item in cours %}
+                                {% set c = item.cours %}
                                 <div class="col-md-6 mb-3">
                                     <div class="course-card card">
                                         <div class="card-body p-3">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <h6 class="card-title mb-0">{{ c.titre }}</h6>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="{{ path('app_cours_show', {id: c.id}) }}"><i class="fas fa-eye me-2"></i>Voir</a></li>
-                                                        <li><a class="dropdown-item" href="{{ path('app_cours_edit', {id: c.id}) }}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                        <li><a class="dropdown-item" href="{{ path('app_module_new', {id: c.id}) }}"><i class="fas fa-plus me-2"></i>Ajouter module</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ c.id }})"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
-                                                    </ul>
-                                                </div>
+                                                <span class="badge bg-{{ item.couleur }} progression-badge">
+                                                    {{ item.statut|upper }}
+                                                </span>
                                             </div>
                                             <p class="card-text text-muted small mb-2">{{ c.description|slice(0, 80) }}...</p>
                                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -185,8 +188,19 @@
                                                     <i class="fas fa-calendar me-1"></i>{{ c.createdAt ? c.createdAt.format('d/m/Y') : 'N/A' }}
                                                 </small>
                                             </div>
-                                            <div class="progress" style="height: 6px;">
-                                                <div class="progress-bar" role="progressbar" style="width: {{ random(30, 90) }}%"></div>
+                                            <div class="cours-status">
+                                                <div class="progress flex-grow-1" style="height: 8px;">
+                                                    <div class="progress-bar bg-{{ item.couleur }}" role="progressbar" style="width: {{ item.progression }}%"></div>
+                                                </div>
+                                                <small class="text-muted">{{ item.progression }}%</small>
+                                            </div>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-play"></i> Continuer
+                                                </a>
+                                                <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -195,7 +209,7 @@
                         </div>
                         {% if totalCours > 5 %}
                             <div class="text-center mt-3">
-                                <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-primary btn-sm">
+                                <a href="{{ path('app_cours') }}" class="btn btn-outline-primary btn-sm">
                                     <i class="fas fa-plus"></i> Voir {{ totalCours - 5 }} cours de plus
                                 </a>
                             </div>
@@ -203,12 +217,12 @@
                     {% else %}
                         <div class="text-center py-4">
                             <div class="mb-3">
-                                <i class="fas fa-book-open fa-3x text-muted"></i>
+                                <i class="fas fa-graduation-cap fa-3x text-muted"></i>
                             </div>
-                            <h6 class="text-muted">Aucun cours créé</h6>
-                            <p class="text-muted small mb-3">Commencez par créer votre premier cours pour voir apparaître vos statistiques.</p>
-                            <a href="{{ path('app_cours_new') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Créer mon premier cours
+                            <h6 class="text-muted">Aucun cours suivi</h6>
+                            <p class="text-muted small mb-3">Découvrez nos cours et commencez votre apprentissage dès maintenant.</p>
+                            <a href="{{ path('app_cours') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search"></i> Découvrir les cours
                             </a>
                         </div>
                     {% endif %}
@@ -222,12 +236,12 @@
             <div class="card dashboard-card mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">📅 Événements à Venir</h5>
-                    <a href="{{ path('enseignant_planning') }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ path('etudiant_planning') }}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-calendar"></i> Voir tout
                     </a>
                 </div>
                 <div class="card-body">
-                    {% if evenementsAvenir|length > 0 %}
+                    {% if evenementsAvenir is defined and evenementsAvenir|length > 0 %}
                         {% for evenement in evenementsAvenir %}
                             <div class="activity-item">
                                 <div class="d-flex align-items-center">
@@ -245,9 +259,6 @@
                         <div class="text-center py-3">
                             <i class="fas fa-calendar-times fa-2x text-muted"></i>
                             <p class="text-muted mt-2">Aucun événement à venir</p>
-                            <a href="{{ path('enseignant_planning') }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-plus"></i> Créer un événement
-                            </a>
                         </div>
                     {% endif %}
                 </div>
@@ -280,14 +291,14 @@
                 </div>
             </div>
 
-            <!-- Graphique des performances -->
+            <!-- Graphique des progressions -->
             <div class="card dashboard-card">
                 <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">📊 Performances</h5>
+                    <h5 class="card-title mb-0">📊 Ma Progression</h5>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
-                        <canvas id="performanceChart"></canvas>
+                        <canvas id="progressionChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -304,50 +315,31 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{{ path('app_cours_new') }}" class="btn btn-outline-primary btn-custom w-100">
-                                <i class="fas fa-plus-circle"></i><br>
-                                Créer un Cours
+                            <a href="{{ path('app_cours') }}" class="btn btn-outline-primary btn-custom w-100">
+                                <i class="fas fa-search"></i><br>
+                                Découvrir les Cours
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-success btn-custom w-100">
-                                <i class="fas fa-list"></i><br>
-                                Gérer les Cours
+                            <a href="{{ path('app_cours') }}" class="btn btn-outline-success btn-custom w-100">
+                                <i class="fas fa-book-open"></i><br>
+                                Mes Cours
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ path('enseignant_planning') }}" class="btn btn-outline-warning btn-custom w-100">
+                            <a href="{{ path('etudiant_planning') }}" class="btn btn-outline-warning btn-custom w-100">
                                 <i class="fas fa-calendar"></i><br>
-                                Planning
+                                Mon Planning
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ path('enseignant_classes') }}" class="btn btn-outline-info btn-custom w-100">
-                                <i class="fas fa-users"></i><br>
-                                Mes Classes
+                            <a href="{{ path('app_account') }}" class="btn btn-outline-info btn-custom w-100">
+                                <i class="fas fa-user-cog"></i><br>
+                                Mon Profil
                             </a>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Supprimer</button>
             </div>
         </div>
     </div>
@@ -358,36 +350,46 @@
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
-        // Graphique des performances
-        const ctx = document.getElementById('performanceChart').getContext('2d');
+        // Graphique de progression
+        const ctx = document.getElementById('progressionChart').getContext('2d');
         
         // Données du graphique
         const coursData = {{ stats.totalCours ?? 0 }};
         const modulesData = {{ stats.totalModules ?? 0 }};
         const chapitresData = {{ stats.totalChapitres ?? 0 }};
+        const progressionData = {{ stats.progressionMoyenne ?? 0 }};
         
         // Vérifier si nous avons des données
         if (coursData === 0 && modulesData === 0 && chapitresData === 0) {
             // Afficher un message si aucune donnée
-            document.getElementById('performanceChart').parentElement.innerHTML = 
+            document.getElementById('progressionChart').parentElement.innerHTML = 
                 '<div class="text-center py-4">' +
                 '<i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>' +
                 '<p class="text-muted">Aucune donnée disponible</p>' +
-                '<p class="text-muted small">Créez des cours pour voir vos statistiques</p>' +
+                '<p class="text-muted small">Inscrivez-vous à des cours pour voir vos progressions</p>' +
                 '</div>';
         } else {
-            const performanceChart = new Chart(ctx, {
-                type: 'doughnut',
+            // Créer un graphique en barres pour la progression
+            const progressionChart = new Chart(ctx, {
+                type: 'bar',
                 data: {
                     labels: ['Cours', 'Modules', 'Chapitres'],
                     datasets: [{
+                        label: 'Nombre',
                         data: [coursData, modulesData, chapitresData],
                         backgroundColor: [
-                            '#667eea',
+                            'rgba(79, 172, 254, 0.8)',
+                            'rgba(56, 239, 125, 0.8)',
+                            'rgba(245, 87, 108, 0.8)'
+                        ],
+                        borderColor: [
+                            '#4facfe',
                             '#38ef7d',
                             '#f5576c'
                         ],
-                        borderWidth: 0
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
                     }]
                 },
                 options: {
@@ -395,39 +397,19 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 15,
-                                usePointStyle: true,
-                                font: {
-                                    size: 12
-                                }
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
                             }
                         }
                     }
                 }
             });
-        }
-
-        // Fonction de confirmation de suppression
-        function confirmDelete(coursId) {
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            document.getElementById('confirmDeleteBtn').onclick = function() {
-                // Créer un formulaire pour envoyer la requête POST avec token CSRF
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/cours/' + coursId + '/delete';
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token("delete") }}';
-                form.appendChild(csrfToken);
-                
-                document.body.appendChild(form);
-                form.submit();
-            };
-            modal.show();
         }
 
         // Animation des cartes au scroll

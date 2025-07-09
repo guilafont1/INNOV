@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Classe {{ classe.nom }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>👥 {{ classe.nom }}</h2>
+            {% if classe.description %}
+                <p class="text-muted">{{ classe.description }}</p>
+            {% endif %}
+        </div>
+        <a href="{{ path('enseignant_classes') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour aux classes
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Statistiques -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">📊 Statistiques</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ etudiants|length }}</h4>
+                            <small class="text-muted">Étudiants</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ cours|length }}</h4>
+                            <small class="text-muted">Cours</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning">
+                                {% set totalModules = 0 %}
+                                {% for c in cours %}
+                                    {% set totalModules = totalModules + c.modules|length %}
+                                {% endfor %}
+                                {{ totalModules }}
+                            </h4>
+                            <small class="text-muted">Modules</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">⚡ Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('enseignant_classe_notes', {id: classe.id}) }}" class="btn btn-success w-100">
+                                <i class="fas fa-clipboard-list"></i><br>
+                                Gérer les Notes
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('enseignant_classe_etudiants', {id: classe.id}) }}" class="btn btn-info w-100">
+                                <i class="fas fa-user-plus"></i><br>
+                                Gérer les Étudiants
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('enseignant_planning_classe', {id: classe.id}) }}" class="btn btn-warning w-100">
+                                <i class="fas fa-calendar"></i><br>
+                                Planning
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Liste des étudiants -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">👨‍🎓 Étudiants ({{ etudiants|length }})</h5>
+                    <a href="{{ path('enseignant_classe_etudiants', {id: classe.id}) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i> Gérer
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if etudiants|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for etudiant in etudiants %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ etudiant.email }}</small>
+                                    </div>
+                                    {% if notesParEtudiant[etudiant.id]|default([])|length > 0 %}
+                                        <span class="badge bg-success">{{ notesParEtudiant[etudiant.id]|length }} note(s)</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Aucune note</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucun étudiant dans cette classe.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des cours -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">📚 Cours ({{ cours|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if cours|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for c in cours %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ c.titre }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ c.modules|length }} module(s)</small>
+                                        </div>
+                                        <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucun cours assigné à cette classe.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

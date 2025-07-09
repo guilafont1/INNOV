@@ -44,6 +44,20 @@ class CoursRepository extends ServiceEntityRepository
         return $this->findAll();
     }
 
+    /**
+     * Récupère les cours créés par un utilisateur
+     * @return Cours[] Returns an array of Cours objects
+     */
+    public function findByCreatedBy(User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.createdBy = :user')
+            ->setParameter('user', $user)
+            ->orderBy('c.titre', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Cours[] Returns an array of Cours objects
 //     */

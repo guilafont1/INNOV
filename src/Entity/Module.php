@@ -28,9 +28,16 @@ class Module
     #[ORM\OneToMany(targetEntity: Chapitre::class, mappedBy: 'module')]
     private Collection $chapitres;
 
+    /**
+     * @var Collection<int, Note>
+     */
+    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'module')]
+    private Collection $notes;
+
     public function __construct()
     {
         $this->chapitres = new ArrayCollection();
+        $this->notes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -86,6 +93,35 @@ class Module
             // set the owning side to null (unless already changed)
             if ($chapitre->getModule() === $this) {
                 $chapitre->setModule(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Note>
+     */
+    public function getNotes(): Collection
+    {
+        return $this->notes;
+    }
+
+    public function addNote(Note $note): static
+    {
+        if (!$this->notes->contains($note)) {
+            $this->notes->add($note);
+            $note->setModule($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(Note $note): static
+    {
+        if ($this->notes->removeElement($note)) {
+            if ($note->getModule() === $this) {
+                $note->setModule(null);
             }
         }
 

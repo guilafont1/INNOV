@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planning - {{ cours.titre }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .planning-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .planning-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        .planning-card.upcoming {
+            border-left: 4px solid #28a745;
+        }
+        .planning-card.past {
+            border-left: 4px solid #6c757d;
+            opacity: 0.7;
+        }
+        .planning-card.today {
+            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+        }
+        .cours-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .time-badge {
+            background: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- En-tête du cours -->
+    <div class="cours-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">📅 Planning - {{ cours.titre }}</h1>
+                <p class="mb-0">{{ cours.description }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex justify-content-md-end gap-2">
+                    <a href="{{ path('enseignant_planning_new', {coursId: cours.id}) }}" class="btn btn-light">
+                        <i class="fas fa-plus"></i> Nouvel événement
+                    </a>
+                    <a href="{{ path('enseignant_planning') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des événements -->
+    {% if planning|length > 0 %}
+        <div class="row">
+            {% for evenement in planning %}
+                {% set isToday = evenement.dateHeure.format('Y-m-d') == "now"|date('Y-m-d') %}
+                {% set isPast = evenement.dateHeure < date() %}
+                {% set isUpcoming = evenement.dateHeure > date() %}
+                
+                <div class="col-12 mb-3">
+                    <div class="planning-card card {{ isToday ? 'today' : (isPast ? 'past' : 'upcoming') }}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="card-title mb-2">
+                                        <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
+                                    </h5>
+                                    <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="time-badge">
+                                            <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('d/m/Y à H:i') }}
+                                        </span>
+                                        {% if isToday %}
+                                            <span class="badge bg-primary">Aujourd'hui</span>
+                                        {% elseif isPast %}
+                                            <span class="badge bg-secondary">Terminé</span>
+                                        {% else %}
+                                            <span class="badge bg-success">À venir</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <div class="d-flex justify-content-md-end gap-2">
+                                        <a href="{{ path('enseignant_planning_edit', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                        <form method="post" action="{{ path('enseignant_planning_delete', {id: evenement.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>Aucun événement planifié</h3>
+            <p>Commencez par créer votre premier événement pour ce cours</p>
+            <a href="{{ path('enseignant_planning_new', {coursId: cours.id}) }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer un événement
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

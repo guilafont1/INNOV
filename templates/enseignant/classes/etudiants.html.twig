@@ -1,0 +1,213 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gérer les Étudiants - {{ classe.nom }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .student-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .classe-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .btn-custom {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+        }
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+        .section-title {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- En-tête de la classe -->
+    <div class="classe-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">👨‍🎓 Gérer les Étudiants</h1>
+                <h3 class="mb-1">{{ classe.nom }}</h3>
+                <p class="mb-0">{{ classe.description ?? 'Gestion des étudiants de la classe' }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-outline-light btn-custom">
+                    <i class="fas fa-arrow-left"></i> Retour à la classe
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Étudiants actuels -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="section-title mb-0">✅ Étudiants de la classe ({{ classe.etudiants|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if classe.etudiants|length > 0 %}
+                        {% for etudiant in classe.etudiants %}
+                            <div class="student-card card">
+                                <div class="card-body p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center">
+                                                <div class="student-avatar">
+                                                    {{ etudiant.prenom|first }}{{ etudiant.nom|first }}
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+                                                    <small class="text-muted">{{ etudiant.email }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-md-end">
+                                            <form method="post" style="display: inline;">
+                                                <input type="hidden" name="action" value="remove">
+                                                <input type="hidden" name="etudiant_id" value="{{ etudiant.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger btn-custom" 
+                                                        onclick="return confirm('Êtes-vous sûr de vouloir retirer cet étudiant de la classe ?')">
+                                                    <i class="fas fa-user-minus"></i> Retirer
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-user-slash"></i>
+                            <h5>Aucun étudiant dans cette classe</h5>
+                            <p>Ajoutez des étudiants à partir de la liste disponible</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Étudiants disponibles -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="section-title mb-0">➕ Étudiants disponibles ({{ etudiantsDisponibles|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if etudiantsDisponibles|length > 0 %}
+                        {% for etudiant in etudiantsDisponibles %}
+                            <div class="student-card card">
+                                <div class="card-body p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center">
+                                                <div class="student-avatar">
+                                                    {{ etudiant.prenom|first }}{{ etudiant.nom|first }}
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+                                                    <small class="text-muted">{{ etudiant.email }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-md-end">
+                                            <form method="post" style="display: inline;">
+                                                <input type="hidden" name="action" value="add">
+                                                <input type="hidden" name="etudiant_id" value="{{ etudiant.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-success btn-custom">
+                                                    <i class="fas fa-user-plus"></i> Ajouter
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-user-check"></i>
+                            <h5>Aucun étudiant disponible</h5>
+                            <p>Tous les étudiants sont déjà assignés à cette classe</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Statistiques</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h3 class="text-primary">{{ classe.etudiants|length }}</h3>
+                                <p class="text-muted mb-0">Étudiants inscrits</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h3 class="text-success">{{ etudiantsDisponibles|length }}</h3>
+                                <p class="text-muted mb-0">Étudiants disponibles</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h3 class="text-info">{{ classe.cours|length }}</h3>
+                                <p class="text-muted mb-0">Cours associés</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

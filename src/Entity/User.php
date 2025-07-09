@@ -89,6 +89,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $passwordUpdatedAt = null;
 
+    /**
+     * @var Collection<int, Note>
+     */
+    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'etudiant')]
+    private Collection $notes;
+
+    /**
+     * @var Collection<int, Note>
+     */
+    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'professeur')]
+    private Collection $notesAttribuees;
+
     public function __construct()
     {
         $this->forumPosts = new ArrayCollection();
@@ -98,6 +110,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->coursCreated = new ArrayCollection();
         $this->classes = new ArrayCollection();
         $this->classesEnseignees = new ArrayCollection();
+        $this->notes = new ArrayCollection();
+        $this->notesAttribuees = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -408,6 +422,64 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->classesEnseignees->removeElement($classEnseignee)) {
             $classEnseignee->removeProfesseur($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Note>
+     */
+    public function getNotes(): Collection
+    {
+        return $this->notes;
+    }
+
+    public function addNote(Note $note): static
+    {
+        if (!$this->notes->contains($note)) {
+            $this->notes->add($note);
+            $note->setEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(Note $note): static
+    {
+        if ($this->notes->removeElement($note)) {
+            if ($note->getEtudiant() === $this) {
+                $note->setEtudiant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Note>
+     */
+    public function getNotesAttribuees(): Collection
+    {
+        return $this->notesAttribuees;
+    }
+
+    public function addNotesAttribuee(Note $notesAttribuee): static
+    {
+        if (!$this->notesAttribuees->contains($notesAttribuee)) {
+            $this->notesAttribuees->add($notesAttribuee);
+            $notesAttribuee->setProfesseur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotesAttribuee(Note $notesAttribuee): static
+    {
+        if ($this->notesAttribuees->removeElement($notesAttribuee)) {
+            if ($notesAttribuee->getProfesseur() === $this) {
+                $notesAttribuee->setProfesseur(null);
+            }
         }
 
         return $this;
