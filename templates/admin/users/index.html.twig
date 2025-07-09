@@ -212,8 +212,8 @@
                                         </div>
                                         <div>
                                             <span class="fw-bold">{{ user.nom ?? '' }} {{ user.prenom ?? '' }}</span>
-                                            {% if user.classe %}
-                                                <br><small class="text-muted">{{ user.classe.nom }}</small>
+                                            {% if user.classes and user.classes|length > 0 %}
+                                                <br><small class="text-muted">{{ user.classes|first.nom }}</small>
                                             {% endif %}
                                         </div>
                                     </div>
