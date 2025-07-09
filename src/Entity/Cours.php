@@ -55,6 +55,10 @@ class Cours
     #[ORM\OneToMany(targetEntity: Calendrier::class, mappedBy: 'cours')]
     private Collection $calendriers;
 
+    #[ORM\ManyToOne(inversedBy: 'coursCreated')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $createdBy = null;
+
     public function __construct()
     {
         $this->modules = new ArrayCollection();
@@ -251,6 +255,18 @@ class Cours
                 $calendrier->setCours(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
 
         return $this;
     }

@@ -59,6 +59,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'createdBy')]
     private Collection $evaluations;
 
+    /**
+     * @var Collection<int, Cours>
+     */
+    #[ORM\OneToMany(targetEntity: Cours::class, mappedBy: 'createdBy')]
+    private Collection $coursCreated;
+
+    /**
+     * @var Collection<int, Classe> Les classes où l'utilisateur est étudiant
+     */
+    #[ORM\ManyToMany(targetEntity: Classe::class, mappedBy: 'etudiants')]
+    private Collection $classes;
+
+    /**
+     * @var Collection<int, Classe> Les classes où l'utilisateur est professeur
+     */
+    #[ORM\ManyToMany(targetEntity: Classe::class, mappedBy: 'professeurs')]
+    private Collection $classesEnseignees;
+
     #[ORM\Column]
     private bool $isVerified = false;
 
@@ -77,6 +95,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->messages = new ArrayCollection();
         $this->progressions = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
+        $this->coursCreated = new ArrayCollection();
+        $this->classes = new ArrayCollection();
+        $this->classesEnseignees = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -308,4 +329,87 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return Collection<int, Cours>
+     */
+    public function getCoursCreated(): Collection
+    {
+        return $this->coursCreated;
+    }
+
+    public function addCoursCreated(Cours $coursCreated): static
+    {
+        if (!$this->coursCreated->contains($coursCreated)) {
+            $this->coursCreated->add($coursCreated);
+            $coursCreated->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCoursCreated(Cours $coursCreated): static
+    {
+        if ($this->coursCreated->removeElement($coursCreated)) {
+            // set the owning side to null (unless already changed)
+            if ($coursCreated->getCreatedBy() === $this) {
+                $coursCreated->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Classe>
+     */
+    public function getClasses(): Collection
+    {
+        return $this->classes;
+    }
+
+    public function addClass(Classe $class): static
+    {
+        if (!$this->classes->contains($class)) {
+            $this->classes->add($class);
+            $class->addEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClass(Classe $class): static
+    {
+        if ($this->classes->removeElement($class)) {
+            $class->removeEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Classe>
+     */
+    public function getClassesEnseignees(): Collection
+    {
+        return $this->classesEnseignees;
+    }
+
+    public function addClassEnseignee(Classe $classEnseignee): static
+    {
+        if (!$this->classesEnseignees->contains($classEnseignee)) {
+            $this->classesEnseignees->add($classEnseignee);
+            $classEnseignee->addProfesseur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClassEnseignee(Classe $classEnseignee): static
+    {
+        if ($this->classesEnseignees->removeElement($classEnseignee)) {
+            $classEnseignee->removeProfesseur($this);
+        }
+
+        return $this;
+    }
 }
