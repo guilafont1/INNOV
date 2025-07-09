@@ -181,6 +181,17 @@ class Classe
         return $this;
     }
 
+    // Aliases pour la compatibilité
+    public function addCours(Cours $cours): static
+    {
+        return $this->addCour($cours);
+    }
+
+    public function removeCours(Cours $cours): static
+    {
+        return $this->removeCour($cours);
+    }
+
     public function __toString(): string
     {
         return $this->nom ?? '';

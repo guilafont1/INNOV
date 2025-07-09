@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la classe {{ classe.nom }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-users"></i> Détails de la classe {{ classe.nom }}</h1>
+                <div>
+                    <a href="{{ path('admin_classes_edit', {id: classe.id}) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ path('admin_classes') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class="fas fa-info-circle"></i> Informations générales</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Nom :</dt>
+                                <dd class="col-sm-8">{{ classe.nom }}</dd>
+                                
+                                <dt class="col-sm-4">Description :</dt>
+                                <dd class="col-sm-8">{{ classe.description ? classe.description : 'Aucune description' }}</dd>
+                                
+                                <dt class="col-sm-4">Créée le :</dt>
+                                <dd class="col-sm-8">{{ classe.createdAt ? classe.createdAt|date('d/m/Y à H:i') : 'Non disponible' }}</dd>
+                                
+                                {% if classe.updatedAt %}
+                                <dt class="col-sm-4">Dernière modification :</dt>
+                                <dd class="col-sm-8">{{ classe.updatedAt|date('d/m/Y à H:i') }}</dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class="fas fa-chart-bar"></i> Statistiques</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-6">Nombre d'étudiants :</dt>
+                                <dd class="col-sm-6">
+                                    <span class="badge bg-primary">{{ classe.etudiants ? classe.etudiants|length : 0 }}</span>
+                                </dd>
+                                
+                                <dt class="col-sm-6">Nombre de cours :</dt>
+                                <dd class="col-sm-6">
+                                    <span class="badge bg-info">{{ classe.cours ? classe.cours|length : 0 }}</span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if classe.etudiants and classe.etudiants|length > 0 %}
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class="fas fa-user-graduate"></i> Étudiants inscrits</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Email</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for etudiant in classe.etudiants %}
+                                        <tr>
+                                            <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
+                                            <td>{{ etudiant.email }}</td>
+                                            <td>
+                                                <a href="{{ path('admin_users_show', {id: etudiant.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if classe.cours and classe.cours|length > 0 %}
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class="fas fa-book"></i> Cours associés</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Titre</th>
+                                            <th>Module</th>
+                                            <th>Enseignant</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cours in classe.cours %}
+                                        <tr>
+                                            <td>{{ cours.titre }}</td>
+                                            <td>{{ cours.module ? cours.module.nom : 'Aucun module' }}</td>
+                                            <td>{{ cours.enseignant ? cours.enseignant.nom ~ ' ' ~ cours.enseignant.prenom : 'Aucun enseignant' }}</td>
+                                            <td>
+                                                <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

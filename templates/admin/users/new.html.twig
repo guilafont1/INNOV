@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un utilisateur - JEAI Learn{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-user-plus"></i> Créer un nouvel utilisateur</h4>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.nom) }}
+                                    {{ form_widget(form.nom) }}
+                                    {{ form_errors(form.nom) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.prenom) }}
+                                    {{ form_widget(form.prenom) }}
+                                    {{ form_errors(form.prenom) }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.email) }}
+                            {{ form_widget(form.email) }}
+                            {{ form_errors(form.email) }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.roleChoice) }}
+                            {{ form_widget(form.roleChoice) }}
+                            {{ form_errors(form.roleChoice) }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Choisissez le rôle approprié pour cet utilisateur
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.plainPassword.first) }}
+                                    {{ form_widget(form.plainPassword.first) }}
+                                    {{ form_errors(form.plainPassword.first) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.plainPassword.second) }}
+                                    {{ form_widget(form.plainPassword.second) }}
+                                    {{ form_errors(form.plainPassword.second) }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Important :</strong> L'utilisateur recevra ses identifiants et devra se connecter avec l'email et le mot de passe fournis.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('admin_users') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Créer l'utilisateur
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

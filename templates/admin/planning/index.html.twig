@@ -1,0 +1,211 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planning Global - JEAI Learn{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-calendar-alt"></i> Planning Global</h1>
+                <div>
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour au dashboard
+                    </a>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                        <i class="fas fa-plus"></i> Nouvel événement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="date_start" class="form-label">Date de début</label>
+                            <input type="date" class="form-control" id="date_start" name="date_start" value="{{ app.request.get('date_start') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_end" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="date_end" name="date_end" value="{{ app.request.get('date_end') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="type" class="form-label">Type d'événement</label>
+                            <select class="form-select" id="type" name="type">
+                                <option value="">Tous les types</option>
+                                <option value="cours" {% if app.request.get('type') == 'cours' %}selected{% endif %}>Cours</option>
+                                <option value="examen" {% if app.request.get('type') == 'examen' %}selected{% endif %}>Examen</option>
+                                <option value="reunion" {% if app.request.get('type') == 'reunion' %}selected{% endif %}>Réunion</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-filter"></i> Filtrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Événements -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-check"></i> Événements planifiés
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if events %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th>Titre</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in events %}
+                                        <tr>
+                                            <td>{{ event.dateDebut|date('d/m/Y') }}</td>
+                                            <td>
+                                                {{ event.dateDebut|date('H:i') }}
+                                                {% if event.dateFin %}
+                                                    - {{ event.dateFin|date('H:i') }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ event.titre }}</td>
+                                            <td>
+                                                {% if event.type == 'cours' %}
+                                                    <span class="badge bg-primary">Cours</span>
+                                                {% elseif event.type == 'examen' %}
+                                                    <span class="badge bg-danger">Examen</span>
+                                                {% elseif event.type == 'reunion' %}
+                                                    <span class="badge bg-warning">Réunion</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ event.type|title }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ event.description|slice(0, 50) }}{% if event.description|length > 50 %}...{% endif %}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="editEvent({{ event.id }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEvent({{ event.id }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun événement planifié</h5>
+                            <p class="text-muted">Créez votre premier événement en cliquant sur "Nouvel événement"</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un événement -->
+<div class="modal fade" id="addEventModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouvel événement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="eventForm">
+                    <div class="mb-3">
+                        <label for="titre" class="form-label">Titre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="titre" name="titre" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="cours">Cours</option>
+                            <option value="examen">Examen</option>
+                            <option value="reunion">Réunion</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date_debut" class="form-label">Date de début <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="date_debut" name="date_debut" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date_fin" class="form-label">Date de fin</label>
+                                <input type="datetime-local" class="form-control" id="date_fin" name="date_fin">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lieu" class="form-label">Lieu</label>
+                        <input type="text" class="form-control" id="lieu" name="lieu">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveEvent()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editEvent(id) {
+    // TODO: Implémenter l'édition d'événement
+    alert('Fonctionnalité d\'édition à implémenter');
+}
+
+function deleteEvent(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+        // TODO: Implémenter la suppression d'événement
+        alert('Fonctionnalité de suppression à implémenter');
+    }
+}
+
+function saveEvent() {
+    // TODO: Implémenter la sauvegarde d'événement
+    alert('Fonctionnalité de sauvegarde à implémenter');
+}
+</script>
+{% endblock %}

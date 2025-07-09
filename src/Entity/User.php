@@ -35,6 +35,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $derniereConnexion = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $derniereDeconnexion = null;
+
     /**
      * @var Collection<int, ForumPost>
      */
@@ -481,6 +487,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $notesAttribuee->setProfesseur(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDerniereConnexion(): ?\DateTimeImmutable
+    {
+        return $this->derniereConnexion;
+    }
+
+    public function setDerniereConnexion(?\DateTimeImmutable $derniereConnexion): static
+    {
+        $this->derniereConnexion = $derniereConnexion;
+
+        return $this;
+    }
+
+    public function getDerniereDeconnexion(): ?\DateTimeImmutable
+    {
+        return $this->derniereDeconnexion;
+    }
+
+    public function setDerniereDeconnexion(?\DateTimeImmutable $derniereDeconnexion): static
+    {
+        $this->derniereDeconnexion = $derniereDeconnexion;
 
         return $this;
     }

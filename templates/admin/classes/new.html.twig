@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer une Classe - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-header {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        .btn-admin {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+        .info-card {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card form-card">
+                <div class="form-header">
+                    <h2 class="mb-2">🏫 Créer une Nouvelle Classe</h2>
+                    <p class="mb-0">Ajoutez une nouvelle classe à la plateforme</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="info-card">
+                        <h6 class="text-danger mb-2">
+                            <i class="fas fa-info-circle"></i> Information
+                        </h6>
+                        <p class="mb-0 small">
+                            Après avoir créé la classe, vous pourrez assigner des professeurs, des étudiants et des cours 
+                            depuis la page de gestion de la classe.
+                        </p>
+                    </div>
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">
+                                <i class="fas fa-tag"></i> Nom de la classe <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="nom" name="nom" 
+                                   placeholder="Ex: Terminale S1, L1 Informatique, Master 2 IA..." 
+                                   value="{{ classe.nom ?? '' }}" required>
+                            <small class="form-text text-muted">
+                                Choisissez un nom descriptif et unique pour cette classe
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4" 
+                                      placeholder="Décrivez cette classe, son niveau, ses objectifs...">{{ classe.description ?? '' }}</textarea>
+                            <small class="form-text text-muted">
+                                La description aidera les enseignants et étudiants à mieux comprendre cette classe
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('admin_classes') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour à la liste
+                            </a>
+                            <button type="submit" class="btn btn-admin">
+                                <i class="fas fa-save"></i> Créer la classe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Prochaines étapes -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-route"></i> Prochaines étapes après création
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="p-3">
+                                <i class="fas fa-chalkboard-teacher fa-2x text-warning mb-2"></i>
+                                <h6>1. Assigner des Professeurs</h6>
+                                <p class="text-muted small">Ajoutez les enseignants qui encadreront cette classe</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="p-3">
+                                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                <h6>2. Ajouter des Étudiants</h6>
+                                <p class="text-muted small">Inscrivez les étudiants dans cette classe</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="p-3">
+                                <i class="fas fa-book fa-2x text-success mb-2"></i>
+                                <h6>3. Associer des Cours</h6>
+                                <p class="text-muted small">Liez les cours pertinents à cette classe</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
