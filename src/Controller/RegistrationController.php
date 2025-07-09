@@ -25,60 +25,9 @@ class RegistrationController extends AbstractController
     #[Route('/register', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
-        $user = new User();
-        $form = $this->createForm(RegistrationForm::class, $user);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Récupération des données du formulaire
-            $plainPassword = $form->get('plainPassword')->getData();
-            $roleChoice = $form->get('roleChoice')->getData();
-
-            // Configuration du mot de passe
-            $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
-            $user->setPasswordUpdatedAt(new \DateTime());
-            
-            // Attribution du rôle
-            $user->setRoles([$roleChoice]);
-
-            // Validation de l'entité
-            $errors = $validator->validate($user);
-            if (count($errors) > 0) {
-                foreach ($errors as $error) {
-                    $this->addFlash('error', $error->getMessage());
-                }
-                return $this->render('registration/register.html.twig', [
-                    'registrationForm' => $form,
-                ]);
-            }
-
-            try {
-                $entityManager->persist($user);
-                $entityManager->flush();
-
-                $this->addFlash('success', sprintf(
-                    'Félicitations %s %s ! Votre compte a été créé avec succès.',
-                    $user->getPrenom(),
-                    $user->getNom()
-                ));
-                
-                // Redirection vers la page de succès
-                return $this->render('registration/success.html.twig', [
-                    'user' => $user
-                ]);
-                
-            } catch (UniqueConstraintViolationException $e) {
-                $this->addFlash('error', 'Un compte avec cet email existe déjà. Veuillez utiliser une autre adresse email ou vous connecter.');
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'inscription. Veuillez réessayer plus tard.');
-                // Log de l'erreur pour le débogage (optionnel)
-                error_log('Registration error: ' . $e->getMessage());
-            }
-        }
-
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form,
-        ]);
+        // Rediriger vers la page de connexion car l'inscription est réservée aux administrateurs
+        $this->addFlash('info', 'L\'inscription est réservée aux administrateurs. Veuillez vous connecter ou contacter un administrateur pour créer un compte.');
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/check-email', name: 'app_check_email', methods: ['POST'])]

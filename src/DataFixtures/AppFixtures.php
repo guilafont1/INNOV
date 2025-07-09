@@ -5,6 +5,7 @@ use App\Entity\User;
 use App\Entity\Cours;
 use App\Entity\Module;
 use App\Entity\Chapitre;
+use App\Entity\Classe;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -17,10 +18,37 @@ class AppFixtures extends Fixture
     {
         // --- USERS ---
         $users = [];
+        
+        // Admin
+        $admin = new User();
+        $admin->setEmail("admin@example.com");
+        $admin->setNom("Administrateur");
+        $admin->setPrenom("Super");
+        $admin->setRoles(['ROLE_ADMIN']);
+        $hashedPassword = $this->hasher->hashPassword($admin, 'password');
+        $admin->setPassword($hashedPassword);
+        $manager->persist($admin);
+
+        // Enseignants
+        $enseignants = [];
+        foreach (range(1, 5) as $i) {
+            $enseignant = new User();
+            $enseignant->setEmail("enseignant$i@example.com");
+            $enseignant->setNom("Enseignant $i");
+            $enseignant->setPrenom("Prénom $i");
+            $enseignant->setRoles(['ROLE_ENSEIGNANT']);
+            $hashedPassword = $this->hasher->hashPassword($enseignant, 'password');
+            $enseignant->setPassword($hashedPassword);
+            $manager->persist($enseignant);
+            $enseignants[] = $enseignant;
+        }
+
+        // Étudiants
         foreach (range(1, 20) as $i) {
             $user = new User();
-            $user->setEmail("user$i@example.com");
-            $user->setNom("Utilisateur $i");
+            $user->setEmail("etudiant$i@example.com");
+            $user->setNom("Étudiant $i");
+            $user->setPrenom("Prénom $i");
             $user->setRoles(['ROLE_ETUDIANT']);
             $hashedPassword = $this->hasher->hashPassword($user, 'password');
             $user->setPassword($hashedPassword);
@@ -47,6 +75,35 @@ class AppFixtures extends Fixture
             $module->setCours($coursList[array_rand($coursList)]);
             $manager->persist($module);
             $modules[] = $module;
+        }
+
+        // --- CLASSES ---
+        $classes = [];
+        foreach (range(1, 5) as $i) {
+            $classe = new Classe();
+            $classe->setNom("Classe $i");
+            $classe->setDescription("Description de la classe $i");
+            $classe->setCreatedAt(new \DateTimeImmutable());
+            
+            // Assigner des étudiants à la classe
+            $etudiantsClasse = array_slice($users, ($i-1)*4, 4);
+            foreach ($etudiantsClasse as $etudiant) {
+                $classe->addEtudiant($etudiant);
+            }
+            
+            // Assigner un enseignant à la classe
+            if (isset($enseignants[$i-1])) {
+                $classe->addProfesseur($enseignants[$i-1]);
+            }
+            
+            // Assigner quelques cours à la classe
+            $coursClasse = array_slice($coursList, ($i-1)*3, 3);
+            foreach ($coursClasse as $cours) {
+                $classe->addCours($cours);
+            }
+            
+            $manager->persist($classe);
+            $classes[] = $classe;
         }
 
         // --- CHAPITRES ---

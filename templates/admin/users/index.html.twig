@@ -1,0 +1,163 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs - JEAI Learn{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-users"></i> Gestion des utilisateurs</h1>
+                <div>
+                    <a href="{{ path('admin_users_new') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Nouvel utilisateur
+                    </a>
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour au dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        {% set etudiants = users|filter(u => 'ROLE_ETUDIANT' in u.roles) %}
+        {% set enseignants = users|filter(u => 'ROLE_ENSEIGNANT' in u.roles) %}
+        {% set admins = users|filter(u => 'ROLE_ADMIN' in u.roles) %}
+
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ users|length }}</h3>
+                    <p class="mb-0">Total utilisateurs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ etudiants|length }}</h3>
+                    <p class="mb-0">Étudiants</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ enseignants|length }}</h3>
+                    <p class="mb-0">Enseignants</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3>{{ admins|length }}</h3>
+                    <p class="mb-0">Administrateurs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des utilisateurs -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list"></i> Liste des utilisateurs
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Rôle</th>
+                            <th>Inscription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.nom ?? '-' }}</td>
+                                <td>{{ user.prenom ?? '-' }}</td>
+                                <td>
+                                    {% if 'ROLE_ADMIN' in user.roles %}
+                                        <span class="badge bg-danger">Administrateur</span>
+                                    {% elseif 'ROLE_ENSEIGNANT' in user.roles %}
+                                        <span class="badge bg-warning">Enseignant</span>
+                                    {% elseif 'ROLE_ETUDIANT' in user.roles %}
+                                        <span class="badge bg-success">Étudiant</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Utilisateur</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.id }}</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><h6 class="dropdown-header">Changer le rôle</h6></li>
+                                            {% if 'ROLE_ETUDIANT' not in user.roles %}
+                                                <li>
+                                                    <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}" class="d-inline">
+                                                        <input type="hidden" name="role" value="ROLE_ETUDIANT">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="fas fa-user-graduate"></i> Étudiant
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
+                                            {% if 'ROLE_ENSEIGNANT' not in user.roles %}
+                                                <li>
+                                                    <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}" class="d-inline">
+                                                        <input type="hidden" name="role" value="ROLE_ENSEIGNANT">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="fas fa-chalkboard-teacher"></i> Enseignant
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
+                                            {% if 'ROLE_ADMIN' not in user.roles %}
+                                                <li>
+                                                    <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}" class="d-inline">
+                                                        <input type="hidden" name="role" value="ROLE_ADMIN">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="fas fa-user-shield"></i> Administrateur
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="fas fa-trash"></i> Supprimer
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Aucun utilisateur trouvé</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
