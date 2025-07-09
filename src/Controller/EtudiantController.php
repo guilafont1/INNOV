@@ -54,13 +54,13 @@ class EtudiantController extends AbstractController
             
             // Trier par date et limiter à 5
             usort($evenementsAvenir, function($a, $b) {
-                return $a->getDateHeure() <=> $b->getDateHeure();
+                return $a->getDateDebut() <=> $b->getDateDebut();
             });
             $evenementsAvenir = array_slice($evenementsAvenir, 0, 5);
 
             return $this->render('etudiant/dashboard.html.twig', [
                 'cours' => $coursAvecProgression,
-                'totalCours' => count($cours),
+                'totalCours' => is_array($cours) ? count($cours) : 1, 
                 'stats' => $stats,
                 'activiteRecente' => $activiteRecente,
                 'evenementsAvenir' => $evenementsAvenir,

@@ -1,38 +1,164 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon Planning{% endblock %}
+{% block title %}Mon Planning d'Enseignant{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .planning-card {
+        .calendar-header {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .admin-card {
             border: none;
-            border-radius: 12px;
+            border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            margin-bottom: 1rem;
         }
-        .planning-card:hover {
+        .timetable {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+        }
+        .timetable th {
+            background-color: #f3f4f6;
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .timetable td {
+            height: 80px;
+            vertical-align: top;
+            padding: 0;
+            border: 1px solid #e5e7eb;
+            background-color: #fdfdfd;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .timetable td:hover {
+            background-color: #f9fafb;
+        }
+        .day-cell {
+            position: relative;
+            height: 75px;
+            overflow: visible;
+        }
+        .time-label {
+            width: 75px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #4b5563;
+            padding: 10px 5px;
+            vertical-align: middle;
+            background-color: #f3f4f6 !important;
+            border-right: 2px solid #e5e7eb;
+        }
+        .event-card {
+            margin: 0;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            z-index: 10;
+            border-radius: 8px;
+        }
+        .event-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
         }
-        .planning-card.upcoming {
-            border-left: 4px solid #28a745;
-        }
-        .planning-card.past {
-            border-left: 4px solid #6c757d;
-            opacity: 0.7;
-        }
-        .planning-card.today {
-            border-left: 4px solid #007bff;
-            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
-        }
-        .calendar-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .event-card.cours {
+            background: linear-gradient(135deg, rgba(25, 135, 84, 0.9) 0%, rgba(40, 167, 69, 0.9) 100%);
             color: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+        }
+        .event-card.examen {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.9) 0%, rgba(255, 107, 107, 0.9) 100%);
+            color: white;
+        }
+        .event-card.reunion {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.9) 0%, rgba(255, 153, 0, 0.9) 100%);
+            color: white;
+        }
+        .event-card.autre {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.9) 0%, rgba(73, 80, 87, 0.9) 100%);
+            color: white;
+        }
+        .event-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .event-info {
+            font-size: 0.75rem;
+            padding: 8px;
+            opacity: 0.9;
+        }
+        .event-info div {
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .type-badge {
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        .day-header {
+            text-align: center;
+            font-weight: 500;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px 5px 0 0;
+        }
+        .empty-cell {
+            background-color: #f8f9fa;
+            text-align: center;
+            color: #adb5bd;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .navigation-buttons button {
+            margin: 0 5px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-week-label {
+            font-size: 1rem;
+            display: inline-block;
+            width: 200px;
+            text-align: center;
+            color: #4e73df;
+        }
+        .today-column {
+            background-color: rgba(59, 130, 246, 0.05) !important;
+        }
+        .today {
+            background-color: rgba(25, 135, 84, 0.1);
         }
         .btn-floating {
             position: fixed;
@@ -41,7 +167,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
             color: white;
             border: none;
             font-size: 24px;
@@ -69,30 +195,27 @@
             font-size: 0.85rem;
             font-weight: 500;
         }
-        .filter-tabs {
-            margin-bottom: 2rem;
+        .calendar-filters {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .filter-tabs .nav-link {
-            border-radius: 20px;
-            margin-right: 0.5rem;
-            color: #6c757d;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .filter-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-        }
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
+        /* Style pour la vue mobile */
+        @media (max-width: 768px) {
+            .timetable {
+                font-size: 0.8rem;
+            }
+            .time-label {
+                width: 50px;
+                font-size: 0.7rem;
+            }
+            .event-title {
+                font-size: 0.7rem;
+            }
+            .event-info {
+                font-size: 0.6rem;
+            }
         }
     </style>
 {% endblock %}
@@ -103,8 +226,8 @@
     <div class="calendar-header">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="mb-2">📅 Mon Planning</h1>
-                <p class="mb-0">Gérez vos événements et planifiez vos cours</p>
+                <h1 class="mb-2">📅 Mon Planning d'Enseignant</h1>
+                <p class="mb-0">Gérez vos cours et événements</p>
             </div>
             <div class="col-md-4 text-md-end">
                 <div class="d-flex justify-content-md-end gap-2">
@@ -116,193 +239,126 @@
         </div>
     </div>
 
-    <!-- Filtres -->
-    <ul class="nav nav-pills filter-tabs" id="planningTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
-                <i class="fas fa-calendar-alt"></i> Tout
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab">
-                <i class="fas fa-clock"></i> À venir
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="today-tab" data-bs-toggle="pill" data-bs-target="#today" type="button" role="tab">
-                <i class="fas fa-calendar-day"></i> Aujourd'hui
-            </button>
-        </li>
-    </ul>
-
-    <!-- Contenu des onglets -->
-    <div class="tab-content" id="planningTabsContent">
-        <!-- Tous les événements -->
-        <div class="tab-pane fade show active" id="all" role="tabpanel">
-            {% if planning|length > 0 %}
-                <div class="row">
-                    {% for evenement in planning %}
-                        {% set isToday = evenement.dateHeure.format('Y-m-d') == "now"|date('Y-m-d') %}
-                        {% set isPast = evenement.dateHeure < date() %}
-                        {% set isUpcoming = evenement.dateHeure > date() %}
-                        
-                        <div class="col-12 mb-3">
-                            <div class="planning-card card {{ isToday ? 'today' : (isPast ? 'past' : 'upcoming') }}">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-8">
-                                            <h5 class="card-title mb-2">
-                                                <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
-                                            </h5>
-                                            <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <span class="cours-badge">
-                                                    <i class="fas fa-book"></i> {{ evenement.cours.titre }}
-                                                </span>
-                                                <span class="time-badge">
-                                                    <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('d/m/Y à H:i') }}
-                                                </span>
-                                                {% if isToday %}
-                                                    <span class="badge bg-primary">Aujourd'hui</span>
-                                                {% elseif isPast %}
-                                                    <span class="badge bg-secondary">Terminé</span>
-                                                {% else %}
-                                                    <span class="badge bg-success">À venir</span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 text-md-end">
-                                            <div class="d-flex justify-content-md-end gap-2">
-                                                <a href="{{ path('enseignant_planning_edit', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i> Modifier
-                                                </a>
-                                                <form method="post" action="{{ path('enseignant_planning_delete', {id: evenement.id}) }}" style="display: inline;">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
-                                                        <i class="fas fa-trash"></i> Supprimer
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
+    <!-- Navigation du planning -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card admin-card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Filtres -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label for="filterCours" class="form-label">Cours</label>
+                                    <select class="form-select" id="filterCours">
+                                        <option value="">Tous mes cours</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="filterType" class="form-label">Type</label>
+                                    <select class="form-select" id="filterType">
+                                        <option value="">Tous les types</option>
+                                        <option value="cours">Cours</option>
+                                        <option value="examen">Examen</option>
+                                        <option value="reunion">Réunion</option>
+                                        <option value="autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="filterClasse" class="form-label">Classe</label>
+                                    <select class="form-select" id="filterClasse">
+                                        <option value="">Toutes les classes</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
+                        <div class="col-md-4">
+                            <div class="navigation-buttons">
+                                <button id="prevWeekBtn" class="btn btn-outline-secondary" style="width: 40px;">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button id="currentWeekBtn" class="btn btn-outline-primary mx-2 px-3">
+                                    Cette semaine
+                                </button>
+                                <span class="nav-week-label fw-bold" id="weekRangeDisplay">
+                                    <!-- Sera rempli par JavaScript -->
+                                </span>
+                                <button id="nextWeekBtn" class="btn btn-outline-secondary" style="width: 40px;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-calendar-times"></i>
-                    <h3>Aucun événement planifié</h3>
-                    <p>Commencez par créer votre premier événement de cours</p>
-                </div>
-            {% endif %}
+            </div>
         </div>
+    </div>
 
-        <!-- Événements à venir -->
-        <div class="tab-pane fade" id="upcoming" role="tabpanel">
-            {% set upcomingEvents = planning|filter(e => e.dateHeure > date()) %}
-            {% if upcomingEvents|length > 0 %}
-                <div class="row">
-                    {% for evenement in upcomingEvents %}
-                        <div class="col-12 mb-3">
-                            <div class="planning-card card upcoming">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-8">
-                                            <h5 class="card-title mb-2">
-                                                <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
-                                            </h5>
-                                            <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <span class="cours-badge">
-                                                    <i class="fas fa-book"></i> {{ evenement.cours.titre }}
-                                                </span>
-                                                <span class="time-badge">
-                                                    <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('d/m/Y à H:i') }}
-                                                </span>
-                                                <span class="badge bg-success">À venir</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 text-md-end">
-                                            <div class="d-flex justify-content-md-end gap-2">
-                                                <a href="{{ path('enseignant_planning_edit', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i> Modifier
-                                                </a>
-                                                <form method="post" action="{{ path('enseignant_planning_delete', {id: evenement.id}) }}" style="display: inline;">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
-                                                        <i class="fas fa-trash"></i> Supprimer
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+    <!-- Emploi du temps hebdomadaire -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card admin-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-week"></i> <span id="weekLabel">Semaine en cours</span>
+                    </h5>
+                    <div>
+                        <button class="btn btn-outline-secondary px-3" onclick="window.print()">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                    </div>
                 </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-calendar-plus"></i>
-                    <h3>Aucun événement à venir</h3>
-                    <p>Planifiez vos prochains cours et événements</p>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="timetable" id="planningTable">
+                            <thead>
+                                <tr>
+                                    <th class="time-label"></th>
+                                    <th>Lundi</th>
+                                    <th>Mardi</th>
+                                    <th>Mercredi</th>
+                                    <th>Jeudi</th>
+                                    <th>Vendredi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Créneaux horaires de 8h à 18h -->
+                                {% for hour in 8..18 %}
+                                    <tr>
+                                        <td class="time-label">{{ hour }}:00</td>
+                                        {% for day in 0..4 %}
+                                            <td class="day-cell" data-hour="{{ hour }}" data-day="{{ day }}">
+                                                <!-- Les événements seront placés ici par JavaScript -->
+                                                <div class="empty-cell">
+                                                    <i class="fas fa-calendar-plus text-muted" style="opacity: 0.2; font-size: 0.8rem;"></i>
+                                                </div>
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            {% endif %}
+            </div>
         </div>
+    </div>
 
-        <!-- Événements d'aujourd'hui -->
-        <div class="tab-pane fade" id="today" role="tabpanel">
-            {% set todayEvents = planning|filter(e => e.dateHeure.format('Y-m-d') == "now"|date('Y-m-d')) %}
-            {% if todayEvents|length > 0 %}
-                <div class="row">
-                    {% for evenement in todayEvents %}
-                        <div class="col-12 mb-3">
-                            <div class="planning-card card today">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-8">
-                                            <h5 class="card-title mb-2">
-                                                <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
-                                            </h5>
-                                            <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <span class="cours-badge">
-                                                    <i class="fas fa-book"></i> {{ evenement.cours.titre }}
-                                                </span>
-                                                <span class="time-badge">
-                                                    <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('H:i') }}
-                                                </span>
-                                                <span class="badge bg-primary">Aujourd'hui</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 text-md-end">
-                                            <div class="d-flex justify-content-md-end gap-2">
-                                                <a href="{{ path('enseignant_planning_edit', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i> Modifier
-                                                </a>
-                                                <form method="post" action="{{ path('enseignant_planning_delete', {id: evenement.id}) }}" style="display: inline;">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
-                                                        <i class="fas fa-trash"></i> Supprimer
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+    <!-- Événements du jour -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card admin-card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-day"></i> Événements du jour
+                    </h5>
                 </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-calendar-day"></i>
-                    <h3>Aucun événement aujourd'hui</h3>
-                    <p>Profitez de votre journée libre ou planifiez de nouveaux événements</p>
+                <div class="card-body">
+                    <div id="todayEvents">
+                        <!-- Sera rempli par JavaScript -->
+                    </div>
                 </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 
@@ -323,9 +379,360 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-{% endblock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Données des événements du planning
+            const events = [
+                {% for event in planning %}
+                    {
+                        id: {{ event.id }},
+                        title: "{{ event.titre }}",
+                        description: "{{ event.description|default('') }}",
+                        start: "{{ event.dateDebut|date('Y-m-d H:i:s') }}",
+                        end: "{{ event.dateFin ? event.dateFin|date('Y-m-d H:i:s') : event.dateDebut|date_modify('+1 hour')|date('Y-m-d H:i:s') }}",
+                        type: "{{ event.type|default('cours') }}",
+                        location: "{{ event.lieu|default('') }}",
+                        {% if event.cours %}
+                        coursId: {{ event.cours.id }},
+                        coursTitle: "{{ event.cours.titre }}",
+                            {% if event.cours.classe %}
+                        classeId: {{ event.cours.classe.id }},
+                        classeTitle: "{{ event.cours.classe.nom }}",
+                            {% endif %}
+                        {% endif %}
+                        {% if event.classe %}
+                        classeId: {{ event.classe.id }},
+                        classeTitle: "{{ event.classe.nom }}",
+                        {% endif %}
+                    },
+                {% endfor %}
+            ];
+
+            // Variables de date
+            let currentWeekStart = getMonday(new Date());
+            let currentWeekEnd = new Date(currentWeekStart);
+            currentWeekEnd.setDate(currentWeekEnd.getDate() + 4);
+
+            // Filtres actifs
+            let activeFilters = {
+                cours: '',
+                type: '',
+                classe: ''
+            };
+
+            // Initialisation
+            updateWeekDisplay();
+            populateFilters();
+            populateCalendar();
+            showTodayEvents();
+
+            // Gestionnaires d'événements pour les filtres
+            document.getElementById('filterCours').addEventListener('change', function() {
+                activeFilters.cours = this.value;
+                populateCalendar();
+            });
+
+            document.getElementById('filterType').addEventListener('change', function() {
+                activeFilters.type = this.value;
+                populateCalendar();
+            });
+
+            document.getElementById('filterClasse').addEventListener('change', function() {
+                activeFilters.classe = this.value;
+                populateCalendar();
+            });
+
+            // Gestion des boutons de navigation
+            document.getElementById('prevWeekBtn').addEventListener('click', function() {
+                currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+                currentWeekEnd.setDate(currentWeekEnd.getDate() - 7);
+                updateWeekDisplay();
+                populateCalendar();
+            });
+
+            document.getElementById('nextWeekBtn').addEventListener('click', function() {
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+                currentWeekEnd.setDate(currentWeekEnd.getDate() + 7);
+                updateWeekDisplay();
+                populateCalendar();
+            });
+
+            document.getElementById('currentWeekBtn').addEventListener('click', function() {
+                currentWeekStart = getMonday(new Date());
+                currentWeekEnd = new Date(currentWeekStart);
+                currentWeekEnd.setDate(currentWeekEnd.getDate() + 4);
+                updateWeekDisplay();
+                populateCalendar();
+            });
+
+            // Fonction pour remplir les filtres
+            function populateFilters() {
+                // Cours uniques
+                const coursSelect = document.getElementById('filterCours');
+                const uniqueCourses = new Map();
+                
+                events.forEach(event => {
+                    if (event.coursTitle && event.coursId) {
+                        uniqueCourses.set(event.coursId, event.coursTitle);
+                    }
+                });
+                
+                uniqueCourses.forEach((title, id) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = title;
+                    coursSelect.appendChild(option);
+                });
+
+                // Classes uniques
+                const classeSelect = document.getElementById('filterClasse');
+                const uniqueClasses = new Map();
+                
+                events.forEach(event => {
+                    if (event.classeTitle && event.classeId) {
+                        uniqueClasses.set(event.classeId, event.classeTitle);
+                    }
+                });
+                
+                uniqueClasses.forEach((name, id) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = name;
+                    classeSelect.appendChild(option);
+                });
+            }
+
+            // Fonctions
+            function getMonday(date) {
+                const day = date.getDay();
+                const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+                const monday = new Date(date);
+                monday.setDate(diff);
+                monday.setHours(0, 0, 0, 0);
+                return monday;
+            }
+
+            function formatDate(date) {
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                return date.toLocaleDateString('fr-FR', options);
+            }
+
+            function updateWeekDisplay() {
+                const weekRangeDisplay = document.getElementById('weekRangeDisplay');
+                weekRangeDisplay.textContent = `${formatDate(currentWeekStart)} - ${formatDate(currentWeekEnd)}`;
+                
+                const weekLabel = document.getElementById('weekLabel');
+                weekLabel.textContent = `Semaine du ${formatDate(currentWeekStart)}`;
+            }
+
+            function populateCalendar() {
+                // Réinitialiser les cellules
+                const cells = document.querySelectorAll('.day-cell');
+                cells.forEach(cell => {
+                    cell.innerHTML = '<div class="empty-cell"><i class="fas fa-calendar-plus text-muted" style="opacity: 0.2; font-size: 0.8rem;"></i></div>';
+                    cell.style.position = 'relative';
+                    cell.style.visibility = 'visible'; // Réinitialiser la visibilité
+                });
+
+                // Filtrer les événements selon les critères actifs
+                let filteredEvents = events.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const isInWeek = eventDate >= currentWeekStart && eventDate <= new Date(currentWeekEnd.getTime() + 24*60*60*1000);
+                    
+                    // Appliquer les filtres
+                    const matchesCours = !activeFilters.cours || (event.coursId && event.coursId.toString() === activeFilters.cours);
+                    const matchesType = !activeFilters.type || event.type === activeFilters.type;
+                    const matchesClasse = !activeFilters.classe || (event.classeId && event.classeId.toString() === activeFilters.classe);
+                    
+                    return isInWeek && matchesCours && matchesType && matchesClasse;
+                });
+
+                // Trier par date et heure
+                filteredEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+                // Traquer les cellules déjà occupées
+                const occupiedCells = new Set();
+
+                // Placer les événements dans le tableau
+                filteredEvents.forEach(event => {
+                    const eventDate = new Date(event.start);
+                    const dayIndex = eventDate.getDay() - 1; // 0 = lundi, 4 = vendredi
+                    const startHour = eventDate.getHours();
+                    
+                    if (dayIndex >= 0 && dayIndex <= 4) { // Jours de semaine uniquement
+                        const eventEndDate = new Date(event.end);
+                        let endHour = eventEndDate.getHours();
+                        
+                        // Si l'événement se termine à l'heure pile et les minutes sont 0, on prend l'heure précédente
+                        if (eventEndDate.getMinutes() === 0 && endHour > startHour) {
+                            endHour--;
+                        }
+                        
+                        // Calculer la durée en heures (arrondie à l'heure supérieure)
+                        let duration = endHour - startHour + 1;
+                        if (duration < 1) duration = 1;
+                        
+                        // Vérifier si la cellule de départ est disponible
+                        const startCellSelector = `.day-cell[data-day="${dayIndex}"][data-hour="${startHour}"]`;
+                        const startCell = document.querySelector(startCellSelector);
+                        
+                        if (startCell && !occupiedCells.has(startCellSelector)) {
+                            // Marquer la cellule de départ comme occupée
+                            occupiedCells.add(startCellSelector);
+                            
+                            // Créer l'élément d'événement
+                            startCell.innerHTML = '';
+                            const eventElement = document.createElement('div');
+                            eventElement.className = `event-card ${event.type}`;
+                            eventElement.style.height = `${duration * 100}%`;
+                            eventElement.style.position = 'absolute';
+                            eventElement.style.top = '0';
+                            eventElement.style.left = '0';
+                            eventElement.style.right = '0';
+                            eventElement.style.zIndex = '10';
+                            
+                            // Si l'événement dure plus d'une heure, on ajuste la hauteur et on masque les cellules suivantes
+                            if (duration > 1) {
+                                // Hauteur proportionnelle à la durée
+                                const heightMultiplier = duration;
+                                eventElement.style.height = `calc(${heightMultiplier * 100}%)`;
+                                
+                                // Marquer les cellules suivantes comme occupées
+                                for (let h = 1; h < duration; h++) {
+                                    if (startHour + h <= 18) {  // Vérifier que nous ne dépassons pas la fin du tableau
+                                        const nextCellSelector = `.day-cell[data-day="${dayIndex}"][data-hour="${startHour + h}"]`;
+                                        occupiedCells.add(nextCellSelector);
+                                        const nextCell = document.querySelector(nextCellSelector);
+                                        if (nextCell) {
+                                            nextCell.style.visibility = 'hidden';
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Afficher un badge pour le type d'événement
+                            const typeBadge = `<span class="badge type-badge bg-${getEventTypeBadge(event.type)}">${getEventTypeLabel(event.type)}</span>`;
+                            
+                            eventElement.innerHTML = `
+                                <div class="event-title">${event.title} ${typeBadge}</div>
+                                <div class="event-info">
+                                    <div><i class="fas fa-clock"></i> ${formatTime(eventDate)} - ${formatTime(eventEndDate)}</div>
+                                    ${event.location ? `<div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>` : ''}
+                                    ${event.coursTitle ? `<div><i class="fas fa-book"></i> ${event.coursTitle}</div>` : ''}
+                                    ${event.classeTitle ? `<div><i class="fas fa-users"></i> ${event.classeTitle}</div>` : ''}
+                                </div>
+                            `;
+                            
+                            // Ajouter une infobulle détaillée sur l'événement
+                            eventElement.setAttribute('data-bs-toggle', 'tooltip');
+                            eventElement.setAttribute('data-bs-html', 'true');
+                            eventElement.setAttribute('data-bs-title', `
+                                <strong>${event.title}</strong><br>
+                                ${formatTime(eventDate)} - ${formatTime(eventEndDate)}<br>
+                                ${event.coursTitle ? `Cours: ${event.coursTitle}<br>` : ''}
+                                ${event.classeTitle ? `Classe: ${event.classeTitle}<br>` : ''}
+                                ${event.location ? `Lieu: ${event.location}<br>` : ''}
+                                ${event.description ? `<small>${event.description}</small>` : ''}
+                            `);
+                            
+                            startCell.appendChild(eventElement);
+                        }
+                    }
+                });
+                
+                // Initialiser les tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl, {
+                        container: 'body'
+                    });
+                });
+            }
+
+            function showTodayEvents() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                // Filtrer les événements d'aujourd'hui
+                const todayEvents = events.filter(event => {
+                    const eventDate = new Date(event.start);
+                    return eventDate >= today && eventDate < tomorrow;
+                });
+                
+                // Afficher les événements
+                const todayEventsContainer = document.getElementById('todayEvents');
+                
+                if (todayEvents.length > 0) {
+                    let html = '<div class="list-group">';
+                    todayEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+                    
+                    todayEvents.forEach(event => {
+                        const eventDate = new Date(event.start);
+                        const eventEndDate = new Date(event.end);
+                        
+                        html += `
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">${event.title}</h5>
+                                    <small class="text-muted">${formatTime(eventDate)} - ${formatTime(eventEndDate)}</small>
+                                </div>
+                                <p class="mb-1">${event.description || 'Aucune description'}</p>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    ${event.coursTitle ? `<span class="badge bg-success">${event.coursTitle}</span>` : ''}
+                                    ${event.classeTitle ? `<span class="badge bg-primary">${event.classeTitle}</span>` : ''}
+                                    ${event.location ? `<span class="badge bg-info text-dark">${event.location}</span>` : ''}
+                                    <span class="badge bg-${getEventTypeBadge(event.type)}">${getEventTypeLabel(event.type)}</span>
+                                </div>
+                                <div class="mt-2 text-end">
+                                    <a href="{{ path('enseignant_planning_edit', {id: 0}) }}".replace('0', event.id) class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    todayEventsContainer.innerHTML = html;
+                } else {
+                    todayEventsContainer.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-calendar-day fa-3x mb-3"></i>
+                            <h4>Aucun événement aujourd'hui</h4>
+                            <p>Vous n'avez pas d'événements planifiés pour aujourd'hui.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function formatTime(date) {
+                return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            function getEventTypeLabel(type) {
+                switch(type) {
+                    case 'cours': return 'Cours';
+                    case 'examen': return 'Examen';
+                    case 'reunion': return 'Réunion';
+                    default: return 'Autre';
+                }
+            }
+            
+            function getEventTypeBadge(type) {
+                switch(type) {
+                    case 'cours': return 'success';
+                    case 'examen': return 'danger';
+                    case 'reunion': return 'warning';
+                    default: return 'secondary';
+                }
+            }
+        });
+    </script>
 {% endblock %}

@@ -17,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class PlanningController extends AbstractController
 {
     #[Route('/enseignant/planning', name: 'enseignant_planning')]
-    public function enseignantIndex(CalendrierRepository $calendrierRepository, CoursRepository $coursRepository): Response
+    public function enseignantIndex(CalendrierRepository $calendrierRepository, CoursRepository $coursRepository, ClasseRepository $classeRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
@@ -26,18 +26,29 @@ class PlanningController extends AbstractController
         // Récupérer tous les cours de l'enseignant
         $cours = $coursRepository->findByCreatedBy($user);
         
-        // Récupérer tous les événements de planning pour ces cours
+        // Récupérer tous les événements de planning pour ces cours et l'enseignant
         $planning = [];
+        
+        // Événements liés aux cours
         foreach ($cours as $c) {
-            $calendriers = $calendrierRepository->findBy(['cours' => $c], ['dateHeure' => 'ASC']);
+            $calendriers = $calendrierRepository->findBy(['cours' => $c], ['dateDebut' => 'ASC']);
             foreach ($calendriers as $calendrier) {
+                $planning[] = $calendrier;
+            }
+        }
+        
+        // Événements où l'enseignant est directement affecté
+        $calendriersEnseignant = $calendrierRepository->findBy(['enseignant' => $user], ['dateDebut' => 'ASC']);
+        foreach ($calendriersEnseignant as $calendrier) {
+            // Éviter les doublons
+            if (!in_array($calendrier, $planning)) {
                 $planning[] = $calendrier;
             }
         }
         
         // Trier par date
         usort($planning, function($a, $b) {
-            return $a->getDateHeure() <=> $b->getDateHeure();
+            return $a->getDateDebut() <=> $b->getDateDebut();
         });
 
         return $this->render('enseignant/planning/index.html.twig', [
@@ -56,7 +67,7 @@ class PlanningController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à voir ce planning.');
         }
 
-        $planning = $calendrierRepository->findBy(['cours' => $cours], ['dateHeure' => 'ASC']);
+        $planning = $calendrierRepository->findBy(['cours' => $cours], ['dateDebut' => 'ASC']);
 
         return $this->render('enseignant/planning/cours.html.twig', [
             'cours' => $cours,
@@ -80,7 +91,7 @@ class PlanningController extends AbstractController
         // Récupérer tous les événements de planning pour ces cours
         $planning = [];
         foreach ($cours as $c) {
-            $calendriers = $calendrierRepository->findBy(['cours' => $c], ['dateHeure' => 'ASC']);
+            $calendriers = $calendrierRepository->findBy(['cours' => $c], ['dateDebut' => 'ASC']);
             foreach ($calendriers as $calendrier) {
                 $planning[] = $calendrier;
             }
@@ -88,7 +99,7 @@ class PlanningController extends AbstractController
         
         // Trier par date
         usort($planning, function($a, $b) {
-            return $a->getDateHeure() <=> $b->getDateHeure();
+            return $a->getDateDebut() <=> $b->getDateDebut();
         });
 
         return $this->render('enseignant/planning/classe.html.twig', [
@@ -119,12 +130,14 @@ class PlanningController extends AbstractController
         if ($request->isMethod('POST')) {
             $titre = $request->request->get('titre');
             $description = $request->request->get('description');
-            $dateHeure = $request->request->get('dateHeure');
+            $dateDebut = $request->request->get('dateDebut');
+            $dateFin = $request->request->get('dateFin');
 
-            if ($titre && $description && $dateHeure) {
+            if ($titre && $description && $dateDebut && $dateFin) {
                 $calendrier->setTitre($titre);
                 $calendrier->setDescription($description);
-                $calendrier->setDateHeure(new \DateTime($dateHeure));
+                $calendrier->setDateDebut(new \DateTime($dateDebut));
+                $calendrier->setDateFin(new \DateTime($dateFin));
 
                 $entityManager->persist($calendrier);
                 $entityManager->flush();
@@ -155,12 +168,14 @@ class PlanningController extends AbstractController
         if ($request->isMethod('POST')) {
             $titre = $request->request->get('titre');
             $description = $request->request->get('description');
-            $dateHeure = $request->request->get('dateHeure');
+            $dateDebut = $request->request->get('dateDebut');
+            $dateFin = $request->request->get('dateFin');
 
-            if ($titre && $description && $dateHeure) {
+            if ($titre && $description && $dateDebut && $dateFin) {
                 $calendrier->setTitre($titre);
                 $calendrier->setDescription($description);
-                $calendrier->setDateHeure(new \DateTime($dateHeure));
+                $calendrier->setDateDebut(new \DateTime($dateDebut));
+                $calendrier->setDateFin(new \DateTime($dateFin));
 
                 $entityManager->flush();
 
@@ -213,10 +228,16 @@ class PlanningController extends AbstractController
             
             foreach ($classes as $classe) {
                 foreach ($classe->getCours() as $cours) {
-                    $calendriers = $calendrierRepository->findBy(['cours' => $cours], ['dateHeure' => 'ASC']);
+                    $calendriers = $calendrierRepository->findBy(['cours' => $cours], ['dateDebut' => 'ASC']);
                     foreach ($calendriers as $calendrier) {
                         $planning[] = $calendrier;
                     }
+                }
+                
+                // Ajout: récupérer aussi les événements liés directement à la classe
+                $calendriersClasse = $calendrierRepository->findBy(['classe' => $classe], ['dateDebut' => 'ASC']);
+                foreach ($calendriersClasse as $calendrier) {
+                    $planning[] = $calendrier;
                 }
             }
         } catch (\Exception $e) {
@@ -226,7 +247,7 @@ class PlanningController extends AbstractController
         
         // Trier par date
         usort($planning, function($a, $b) {
-            return $a->getDateHeure() <=> $b->getDateHeure();
+            return $a->getDateDebut() <=> $b->getDateDebut();
         });
 
         return $this->render('etudiant/planning/index.html.twig', [

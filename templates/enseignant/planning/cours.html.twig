@@ -81,9 +81,9 @@
     {% if planning|length > 0 %}
         <div class="row">
             {% for evenement in planning %}
-                {% set isToday = evenement.dateHeure.format('Y-m-d') == "now"|date('Y-m-d') %}
-                {% set isPast = evenement.dateHeure < date() %}
-                {% set isUpcoming = evenement.dateHeure > date() %}
+                {% set isToday = evenement.dateDebut.format('Y-m-d') == "now"|date('Y-m-d') %}
+                {% set isPast = evenement.dateDebut < date() %}
+                {% set isUpcoming = evenement.dateDebut > date() %}
                 
                 <div class="col-12 mb-3">
                     <div class="planning-card card {{ isToday ? 'today' : (isPast ? 'past' : 'upcoming') }}">
@@ -96,7 +96,7 @@
                                     <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
                                     <div class="d-flex flex-wrap gap-2">
                                         <span class="time-badge">
-                                            <i class="fas fa-clock"></i> {{ evenement.dateHeure.format('d/m/Y à H:i') }}
+                                            <i class="fas fa-clock"></i> {{ evenement.dateDebut.format('d/m/Y à H:i') }}
                                         </span>
                                         {% if isToday %}
                                             <span class="badge bg-primary">Aujourd'hui</span>

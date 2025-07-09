@@ -87,10 +87,10 @@ class CalendrierRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->innerJoin('c.cours', 'cours')
             ->andWhere('cours.createdBy = :enseignant')
-            ->andWhere('c.dateHeure >= :now')
+            ->andWhere('c.dateDebut >= :now')
             ->setParameter('enseignant', $enseignant)
             ->setParameter('now', new \DateTime())
-            ->orderBy('c.dateHeure', 'ASC')
+            ->orderBy('c.dateDebut', 'ASC')
             ->setMaxResults(10)
             ->getQuery()
             ->getResult();

@@ -79,10 +79,17 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="dateHeure" class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Date et heure
+                            <label for="dateDebut" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Date et heure de début
                             </label>
-                            <input type="datetime-local" class="form-control" id="dateHeure" name="dateHeure" 
+                            <input type="datetime-local" class="form-control" id="dateDebut" name="dateDebut" 
+                                   min="{{ 'now'|date('Y-m-d\\TH:i') }}" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="dateFin" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Date et heure de fin
+                            </label>
+                            <input type="datetime-local" class="form-control" id="dateFin" name="dateFin" 
                                    min="{{ 'now'|date('Y-m-d\\TH:i') }}" required>
                         </div>
 

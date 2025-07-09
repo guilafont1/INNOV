@@ -78,11 +78,18 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="dateHeure" class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Date et heure
+                            <label for="dateDebut" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Date et heure de début
                             </label>
-                            <input type="datetime-local" class="form-control" id="dateHeure" name="dateHeure" 
-                                   value="{{ calendrier.dateHeure.format('Y-m-d\\TH:i') }}" required>
+                            <input type="datetime-local" class="form-control" id="dateDebut" name="dateDebut" 
+                                   value="{{ calendrier.dateDebut.format('Y-m-d\\TH:i') }}" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="dateFin" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Date et heure de fin
+                            </label>
+                            <input type="datetime-local" class="form-control" id="dateFin" name="dateFin" 
+                                   value="{{ calendrier.dateFin ? calendrier.dateFin.format('Y-m-d\\TH:i') : calendrier.dateDebut.modify('+1 hour').format('Y-m-d\\TH:i') }}" required>
                         </div>
 
                         <div class="d-flex justify-content-between">

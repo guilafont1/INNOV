@@ -570,5 +570,43 @@ function deleteEvent() {
         });
     }
 }
+
+// Filtrage dynamique des enseignants et cours en fonction de la classe
+document.addEventListener('DOMContentLoaded', function() {
+    const classeSelect = document.getElementById('classe');
+    const enseignantSelect = document.getElementById('enseignant');
+    
+    if (classeSelect) {
+        classeSelect.addEventListener('change', function() {
+            const classeId = this.value;
+            
+            if (classeId) {
+                // Si une classe est sélectionnée, récupérer les enseignants associés
+                fetch(`/admin/api/classe/${classeId}/enseignants`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Sauvegarder la valeur actuelle
+                        const currentValue = enseignantSelect.value;
+                        
+                        // Vider et reconstruire la liste des enseignants
+                        enseignantSelect.innerHTML = '<option value="">Tous les enseignants</option>';
+                        
+                        if (data.success && data.enseignants.length > 0) {
+                            data.enseignants.forEach(prof => {
+                                const option = document.createElement('option');
+                                option.value = prof.id;
+                                option.textContent = prof.prenom + ' ' + prof.nom;
+                                if (prof.id.toString() === currentValue) {
+                                    option.selected = true;
+                                }
+                                enseignantSelect.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Erreur:', error));
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
