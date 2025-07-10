@@ -10,16 +10,64 @@
 
     <div class="row">
         {% for c in cours %}
-            <div class="col-md-4 mb-4">
-                <div class="card">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title">{{ c.titre }}</h5>
-                        <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
-                        <div class="d-flex gap-2">
-                            <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary btn-sm">👁️ Voir</a>
-                            <a href="{{ path('app_cours_edit', {id: c.id}) }}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+                        <p class="card-text text-muted">{{ c.description|slice(0, 120) ~ '...' }}</p>
+                        
+                        <!-- Statistiques du cours -->
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <small class="text-muted">Modules</small>
+                                <div class="fw-bold text-primary">{{ c.modules.count }}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Chapitres</small>
+                                <div class="fw-bold text-success">
+                                    {% set totalChapitres = 0 %}
+                                    {% for module in c.modules %}
+                                        {% set totalChapitres = totalChapitres + module.chapitres.count %}
+                                    {% endfor %}
+                                    {{ totalChapitres }}
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Classes</small>
+                                <div class="fw-bold text-info">{{ c.classes.count }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Statut de configuration -->
+                        {% set isConfigured = c.modules.count > 0 %}
+                        {% if isConfigured %}
+                            <div class="alert alert-success py-2 mb-3">
+                                <i class="fas fa-check-circle"></i> <small>Cours configuré</small>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning py-2 mb-3">
+                                <i class="fas fa-exclamation-triangle"></i> <small>Configuration incomplète</small>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex flex-wrap gap-1">
+                            <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            {% if not isConfigured %}
+                                <a href="{{ path('app_cours_setup', {id: c.id}) }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-cogs"></i> Configurer
+                                </a>
+                            {% else %}
+                                <a href="{{ path('app_module_new') }}?coursId={{ c.id }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Module
+                                </a>
+                            {% endif %}
+                            <a href="{{ path('app_cours_edit', {id: c.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
                             <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}">
-                                🗑️ Supprimer
+                                <i class="fas fa-trash"></i> Supprimer
                             </button>
                         </div>
                     </div>

@@ -76,6 +76,16 @@ class ModuleController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
 
         $module = new Module();
+        
+        // Si un cours est spécifié dans l'URL, l'associer au module
+        $coursId = $request->query->get('coursId');
+        if ($coursId) {
+            $cours = $em->getRepository(\App\Entity\Cours::class)->find($coursId);
+            if ($cours && $cours->getCreatedBy() === $this->getUser()) {
+                $module->setCours($cours);
+            }
+        }
+        
         $form = $this->createForm(ModuleType::class, $module);
         $form->handleRequest($request);
 
@@ -85,6 +95,12 @@ class ModuleController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', 'Module créé avec succès !');
+                
+                // Rediriger vers la page de configuration du cours si un cours est associé
+                if ($module->getCours()) {
+                    return $this->redirectToRoute('app_cours_setup', ['id' => $module->getCours()->getId()]);
+                }
+                
                 return $this->redirectToRoute('enseignant_dashboard');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création du module.');
@@ -93,6 +109,7 @@ class ModuleController extends AbstractController
 
         return $this->render('module/new.html.twig', [
             'form' => $form->createView(),
+            'cours' => $module->getCours(),
         ]);
     }
 

@@ -90,11 +90,15 @@ final class CoursController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                // Définir l'enseignant créateur du cours
+                $cours->setCreatedBy($this->getUser());
+                
                 $em->persist($cours);
                 $em->flush();
 
-                $this->addFlash('success', 'Cours créé avec succès !');
-                return $this->redirectToRoute('enseignant_dashboard');
+                $this->addFlash('success', 'Cours créé avec succès ! Vous pouvez maintenant ajouter des modules.');
+                // Rediriger vers la page de gestion des modules du cours
+                return $this->redirectToRoute('app_cours_setup', ['id' => $cours->getId()]);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création du cours.');
             }
@@ -127,6 +131,21 @@ final class CoursController extends AbstractController
         return $this->render('cours/edit.html.twig', [
             'cours' => $cours,
             'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/cours/{id}/setup', name: 'app_cours_setup', requirements: ['id' => '\d+'])]
+    public function setup(Cours $cours): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
+
+        // Vérifier que l'utilisateur est le créateur du cours
+        if ($cours->getCreatedBy() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à configurer ce cours.');
+        }
+
+        return $this->render('cours/setup.html.twig', [
+            'cours' => $cours,
         ]);
     }
 
