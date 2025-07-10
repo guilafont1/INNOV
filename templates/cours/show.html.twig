@@ -23,6 +23,10 @@
         <p>Aucun module pour ce cours.</p>
     {% endfor %}
 
-    <a href="{{ path('app_cours') }}" class="btn btn-secondary mt-3">← Retour aux cours</a>
+    {% if is_granted('ROLE_ENSEIGNANT') %}
+        <a href="{{ path('enseignant_cours') }}" class="btn btn-secondary mt-3">← Retour aux cours</a>
+    {% else %}
+        <a href="{{ path('app_cours') }}" class="btn btn-secondary mt-3">← Retour aux cours</a>
+    {% endif %}
 </div>
 {% endblock %}

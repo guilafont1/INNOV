@@ -69,6 +69,8 @@ final class CoursController extends AbstractController
             }
         }
         
+        // Si l'utilisateur vient de créer ou modifier un cours en tant qu'enseignant, 
+        // il sera redirigé vers la bonne vue ensuite
         return $this->render('cours/show.html.twig', [
             'cours' => $cours,
             'modules' => $cours->getModules(),
