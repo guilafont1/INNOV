@@ -126,8 +126,8 @@
                                         {% for cours in classe.cours %}
                                         <tr>
                                             <td>{{ cours.titre }}</td>
-                                            <td>{{ cours.module ? cours.module.nom : 'Aucun module' }}</td>
-                                            <td>{{ cours.enseignant ? cours.enseignant.nom ~ ' ' ~ cours.enseignant.prenom : 'Aucun enseignant' }}</td>
+                                            <td>{{ cours.modules.count > 0 ? cours.modules.first.titre : 'Aucun module' }}</td>
+                                            <td>{{ cours.createdBy ? cours.createdBy.nom ~ ' ' ~ cours.createdBy.prenom : 'Aucun enseignant' }}</td>
                                             <td>
                                                 <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye"></i> Voir
