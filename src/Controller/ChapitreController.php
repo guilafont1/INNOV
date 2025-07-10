@@ -71,7 +71,50 @@ class ChapitreController extends AbstractController
         ]);
     }
 
-    #[Route('/module/{id}/chapitre/new', name: 'app_chapitre_new')]
+    #[Route('/chapitre/new', name: 'app_chapitre_new')]
+    public function new(Request $request, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
+
+        $moduleId = $request->query->get('moduleId');
+        if (!$moduleId) {
+            $this->addFlash('error', 'Module non spécifié.');
+            return $this->redirectToRoute('enseignant_cours');
+        }
+
+        $module = $em->getRepository(Module::class)->find($moduleId);
+        if (!$module) {
+            $this->addFlash('error', 'Module introuvable.');
+            return $this->redirectToRoute('enseignant_cours');
+        }
+
+        $chapitre = new Chapitre();
+        $chapitre->setModule($module);
+
+        $form = $this->createForm(ChapitreType::class, $chapitre);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $em->persist($chapitre);
+                $em->flush();
+
+                $this->addFlash('success', 'Chapitre ajouté avec succès.');
+                
+                // Rediriger vers la configuration du cours pour continuer le processus
+                return $this->redirectToRoute('app_cours_setup', ['id' => $module->getCours()->getId()]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de la création du chapitre.');
+            }
+        }
+
+        return $this->render('chapitre/new.html.twig', [
+            'form' => $form->createView(),
+            'module' => $module
+        ]);
+    }
+
+    #[Route('/module/{id}/chapitre/new', name: 'app_chapitre_new_from_module')]
     public function addChapitre(Request $request, Module $module, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');

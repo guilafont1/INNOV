@@ -1,37 +1,112 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter un chapitre{% endblock %}
+{% block title %}Nouveau chapitre - {{ module.titre }}{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="max-width: 600px;">
-    <h2 class="mb-4 text-center">➕ Nouveau chapitre pour le module "{{ module.titre }}"</h2>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-alt"></i> 
+                        Nouveau chapitre pour "{{ module.titre }}"
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('enseignant_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('enseignant_cours') }}">Mes cours</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_cours_show', {id: module.cours.id}) }}">{{ module.cours.titre }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Nouveau chapitre</li>
+                        </ol>
+                    </nav>
 
-    {% for message in app.flashes('success') %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    {% endfor %}
-    
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    {% endfor %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Information :</strong> Ce chapitre sera ajouté au module "{{ module.titre }}" dans le cours "{{ module.cours.titre }}".
+                    </div>
 
-    {{ form_start(form) }}
-        {{ form_row(form.titre) }}
-        {{ form_row(form.contenu) }}
-        {{ form_row(form.fichierMedia) }}
-        <div class="d-flex justify-content-between mt-3">
-            <a href="{{ path('app_cours_show', {'id': module.cours.id}) }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour
-            </a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Ajouter le chapitre
-            </button>
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                    
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Introduction aux concepts, Exercices pratiques...'}}) }}
+                            {{ form_errors(form.titre) }}
+                            <div class="form-text">Choisissez un titre descriptif pour ce chapitre.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.contenu, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 8, 'placeholder': 'Saisissez le contenu détaillé de ce chapitre...'}}) }}
+                            {{ form_errors(form.contenu) }}
+                            <div class="form-text">Décrivez le contenu pédagogique de ce chapitre.</div>
+                        </div>
+
+                        {% if form.fichierMedia is defined %}
+                        <div class="mb-3">
+                            {{ form_label(form.fichierMedia, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.fichierMedia, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.fichierMedia) }}
+                            <div class="form-text">Vous pouvez ajouter un fichier média (optionnel).</div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Créer le chapitre
+                            </button>
+                            <a href="{{ path('app_cours_show', {id: module.cours.id}) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour au cours
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+            
+            <!-- Informations sur les chapitres -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Conseils pour créer un bon chapitre</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-check-circle text-success"></i> Bonnes pratiques :</h6>
+                            <ul>
+                                <li>Utilisez un titre clair et spécifique</li>
+                                <li>Structurez le contenu avec des paragraphes</li>
+                                <li>Ajoutez des exemples concrets</li>
+                                <li>Incluez des exercices si pertinent</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-lightbulb text-warning"></i> Suggestions :</h6>
+                            <ul>
+                                <li>Durée de lecture : 5-15 minutes</li>
+                                <li>Utilisez des listes à puces</li>
+                                <li>Intégrez des médias si possible</li>
+                                <li>Terminez par une conclusion</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    {{ form_end(form) }}
+    </div>
 </div>
 {% endblock %}

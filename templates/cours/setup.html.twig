@@ -5,13 +5,23 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .step-card {
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
+        .setup-container {
+            max-width: 900px;
+            margin: 0 auto;
         }
-        .step-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+            max-width: 200px;
         }
         .step-number {
             width: 40px;
@@ -21,48 +31,312 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-right: 15px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
         }
-        .progress-bar-custom {
-            height: 10px;
-            border-radius: 5px;
+        .step-item.completed .step-number {
+            background-color: #28a745;
+            color: white;
+        }
+        .step-item.active .step-number {
+            background-color: #007bff;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .step-item.pending .step-number {
+            background-color: #6c757d;
+            color: white;
+        }
+        .step-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background-color: #dee2e6;
+            z-index: -1;
+        }
+        .step-item.completed .step-line {
+            background-color: #28a745;
+        }
+        .step-item:last-child .step-line {
+            display: none;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+        }
+        .content-card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+        .action-button {
+            transition: all 0.3s ease;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
     </style>
 {% endblock %}
 
 {% block body %}
 <div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <!-- En-tête -->
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h1 class="text-success mb-3">
-                        <i class="fas fa-check-circle"></i> Cours créé avec succès !
-                    </h1>
-                    <h2 class="text-primary">{{ cours.titre }}</h2>
-                    <p class="text-muted">{{ cours.description }}</p>
+    <div class="setup-container">
+        <!-- En-tête -->
+        <div class="text-center mb-4">
+            <h1 class="text-success mb-3">
+                <i class="fas fa-check-circle"></i> Cours créé avec succès !
+            </h1>
+            <h2 class="text-primary">{{ cours.titre }}</h2>
+            <p class="text-muted">{{ cours.description }}</p>
+        </div>
+
+        <!-- Indicateur d'étapes -->
+        <div class="step-indicator">
+            {% set totalModules = cours.modules.count %}
+            {% set totalChapitres = 0 %}
+            {% for module in cours.modules %}
+                {% set totalChapitres = totalChapitres + module.chapitres.count %}
+            {% endfor %}
+            
+            <div class="step-item {{ totalModules > 0 ? 'completed' : 'active' }}">
+                <div class="step-number">
+                    {% if totalModules > 0 %}
+                        <i class="fas fa-check"></i>
+                    {% else %}
+                        1
+                    {% endif %}
+                </div>
+                <small class="text-center">Modules<br><strong>{{ totalModules }} créé(s)</strong></small>
+                <div class="step-line"></div>
+            </div>
+            
+            <div class="step-item {{ totalChapitres > 0 ? 'completed' : (totalModules > 0 ? 'active' : 'pending') }}">
+                <div class="step-number">
+                    {% if totalChapitres > 0 %}
+                        <i class="fas fa-check"></i>
+                    {% else %}
+                        2
+                    {% endif %}
+                </div>
+                <small class="text-center">Chapitres<br><strong>{{ totalChapitres }} créé(s)</strong></small>
+                <div class="step-line"></div>
+            </div>
+            
+            <div class="step-item {{ cours.classes.count > 0 ? 'completed' : (totalChapitres > 0 ? 'active' : 'pending') }}">
+                <div class="step-number">
+                    {% if cours.classes.count > 0 %}
+                        <i class="fas fa-check"></i>
+                    {% else %}
+                        3
+                    {% endif %}
+                </div>
+                <small class="text-center">Classes<br><strong>{{ cours.classes.count }} assignée(s)</strong></small>
+                <div class="step-line"></div>
+            </div>
+            
+            <div class="step-item pending">
+                <div class="step-number">4</div>
+                <small class="text-center">Planning<br><strong>À configurer</strong></small>
+            </div>
+        </div>
+
+        <!-- Contenu principal selon l'étape active -->
+        {% if totalModules == 0 %}
+            <!-- Étape 1: Créer des modules -->
+            <div class="card content-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-layer-group"></i> Étape 1/4 : Créer des modules
+                    </h4>
+                </div>
+                <div class="card-body">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
-                        Maintenant, structurez votre cours en suivant ces étapes pour une expérience optimale.
+                        <strong>Première étape :</strong> Organisez votre cours en modules thématiques. 
+                        Un module regroupe plusieurs chapitres sur un même sujet.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-lightbulb text-warning"></i> Exemples de modules :</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-arrow-right text-primary"></i> Introduction aux concepts</li>
+                                <li><i class="fas fa-arrow-right text-primary"></i> Théorie fondamentale</li>
+                                <li><i class="fas fa-arrow-right text-primary"></i> Applications pratiques</li>
+                                <li><i class="fas fa-arrow-right text-primary"></i> Études de cas</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-question-circle text-info"></i> Combien de modules ?</h6>
+                            <p class="text-muted">Nous recommandons entre 3 et 7 modules par cours pour une structure claire et navigable.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ path('app_module_new') }}?coursId={{ cours.id }}" class="btn btn-primary btn-lg action-button">
+                            <i class="fas fa-plus"></i> Créer le premier module
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Progression -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-tasks"></i> Progression de la configuration
-                    </h5>
+        {% elseif totalChapitres == 0 %}
+            <!-- Étape 2: Créer des chapitres -->
+            <div class="card content-card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Étape 2/4 : Ajouter des chapitres
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <div class="progress progress-bar-custom mb-3">
-                        <div class="progress-bar bg-success" style="width: 25%"></div>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Excellent !</strong> Vous avez créé {{ totalModules }} module(s). 
+                        Maintenant, ajoutez des chapitres à chaque module.
                     </div>
-                    <small class="text-muted">1 sur 4 étapes complétées</small>
+                    
+                    <h6><i class="fas fa-list text-primary"></i> Vos modules :</h6>
+                    <div class="row">
+                        {% for module in cours.modules %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-folder text-primary"></i> {{ module.titre }}
+                                        </h6>
+                                        <p class="text-muted mb-2">
+                                            {{ module.chapitres.count }} chapitre(s)
+                                        </p>
+                                        <a href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}" class="btn btn-outline-success btn-sm action-button">
+                                            <i class="fas fa-plus"></i> Ajouter un chapitre
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
+
+        {% elseif cours.classes.count == 0 %}
+            <!-- Étape 3: Assigner à des classes -->
+            <div class="card content-card">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users"></i> Étape 3/4 : Assigner à des classes
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Presque fini !</strong> Votre cours a {{ totalModules }} module(s) et {{ totalChapitres }} chapitre(s).
+                        L'assignation aux classes est généralement faite par l'administration.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle text-info"></i> Information :</h6>
+                            <p>L'assignation de cours aux classes permet aux étudiants d'accéder au contenu. Cette action est normalement effectuée par l'administration de l'établissement.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-cogs text-secondary"></i> En attendant :</h6>
+                            <p>Vous pouvez continuer à enrichir votre cours en ajoutant plus de chapitres ou en configurant le planning.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <div class="btn-group">
+                            <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-outline-primary action-button">
+                                <i class="fas fa-eye"></i> Voir le cours complet
+                            </a>
+                            <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-warning action-button">
+                                <i class="fas fa-calendar"></i> Configurer le planning
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- Étape 4: Configuration terminée -->
+            <div class="card content-card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-trophy"></i> Configuration terminée !
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-celebration"></i>
+                        <strong>Félicitations !</strong> Votre cours est prêt ! Il contient {{ totalModules }} module(s), 
+                        {{ totalChapitres }} chapitre(s) et est assigné à {{ cours.classes.count }} classe(s).
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h3 class="text-primary">{{ totalModules }}</h3>
+                                    <small>Module(s)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h3 class="text-success">{{ totalChapitres }}</h3>
+                                    <small>Chapitre(s)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h3 class="text-info">{{ cours.classes.count }}</h3>
+                                    <small>Classe(s)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h3 class="text-warning">{{ cours.progressions.count }}</h3>
+                                    <small>Étudiant(s)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <div class="btn-group">
+                            <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-primary action-button">
+                                <i class="fas fa-eye"></i> Voir le cours
+                            </a>
+                            <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-outline-info action-button">
+                                <i class="fas fa-calendar"></i> Planning
+                            </a>
+                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-secondary action-button">
+                                <i class="fas fa-list"></i> Mes cours
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Navigation -->
+        <div class="text-center mt-4">
+            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à mes cours
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
             <!-- Étapes de configuration -->
             <div class="row">
@@ -124,9 +398,24 @@
                                     </div>
                                 {% endif %}
                                 
-                                <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn {% if totalChapitres > 0 %}btn-outline-primary{% else %}btn-primary{% endif %}">
-                                    <i class="fas fa-book-open"></i> {% if totalChapitres > 0 %}Gérer{% else %}Créer{% endif %} les chapitres
-                                </a>
+                                <!-- Boutons d'action pour chaque module -->
+                                {% if cours.modules.count > 0 %}
+                                    <div class="mt-3">
+                                        <h6><i class="fas fa-plus text-success"></i> Ajouter un chapitre à :</h6>
+                                        <div class="btn-group-vertical w-100">
+                                            {% for module in cours.modules %}
+                                                <a href="{{ path('app_chapitre_new') }}?moduleId={{ module.id }}" class="btn btn-outline-success btn-sm mb-2">
+                                                    <i class="fas fa-plus"></i> {{ module.titre }}
+                                                    <span class="badge badge-light">{{ module.chapitres.count }} chapitre(s)</span>
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-lock"></i> Créer des modules d'abord
+                                    </button>
+                                {% endif %}
                             {% else %}
                                 <button class="btn btn-secondary" disabled>
                                     <i class="fas fa-lock"></i> Créer des modules d'abord
@@ -135,111 +424,65 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Étape 3: Classes et étudiants -->
-                <div class="col-md-6 mb-4">
-                    <div class="card step-card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="step-number bg-warning text-white">3</div>
-                                <h5 class="mb-0">Assigner à des classes</h5>
-                            </div>
-                            <p class="text-muted">Associez votre cours à des classes pour que les étudiants puissent y accéder.</p>
-                            <div class="mb-3">
-                                <small class="text-warning">
-                                    <i class="fas fa-users"></i>
-                                    <strong>Note :</strong> Cette action est généralement effectuée par l'administration
-                                </small>
-                            </div>
-                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-warning">
-                                <i class="fas fa-eye"></i> Voir mes cours
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Étape 4: Planning -->
-                <div class="col-md-6 mb-4">
-                    <div class="card step-card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="step-number bg-info text-white">4</div>
-                                <h5 class="mb-0">Planifier les séances</h5>
-                            </div>
-                            <p class="text-muted">Créez des événements dans le planning pour organiser vos cours et examens.</p>
-                            <div class="mb-3">
-                                <small class="text-info">
-                                    <i class="fas fa-calendar"></i>
-                                    <strong>Planification :</strong> Programmez vos séances de cours et évaluations
-                                </small>
-                            </div>
-                            <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-outline-info">
-                                <i class="fas fa-calendar-plus"></i> Gérer le planning
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
+        {% endif %}
 
-            <!-- Actions rapides -->
-            <div class="card mt-4">
+        <!-- Actions supplémentaires si le cours est configuré -->
+        {% if totalModules > 0 %}
+            <div class="card content-card mt-4">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-bolt"></i> Actions rapides
+                        <i class="fas fa-bolt"></i> Actions supplémentaires
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 mb-2">
-                            <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-primary w-100">
-                                <i class="fas fa-eye"></i> Voir le cours
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('app_module_new') }}?coursId={{ cours.id }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus"></i> Ajouter un module
                             </a>
                         </div>
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-4 mb-2">
                             <a href="{{ path('app_cours_edit', {id: cours.id}) }}" class="btn btn-outline-secondary w-100">
-                                <i class="fas fa-edit"></i> Modifier
+                                <i class="fas fa-edit"></i> Modifier le cours
                             </a>
                         </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-primary w-100">
-                                <i class="fas fa-list"></i> Mes cours
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{{ path('enseignant_dashboard') }}" class="btn btn-outline-success w-100">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-calendar"></i> Planning
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
+        {% endif %}
 
-            <!-- Guide rapide -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-question-circle"></i> Guide rapide
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-layer-group text-primary"></i> Structure recommandée :</h6>
-                            <ul class="list-unstyled">
-                                <li><strong>Cours</strong> → Conteneur principal</li>
-                                <li>└── <strong>Modules</strong> → Grandes thématiques</li>
-                                <li>&nbsp;&nbsp;&nbsp;&nbsp;└── <strong>Chapitres</strong> → Contenu détaillé</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-clock text-info"></i> Ordre recommandé :</h6>
-                            <ol>
-                                <li>Créer les modules principaux</li>
-                                <li>Ajouter les chapitres de chaque module</li>
-                                <li>Programmer les séances</li>
-                                <li>Inviter les étudiants</li>
-                            </ol>
-                        </div>
+        <!-- Guide rapide -->
+        <div class="card content-card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle"></i> Guide de configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-layer-group text-primary"></i> Structure recommandée :</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>1. Cours</strong> → Conteneur principal</li>
+                            <li><strong>2. Modules</strong> → Grandes thématiques (3-7 recommandés)</li>
+                            <li><strong>3. Chapitres</strong> → Contenu détaillé</li>
+                            <li><strong>4. Planning</strong> → Séances et évaluations</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-lightbulb text-warning"></i> Conseils :</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Commencez par les modules principaux</li>
+                            <li><i class="fas fa-check text-success"></i> Ajoutez 2-5 chapitres par module</li>
+                            <li><i class="fas fa-check text-success"></i> Organisez chronologiquement</li>
+                            <li><i class="fas fa-check text-success"></i> Planifiez après la structure</li>
+                        </ul>
                     </div>
                 </div>
             </div>
