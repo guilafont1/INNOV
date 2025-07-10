@@ -141,7 +141,12 @@ final class CoursController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', 'Cours supprimé avec succès !');
-                return $this->redirectToRoute('app_cours');
+                // Rediriger en fonction du rôle de l'utilisateur
+                if ($this->isGranted('ROLE_ENSEIGNANT')) {
+                    return $this->redirectToRoute('enseignant_cours');
+                } else {
+                    return $this->redirectToRoute('app_cours');
+                }
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression du cours.');
             }
