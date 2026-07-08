@@ -436,7 +436,7 @@ class PlanningExportController extends AbstractController
 
             'VERSION:2.0',
 
-            'PRODID:-//MERJ//Planning//FR',
+            'PRODID:-//MERJ LEARN//Planning//FR',
 
             'CALSCALE:GREGORIAN',
 

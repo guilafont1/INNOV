@@ -1,4 +1,4 @@
-# MERJ
+# MERJ LEARN
 
 Plateforme e-learning pour établissements : cours, classes, notes, planning, forum, messagerie et évaluations.
 
@@ -84,6 +84,8 @@ ROLE_ETUDIANT     →  ROLE_USER
 | --- | ----- | ---- |
 | Super Administrateur | `admin@jeai.fr` | Super admin (développeur) |
 | Sophie Rousseau | `admin.ecole@jeai.fr` | Administration école |
+| Pierre Lambert | `scolarite@jeai.fr` | Administration école (scolarité) |
+| Amélie Gérard | `vie.scolaire@jeai.fr` | Administration école (vie scolaire) |
 
 ### Enseignants
 
@@ -109,6 +111,10 @@ ROLE_ETUDIANT     →  ROLE_USER
 | Samir Kacem | `etudiant10@jeai.fr` | B3 DevOps |
 | Zoé Chevalier | `etudiant11@jeai.fr` | B3 DevOps |
 | Thomas Marchand | `etudiant12@jeai.fr` | B3 DevOps |
+| Léa Fontaine | `etudiant13@jeai.fr` | L3 Alternance Web |
+| Noah Perrin | `etudiant14@jeai.fr` | L3 Alternance Web |
+| Inès Blanc | `etudiant15@jeai.fr` | L3 Alternance Web |
+| Lucas Renard | `etudiant16@jeai.fr` | L3 Alternance Web |
 
 ---
 
@@ -173,16 +179,16 @@ Ouvrir : [http://localhost:8000/login](http://localhost:8000/login)
 
 | Élément | Quantité |
 | ------- | -------- |
-| Utilisateurs | 17 (1 super admin, 1 admin école, 3 enseignants, 12 étudiants) |
-| Classes | 3 (M1 Dev Web, M2 EISI, B3 DevOps) |
+| Utilisateurs | 23 (1 super admin, 3 admin école, 3 enseignants, 16 étudiants) |
+| Classes | 4 (M1 Dev Web, M2 EISI, B3 DevOps, L3 Alternance Web) |
 | Cours | 6 |
 | Modules | 13 |
 | Chapitres | 34 |
 | Notes | 60 |
-| Événements planning | 17 |
-| Progressions | 18 |
-| Posts forum | 24 |
-| Messages | 12 |
+| Événements planning | 27 |
+| Progressions | 24 |
+| Posts forum | 36 |
+| Messages | 21 |
 | Évaluations | 8 |
 
 ---
@@ -196,7 +202,7 @@ Ouvrir : [http://localhost:8000/login](http://localhost:8000/login)
 3. **Classes** : créer une classe, y ajouter élèves, profs et cours
 4. **Planning** (`/admin/planning`) : vue globale, filtres par classe / cours / enseignant, export PDF
 
-### Administration école — `admin.ecole@jeai.fr`
+### Administration école — `admin.ecole@jeai.fr`, `scolarite@jeai.fr` ou `vie.scolaire@jeai.fr`
 
 1. Connexion → `/admin/dashboard`
 2. Gérer les **classes** et les **utilisateurs** (sans toucher aux super admins)
@@ -312,4 +318,4 @@ docs: mettre à jour le README des comptes démo
 
 ## Licence
 
-Projet propriétaire — usage interne MERJ.
+Projet propriétaire — usage interne MERJ LEARN.

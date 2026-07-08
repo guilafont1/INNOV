@@ -39,14 +39,27 @@ class AppFixtures extends Fixture
         );
         $manager->persist($admin);
 
-        $adminEcole = $this->createUser(
-            email: 'admin.ecole@jeai.fr',
-            nom: 'Rousseau',
-            prenom: 'Sophie',
-            roles: ['ROLE_ADMIN_ECOLE'],
-            password: $password
-        );
-        $manager->persist($adminEcole);
+        $adminsEcoleData = [
+            'ae1' => ['email' => 'admin.ecole@jeai.fr', 'prenom' => 'Sophie', 'nom' => 'Rousseau'],
+            'ae2' => ['email' => 'scolarite@jeai.fr', 'prenom' => 'Pierre', 'nom' => 'Lambert'],
+            'ae3' => ['email' => 'vie.scolaire@jeai.fr', 'prenom' => 'Amélie', 'nom' => 'Gérard'],
+        ];
+        $adminsEcole = [];
+        foreach ($adminsEcoleData as $key => $data) {
+            $adminsEcole[$key] = $this->createUser(
+                email: $data['email'],
+                nom: $data['nom'],
+                prenom: $data['prenom'],
+                roles: ['ROLE_ADMIN_ECOLE'],
+                password: $password,
+            );
+            $adminsEcole[$key]->setDerniereConnexion($now->modify('-' . match ($key) {
+                'ae1' => 1,
+                'ae2' => 3,
+                default => 6,
+            } . ' days'));
+            $manager->persist($adminsEcole[$key]);
+        }
 
         $teachersData = [
             't1' => ['email' => 'prof1@jeai.fr', 'prenom' => 'Marie', 'nom' => 'Dupont'],
@@ -78,6 +91,10 @@ class AppFixtures extends Fixture
             's10' => ['email' => 'etudiant10@jeai.fr', 'prenom' => 'Samir', 'nom' => 'Kacem'],
             's11' => ['email' => 'etudiant11@jeai.fr', 'prenom' => 'Zoé', 'nom' => 'Chevalier'],
             's12' => ['email' => 'etudiant12@jeai.fr', 'prenom' => 'Thomas', 'nom' => 'Marchand'],
+            's13' => ['email' => 'etudiant13@jeai.fr', 'prenom' => 'Léa', 'nom' => 'Fontaine'],
+            's14' => ['email' => 'etudiant14@jeai.fr', 'prenom' => 'Noah', 'nom' => 'Perrin'],
+            's15' => ['email' => 'etudiant15@jeai.fr', 'prenom' => 'Inès', 'nom' => 'Blanc'],
+            's16' => ['email' => 'etudiant16@jeai.fr', 'prenom' => 'Lucas', 'nom' => 'Renard'],
         ];
         $students = [];
         foreach ($studentsData as $key => $data) {
@@ -296,6 +313,13 @@ class AppFixtures extends Fixture
                 'students' => ['s9', 's10', 's11', 's12'],
                 'courses' => ['docker', 'agile'],
             ],
+            'l3' => [
+                'nom' => 'L3 Alternance Web',
+                'description' => 'Parcours alternance : consolidation Symfony, sécurité et gestion de projet.',
+                'teacher' => 't1',
+                'students' => ['s13', 's14', 's15', 's16'],
+                'courses' => ['symfony', 'security', 'agile'],
+            ],
         ];
 
         $classes = [];
@@ -376,6 +400,18 @@ class AppFixtures extends Fixture
             ['offset' => 3, 'time' => '08:30', 'dur' => 90, 'type' => 'cours', 'titre' => 'Architecture Symfony : refactor & tests', 'desc' => 'Un exemple “bout en bout”', 'lieu' => 'Salle B204', 'class' => 'm1', 'course' => 'symfony', 'teacher' => 't1'],
             ['offset' => 9, 'time' => '08:00', 'dur' => 60, 'type' => 'reunion', 'titre' => 'Rétro Sprint : démo + actions', 'desc' => 'S’améliorer en continu', 'lieu' => 'Distanciel', 'class' => 'm1', 'course' => 'agile', 'teacher' => 't3'],
             ['offset' => 12, 'time' => '11:30', 'dur' => 75, 'type' => 'cours', 'titre' => 'CI/CD : gestion des secrets', 'desc' => 'Pratiques de sécurité en pipeline', 'lieu' => 'Salle D210', 'class' => 'b3', 'course' => 'docker', 'teacher' => 't3'],
+
+            // Semaine en cours + chevauchements (planning dense)
+            ['offset' => 0, 'time' => '10:00', 'dur' => 120, 'type' => 'reunion', 'titre' => 'Conseil pédagogique — rentrée', 'desc' => 'Point direction / enseignants', 'lieu' => 'Salle du conseil', 'class' => 'm1', 'course' => 'agile', 'teacher' => 't1'],
+            ['offset' => 1, 'time' => '09:00', 'dur' => 90, 'type' => 'cours', 'titre' => 'Atelier Symfony : formulaires avancés', 'desc' => 'CollectionType et validation', 'lieu' => 'Salle B204', 'class' => 'l3', 'course' => 'symfony', 'teacher' => 't1'],
+            ['offset' => 1, 'time' => '09:30', 'dur' => 90, 'type' => 'cours', 'titre' => 'TP JavaScript : API planning', 'desc' => 'Consommation JSON côté client', 'lieu' => 'Salle C102', 'class' => 'm2', 'course' => 'js', 'teacher' => 't2'],
+            ['offset' => 1, 'time' => '14:00', 'dur' => 60, 'type' => 'examen', 'titre' => 'Contrôle continu BDD', 'desc' => 'Requêtes et index', 'lieu' => 'Amphi A', 'class' => 'm2', 'course' => 'db', 'teacher' => 't2'],
+            ['offset' => 2, 'time' => '08:30', 'dur' => 90, 'type' => 'cours', 'titre' => 'Sécurité : authentification JWT', 'desc' => 'Bonnes pratiques et pièges', 'lieu' => 'Salle B204', 'class' => 'l3', 'course' => 'security', 'teacher' => 't1'],
+            ['offset' => 2, 'time' => '08:30', 'dur' => 90, 'type' => 'cours', 'titre' => 'Docker : réseaux et volumes', 'desc' => 'Compose avancé', 'lieu' => 'Salle D210', 'class' => 'b3', 'course' => 'docker', 'teacher' => 't3'],
+            ['offset' => 3, 'time' => '15:30', 'dur' => 45, 'type' => 'reunion', 'titre' => 'Bureau des études — planning examens', 'desc' => 'Calendrier partiel juillet', 'lieu' => 'Bureau scolarité', 'class' => 'm1', 'course' => 'agile', 'teacher' => 't1'],
+            ['offset' => 4, 'time' => '11:00', 'dur' => 90, 'type' => 'examen', 'titre' => 'Examen blanc Symfony', 'desc' => 'Épreuve pratique 1h30', 'lieu' => 'Salle B204', 'class' => 'l3', 'course' => 'symfony', 'teacher' => 't1'],
+            ['offset' => 7, 'time' => '13:30', 'dur' => 60, 'type' => 'autre', 'titre' => 'Forum parents — M1 Dev Web', 'desc' => 'Présentation des projets', 'lieu' => 'Amphi B', 'class' => 'm1', 'course' => 'symfony', 'teacher' => 't1'],
+            ['offset' => 14, 'time' => '09:00', 'dur' => 120, 'type' => 'examen', 'titre' => 'Examen final DevOps', 'desc' => 'Pipeline + déploiement', 'lieu' => 'Salle D210', 'class' => 'b3', 'course' => 'docker', 'teacher' => 't3'],
         ];
 
         foreach ($eventDefs as $def) {
@@ -419,6 +455,10 @@ class AppFixtures extends Fixture
             's10' => [['docker', 85, 1]],
             's11' => [['agile', 70, 2]],
             's12' => [['docker', 35, 5], ['agile', 55, 4]],
+            's13' => [['symfony', 25, 2], ['security', 15, 1]],
+            's14' => [['symfony', 50, 3], ['agile', 20, 2]],
+            's15' => [['security', 40, 4]],
+            's16' => [['symfony', 60, 1], ['security', 55, 2], ['agile', 30, 3]],
         ];
 
         foreach ($progressionDefs as $studentKey => $entries) {
@@ -461,7 +501,6 @@ class AppFixtures extends Fixture
 
         foreach ($coursesData as $courseKey => $courseData) {
             $course = $courses[$courseKey];
-            $teacher = $teachers[$courseData['createdBy']];
 
             // classes qui ont ce cours
             $classesAvecCours = [];
@@ -479,19 +518,26 @@ class AppFixtures extends Fixture
                 }
             }
 
-            $postsCount = 4;
+            $postsCount = 6;
             for ($i = 0; $i < $postsCount; $i++) {
                 $post = new ForumPost();
                 $post->setCours($course);
-                $post->setAuteur($i % 2 === 0 ? $teacher : $studentsPool[$i % max(1, count($studentsPool))]);
-
-                $post->setContenu(
-                    ($i % 2 === 0 ? $forumContent['question'] : $forumContent['reponse'])
-                    . "\n\n" .
-                    $forumContent['detail']
-                    . "\n\n"
-                    . $forumContent['retour']
-                );
+                if ($i === 0) {
+                    $post->setAuteur($adminsEcole['ae2']);
+                    $post->setContenu(
+                        "Annonce scolarité — Les créneaux d'examens du mois sont publiés sur le planning.\n\n"
+                        . "Merci de vérifier vos convocations et de signaler tout chevauchement à vie.scolaire@jeai.fr avant vendredi."
+                    );
+                } else {
+                    $post->setAuteur($studentsPool[($i - 1) % max(1, count($studentsPool))]);
+                    $post->setContenu(
+                        ($i % 2 === 0 ? $forumContent['question'] : $forumContent['reponse'])
+                        . "\n\n"
+                        . $forumContent['detail']
+                        . "\n\n"
+                        . $forumContent['retour']
+                    );
+                }
                 $post->setCreatedAt($monday->modify('+' . (1 + $i * 2) . ' days'));
                 $manager->persist($post);
             }
@@ -511,6 +557,15 @@ class AppFixtures extends Fixture
             ['from' => 's11', 'to' => 's10', 'days' => 4, 'text' => "Oui Samir, j'ai presque fini les critères d'acceptation du sprint."],
             ['from' => 's6', 'to' => 's7', 'days' => 2, 'text' => "Emma, tu as testé fetch avec les headers CSRF pour le planning admin ?"],
             ['from' => 's7', 'to' => 's6', 'days' => 1, 'text' => "Oui Yanis, il faut passer X-CSRF-Token dans les requêtes POST JSON."],
+            ['from' => 's13', 'to' => 't1', 'days' => 2, 'text' => "Bonjour, pour l'alternance L3, le planning affiche deux cours en même temps mardi matin — c'est normal ?"],
+            ['from' => 't1', 'to' => 's13', 'days' => 1, 'text' => "Léa, non : signale-le à la scolarité via scolarite@jeai.fr, ils corrigeront le planning global."],
+            ['from' => 's14', 'to' => 's15', 'days' => 3, 'text' => "Inès, tu as commencé le module sécurité ? Les exercices CSRF sont costauds."],
+            ['from' => 's15', 'to' => 's14', 'days' => 2, 'text' => "Oui Noah, j'ai fini le chapitre validation — je t'envoie mes notes ce soir."],
+            ['from' => 's16', 'to' => 't1', 'days' => 4, 'text' => "Professeur, puis-je déposer mon projet Symfony sur le forum ou uniquement par message ?"],
+            ['from' => 's4', 'to' => 's1', 'days' => 6, 'text' => "Alice, tu viens à l'examen blanc de jeudi ? On révise ensemble mercredi ?"],
+            ['from' => 's8', 'to' => 't2', 'days' => 5, 'text' => "Bonjour, le contrôle continu BDD est bien en salle Amphi A à 14h ?"],
+            ['from' => 't2', 'to' => 's8', 'days' => 4, 'text' => "Louis, oui — pense à une calculatrice et une feuille de synthèse manuscrite autorisée."],
+            ['from' => 's10', 'to' => 's12', 'days' => 7, 'text' => "Thomas, tu as vu l'annonce sur le forum pour les examens de juillet ?"],
         ];
 
         foreach ($messageDefs as $def) {

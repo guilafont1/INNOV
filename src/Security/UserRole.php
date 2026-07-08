@@ -3,7 +3,7 @@
 namespace App\Security;
 
 /**
- * Rôles applicatifs MERJ.
+ * Rôles applicatifs MERJ LEARN.
  *
  * Hiérarchie (security.yaml) :
  *   ROLE_SUPER_ADMIN → ROLE_ADMIN_ECOLE → ROLE_USER
