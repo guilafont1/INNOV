@@ -3,7 +3,26 @@ document.addEventListener('DOMContentLoaded', function () {
   initConfirmModal();
   initToasts();
   initDropdownElevation();
+  initPasswordToggle();
 });
+
+function initPasswordToggle() {
+  document.querySelectorAll('[data-password-toggle]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const input = btn.closest('.input-group')?.querySelector('input');
+      const icon = btn.querySelector('i');
+      if (!input || !icon) {
+        return;
+      }
+
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      icon.classList.toggle('bi-eye', !isPassword);
+      icon.classList.toggle('bi-eye-slash', isPassword);
+      btn.setAttribute('aria-label', isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+    });
+  });
+}
 
 function initTomSelect() {
   if (typeof TomSelect === 'undefined') {

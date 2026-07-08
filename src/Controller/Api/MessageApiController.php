@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Service\MessageAccessService;
+use App\Service\MessageUnreadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,59 +24,36 @@ class MessageApiController extends AbstractController
     public function __construct(
         private MessageRepository $messageRepository,
         private MessageAccessService $accessService,
+        private MessageUnreadService $messageUnreadService,
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
 
     #[Route('/conversations', name: 'api_messages_conversations', methods: ['GET'])]
-    public function conversations(): JsonResponse
+    public function conversations(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
+        $canSwitchScope = $this->accessService->isGlobalViewer($user);
+        $scope = $request->query->get('scope', 'personal');
 
-        $summaries = $this->messageRepository->findConversationSummaries($user);
-        $contacts = $this->accessService->getEligibleContacts($user);
-
-        $items = [];
-        foreach ($summaries as $summary) {
-            $partner = $summary['partner'];
-            $lastMessage = $summary['lastMessage'];
-            $items[] = $this->serializeConversation($user, $partner, $lastMessage, $summary['unreadCount']);
-            unset($contacts[$partner->getId()]);
+        if ($scope === 'global' && $canSwitchScope) {
+            return $this->json([
+                'success' => true,
+                'scope' => 'global',
+                'canSwitchScope' => true,
+                'conversations' => $this->buildGlobalViewerConversations($user),
+                'totalUnread' => $this->messageUnreadService->countUnread($user),
+            ]);
         }
-
-        foreach ($contacts as $contact) {
-            $items[] = [
-                'partner' => $this->accessService->serializeUser($contact),
-                'lastMessage' => null,
-                'preview' => 'Démarrer une conversation',
-                'sentAt' => null,
-                'unreadCount' => 0,
-                'isMine' => false,
-            ];
-        }
-
-        usort($items, static function (array $a, array $b): int {
-            $timeA = $a['sentAt'] ?? '';
-            $timeB = $b['sentAt'] ?? '';
-            if ($timeA === $timeB) {
-                return strcasecmp($a['partner']['name'], $b['partner']['name']);
-            }
-            if ($timeA === '') {
-                return 1;
-            }
-            if ($timeB === '') {
-                return -1;
-            }
-
-            return strcmp($timeB, $timeA);
-        });
 
         return $this->json([
             'success' => true,
-            'conversations' => $items,
-            'totalUnread' => $this->messageRepository->countTotalUnread($user),
+            'scope' => 'personal',
+            'canSwitchScope' => $canSwitchScope,
+            'conversations' => $this->buildPersonalConversations($user),
+            'totalUnread' => $this->messageUnreadService->countUnread($user),
         ]);
     }
 
@@ -96,13 +74,38 @@ class MessageApiController extends AbstractController
     }
 
     #[Route('/thread/{partnerId}', name: 'api_messages_thread', methods: ['GET'], requirements: ['partnerId' => '\d+'])]
-    public function thread(int $partnerId): JsonResponse
+    public function thread(int $partnerId, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
         $partner = $this->userRepository->find($partnerId);
+        $withId = (int) $request->query->get('with', 0);
+        $withUser = $withId > 0 ? $this->userRepository->find($withId) : null;
 
-        if (!$partner instanceof User || !$this->accessService->canMessage($user, $partner)) {
+        if (!$partner instanceof User || !$this->accessService->canAccessThread($user, $partner, $withUser)) {
+            return $this->json(['success' => false, 'message' => 'Conversation introuvable.'], 404);
+        }
+
+        $observerMode = $withUser instanceof User && $withUser->getId() !== $user->getId();
+
+        if ($observerMode) {
+            $messages = $this->messageRepository->findThreadMessages($withUser, $partner);
+
+            return $this->json([
+                'success' => true,
+                'observerMode' => true,
+                'participants' => [
+                    $this->accessService->serializeUser($withUser),
+                    $this->accessService->serializeUser($partner),
+                ],
+                'partner' => $this->accessService->serializeUser($partner),
+                'displayName' => $this->accessService->getConversationDisplayName($withUser, $partner),
+                'messages' => array_map(fn (Message $message) => $this->serializeMessage($message, $user), $messages),
+                'totalUnread' => $this->messageUnreadService->countUnread($user),
+            ]);
+        }
+
+        if (!$this->accessService->canMessage($user, $partner) && !$this->accessService->isGlobalViewer($user)) {
             return $this->json(['success' => false, 'message' => 'Conversation introuvable.'], 404);
         }
 
@@ -111,9 +114,10 @@ class MessageApiController extends AbstractController
 
         return $this->json([
             'success' => true,
+            'observerMode' => false,
             'partner' => $this->accessService->serializeUser($partner),
             'messages' => array_map(fn (Message $message) => $this->serializeMessage($message, $user), $messages),
-            'totalUnread' => $this->messageRepository->countTotalUnread($user),
+            'totalUnread' => $this->messageUnreadService->countUnread($user),
         ]);
     }
 
@@ -176,7 +180,7 @@ class MessageApiController extends AbstractController
         }
 
         $partner = $this->userRepository->find($partnerId);
-        if (!$partner instanceof User || !$this->accessService->canMessage($user, $partner)) {
+        if (!$partner instanceof User || !$this->accessService->canAccessThread($user, $partner)) {
             return $this->json(['success' => false, 'message' => 'Conversation introuvable.'], 404);
         }
 
@@ -184,7 +188,7 @@ class MessageApiController extends AbstractController
 
         return $this->json([
             'success' => true,
-            'totalUnread' => $this->messageRepository->countTotalUnread($user),
+            'totalUnread' => $this->messageUnreadService->countUnread($user),
         ]);
     }
 
@@ -206,7 +210,124 @@ class MessageApiController extends AbstractController
             'sentAt' => $lastMessage->getSentAt()?->format(\DateTimeInterface::ATOM),
             'unreadCount' => $unreadCount,
             'isMine' => $isMine,
+            'observerMode' => false,
         ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function buildPersonalConversations(User $user): array
+    {
+        $summaries = $this->messageRepository->findConversationSummaries($user);
+        $contacts = $this->accessService->getEligibleContacts($user);
+
+        $items = [];
+        foreach ($summaries as $summary) {
+            $partner = $summary['partner'];
+            $items[] = $this->serializeConversation(
+                $user,
+                $partner,
+                $summary['lastMessage'],
+                $summary['unreadCount'],
+            );
+            unset($contacts[$partner->getId()]);
+        }
+
+        foreach ($contacts as $contact) {
+            $items[] = [
+                'partner' => $this->accessService->serializeUser($contact),
+                'lastMessage' => null,
+                'preview' => 'Démarrer une conversation',
+                'sentAt' => null,
+                'unreadCount' => 0,
+                'isMine' => false,
+                'observerMode' => false,
+            ];
+        }
+
+        usort($items, $this->sortConversations(...));
+
+        return $items;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function buildGlobalViewerConversations(User $user): array
+    {
+        $items = [];
+
+        foreach ($this->messageRepository->findAllConversationPairs() as $pair) {
+            $userA = $pair['userA'];
+            $userB = $pair['userB'];
+            $lastMessage = $pair['lastMessage'];
+
+            $involvesViewer = $userA->getId() === $user->getId() || $userB->getId() === $user->getId();
+
+            if ($involvesViewer) {
+                $partner = $userA->getId() === $user->getId() ? $userB : $userA;
+                $items[] = $this->serializeConversation(
+                    $user,
+                    $partner,
+                    $lastMessage,
+                    $this->messageRepository->countUnreadFrom($user, $partner),
+                );
+                continue;
+            }
+
+            $preview = $lastMessage->getContenu() ?? '';
+            if (mb_strlen($preview) > 80) {
+                $preview = mb_substr($preview, 0, 80) . '…';
+            }
+
+            $expediteur = $lastMessage->getExpediteur();
+            $senderName = $expediteur ? $this->accessService->getUserDisplayName($expediteur) : 'Utilisateur';
+
+            $items[] = [
+                'observerMode' => true,
+                'partner' => $this->accessService->serializeUser($userB),
+                'participants' => [
+                    $this->accessService->serializeUser($userA),
+                    $this->accessService->serializeUser($userB),
+                ],
+                'participantIds' => [$userA->getId(), $userB->getId()],
+                'displayName' => $this->accessService->getConversationDisplayName($userA, $userB),
+                'lastMessage' => $this->serializeMessage($lastMessage, $user),
+                'preview' => $senderName . ' : ' . $preview,
+                'sentAt' => $lastMessage->getSentAt()?->format(\DateTimeInterface::ATOM),
+                'unreadCount' => 0,
+                'isMine' => false,
+            ];
+        }
+
+        usort($items, $this->sortConversations(...));
+
+        return $items;
+    }
+
+    /**
+     * @param array<string, mixed> $a
+     * @param array<string, mixed> $b
+     */
+    private function sortConversations(array $a, array $b): int
+    {
+        $timeA = $a['sentAt'] ?? '';
+        $timeB = $b['sentAt'] ?? '';
+        if ($timeA === $timeB) {
+            $nameA = $a['displayName'] ?? $a['partner']['name'] ?? '';
+            $nameB = $b['displayName'] ?? $b['partner']['name'] ?? '';
+
+            return strcasecmp($nameA, $nameB);
+        }
+        if ($timeA === '') {
+            return 1;
+        }
+        if ($timeB === '') {
+            return -1;
+        }
+
+        return strcmp($timeB, $timeA);
     }
 
     /**

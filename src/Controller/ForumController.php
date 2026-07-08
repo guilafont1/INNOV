@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Cours;
 use App\Entity\ForumPost;
 use App\Entity\User;
+use App\Repository\CoursRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,8 +15,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class ForumController extends AbstractController
 {
     #[Route('/forum/cours/{id}', name: 'app_forum_cours', requirements: ['id' => '\d+'])]
-    public function cours(Request $request, Cours $cours, EntityManagerInterface $em): Response
+    public function cours(Request $request, int $id, CoursRepository $coursRepository, EntityManagerInterface $em): Response
     {
+        $cours = $coursRepository->find($id);
+        if (!$cours) {
+            $this->addFlash('error', 'Ce cours est introuvable ou a été supprimé.');
+            return $this->redirectToRoute('app_cours');
+        }
+
         $user = $this->getUser();
         if (!$user) {
             throw $this->createAccessDeniedException('Vous devez être connecté.');

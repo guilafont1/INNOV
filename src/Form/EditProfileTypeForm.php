@@ -19,6 +19,7 @@ class EditProfileTypeForm extends AbstractType
         $builder
             ->add('email', EmailType::class, [
                 'label' => 'Adresse email',
+                'attr' => ['placeholder' => 'votre.email@exemple.com'],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer une adresse email',
@@ -29,7 +30,8 @@ class EditProfileTypeForm extends AbstractType
                 ],
             ])
             ->add('nom', TextType::class, [
-                'label' => 'Nom complet',
+                'label' => 'Nom',
+                'attr' => ['placeholder' => 'Dupont'],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer votre nom',
@@ -39,6 +41,21 @@ class EditProfileTypeForm extends AbstractType
                         'max' => 100,
                         'minMessage' => 'Votre nom doit contenir au moins {{ limit }} caractères',
                         'maxMessage' => 'Votre nom ne peut pas dépasser {{ limit }} caractères',
+                    ]),
+                ],
+            ])
+            ->add('prenom', TextType::class, [
+                'label' => 'Prénom',
+                'attr' => ['placeholder' => 'Marie'],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez entrer votre prénom',
+                    ]),
+                    new Length([
+                        'min' => 2,
+                        'max' => 100,
+                        'minMessage' => 'Votre prénom doit contenir au moins {{ limit }} caractères',
+                        'maxMessage' => 'Votre prénom ne peut pas dépasser {{ limit }} caractères',
                     ]),
                 ],
             ])

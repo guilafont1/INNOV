@@ -20,9 +20,13 @@ class MessageController extends AbstractController
         $user = $this->getUser();
         $contacts = $accessService->getEligibleContacts($user);
 
+        $initialPartnerId = (int) $request->query->get('user', 0);
+
         return $this->render('messages/inbox.html.twig', [
             'contacts' => $contacts,
-            'initialPartnerId' => (int) $request->query->get('user', 0),
+            'initialPartnerId' => $initialPartnerId,
+            'initialWithUserId' => (int) $request->query->get('with', 0),
+            'isGlobalViewer' => $accessService->isGlobalViewer($user),
         ]);
     }
 }

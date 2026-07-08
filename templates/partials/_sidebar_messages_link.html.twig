@@ -1,0 +1,5 @@
+<i class="bi bi-chat-dots"></i>
+<span class="app-sidebar__link-label">Messages</span>
+<span class="app-sidebar__unread{% if messagesUnreadCount <= 0 %} d-none{% endif %}" data-nav-messages-unread aria-label="{{ messagesUnreadCount }} message(s) non lu(s)">
+    {{ messagesUnreadCount > 99 ? '99+' : messagesUnreadCount }}
+</span>

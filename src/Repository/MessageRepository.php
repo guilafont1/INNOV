@@ -96,6 +96,15 @@ class MessageRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countAllUnread(): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.readAt IS NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function markThreadAsRead(User $reader, User $partner): int
     {
         return $this->createQueryBuilder('m')
@@ -109,5 +118,66 @@ class MessageRepository extends ServiceEntityRepository
             ->setParameter('reader', $reader)
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @return array<int, array{userA: User, userB: User, lastMessage: Message}>
+     */
+    public function findAllConversationPairs(): array
+    {
+        $messages = $this->createQueryBuilder('m')
+            ->leftJoin('m.expediteur', 'e')->addSelect('e')
+            ->leftJoin('m.destinataire', 'd')->addSelect('d')
+            ->orderBy('m.sentAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $pairs = [];
+
+        foreach ($messages as $message) {
+            $expediteur = $message->getExpediteur();
+            $destinataire = $message->getDestinataire();
+
+            if ($expediteur === null || $destinataire === null) {
+                continue;
+            }
+
+            $first = $expediteur->getId() < $destinataire->getId() ? $expediteur : $destinataire;
+            $second = $expediteur->getId() < $destinataire->getId() ? $destinataire : $expediteur;
+            $key = $first->getId() . '-' . $second->getId();
+
+            if (!isset($pairs[$key])) {
+                $pairs[$key] = [
+                    'userA' => $first,
+                    'userB' => $second,
+                    'lastMessage' => $message,
+                ];
+            }
+        }
+
+        return $pairs;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function countGroupedByDaySince(\DateTimeImmutable $since): array
+    {
+        $messages = $this->createQueryBuilder('m')
+            ->where('m.sentAt >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($messages as $message) {
+            $day = $message->getSentAt()?->format('Y-m-d');
+            if ($day === null) {
+                continue;
+            }
+            $counts[$day] = ($counts[$day] ?? 0) + 1;
+        }
+
+        return $counts;
     }
 }

@@ -48,6 +48,43 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getResult();
     }
 
+    /**
+     * @return list<User>
+     */
+    public function findAllExcept(User $exclude): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u != :exclude')
+            ->setParameter('exclude', $exclude)
+            ->orderBy('u.nom', 'ASC')
+            ->addOrderBy('u.prenom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function countLoginsGroupedByDaySince(\DateTimeImmutable $since): array
+    {
+        $users = $this->createQueryBuilder('u')
+            ->where('u.derniereConnexion >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($users as $user) {
+            $day = $user->getDerniereConnexion()?->format('Y-m-d');
+            if ($day === null) {
+                continue;
+            }
+            $counts[$day] = ($counts[$day] ?? 0) + 1;
+        }
+
+        return $counts;
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

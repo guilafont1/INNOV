@@ -5,7 +5,9 @@
 {% block layout %}
     <div class="login-layout">
         <aside class="login-panel">
-            <div class="login-panel__logo">MERJ Learn</div>
+            <div class="login-panel__logo">
+                {% include 'partials/_app_brand.html.twig' %}
+            </div>
             <p class="login-panel__baseline">
                 Plateforme pédagogique de gestion des cours, classes et plannings.
             </p>
@@ -38,9 +40,15 @@
 
                         <div class="mb-4">
                             <label for="password" class="form-label">Mot de passe</label>
-                            <input type="password" name="_password" id="password" class="form-control"
-                                   required autocomplete="current-password"
-                                   placeholder="Votre mot de passe">
+                            <div class="input-group">
+                                <input type="password" name="_password" id="password" class="form-control"
+                                       required autocomplete="current-password"
+                                       placeholder="Votre mot de passe">
+                                <button class="btn btn-outline-secondary" type="button" data-password-toggle
+                                        aria-label="Afficher le mot de passe">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
@@ -49,11 +57,6 @@
                             <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
                         </button>
                     </form>
-
-                    <p class="text-center text-muted small mt-4 mb-0">
-                        Pas encore de compte ?
-                        <a href="{{ path('app_register') }}">Inscrivez-vous</a>
-                    </p>
                 {% endif %}
             </div>
         </div>

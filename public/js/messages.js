@@ -11,9 +11,11 @@
     csrfToken: app.dataset.csrfToken,
     initialPartnerId: parseInt(app.dataset.initialPartner, 10) || 0,
     currentUserId: parseInt(app.dataset.currentUserId, 10),
+    globalViewer: app.dataset.globalViewer === '1',
     apiConversations: app.dataset.apiConversations,
     apiThread: app.dataset.apiThread,
     apiSend: app.dataset.apiSend,
+    storageKey: 'merj-messages-scope',
   };
 
   const els = {
@@ -38,12 +40,19 @@
     contactSearch: document.getElementById('messages-contact-search'),
     contactList: document.getElementById('messages-contact-list'),
     infoBtn: document.getElementById('messages-info-btn'),
+    observerNotice: document.getElementById('messages-observer-notice'),
+    composeFooter: document.querySelector('.messages-compose'),
+    subtitle: document.getElementById('messages-subtitle'),
+    scopeToggle: document.getElementById('messages-scope-toggle'),
   };
 
   let conversations = [];
   let threadMessages = [];
   let activePartnerId = null;
+  let activeWithUserId = null;
   let activePartner = null;
+  let observerMode = false;
+  let viewScope = 'personal';
   let pollTimer = null;
   let newModalInstance = null;
 
@@ -52,10 +61,17 @@
       newModalInstance = new bootstrap.Modal(els.newModal);
     }
 
+    if (config.globalViewer) {
+      const savedScope = localStorage.getItem(config.storageKey);
+      viewScope = savedScope === 'global' ? 'global' : 'personal';
+    }
+    updateScopeUi();
+
     bindEvents();
     loadConversations().then(() => {
+      const initialWith = parseInt(new URL(window.location.href).searchParams.get('with') || '0', 10) || null;
       if (config.initialPartnerId > 0) {
-        openThread(config.initialPartnerId);
+        openThread(config.initialPartnerId, initialWith);
       }
     });
     startPolling();
@@ -72,34 +88,97 @@
     els.contactSearch?.addEventListener('input', filterContactList);
     els.contactList?.addEventListener('click', onContactPick);
     els.infoBtn?.addEventListener('click', showPartnerInfo);
+    els.scopeToggle?.addEventListener('click', onScopeToggle);
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         stopPolling();
       } else {
         startPolling();
-        if (activePartnerId) refreshThread(activePartnerId, false);
+        if (activePartnerId) refreshThread(activePartnerId, activeWithUserId, false);
         loadConversations();
       }
     });
   }
 
-  function apiUrl(template, partnerId) {
-    return template.replace(/\/0$/, '/' + String(partnerId));
+  function apiUrl(template, partnerId, withUserId) {
+    let url = template.replace(/\/0$/, '/' + String(partnerId));
+    if (withUserId) {
+      url += (url.includes('?') ? '&' : '?') + 'with=' + String(withUserId);
+    }
+    return url;
+  }
+
+  function conversationsApiUrl() {
+    const url = new URL(config.apiConversations, window.location.origin);
+    if (config.globalViewer) {
+      url.searchParams.set('scope', viewScope);
+    }
+    return url.toString();
+  }
+
+  function onScopeToggle(e) {
+    const btn = e.target.closest('[data-scope]');
+    if (!btn || btn.dataset.scope === viewScope) return;
+
+    viewScope = btn.dataset.scope === 'global' ? 'global' : 'personal';
+    localStorage.setItem(config.storageKey, viewScope);
+    updateScopeUi();
+    closeThreadMobile();
+    showListLoading();
+    loadConversations();
+  }
+
+  function showListLoading() {
+    if (!els.list || !els.listLoading) return;
+    els.list.innerHTML = '';
+    els.list.appendChild(els.listLoading);
+    els.listLoading.classList.remove('d-none');
+  }
+
+  function updateScopeUi() {
+    if (!config.globalViewer) return;
+
+    els.scopeToggle?.querySelectorAll('[data-scope]').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.scope === viewScope);
+    });
+
+    if (els.subtitle) {
+      els.subtitle.textContent = viewScope === 'global'
+        ? 'Vue globale — toutes les conversations de la plateforme'
+        : 'Vos conversations personnelles';
+    }
+
+    const hideNew = viewScope === 'global';
+    if (els.newBtn) {
+      els.newBtn.disabled = hideNew;
+      els.newBtn.classList.toggle('d-none', hideNew);
+    }
+    if (els.emptyNewBtn) {
+      els.emptyNewBtn.classList.toggle('d-none', hideNew);
+    }
   }
 
   async function loadConversations() {
     try {
-      const res = await fetch(config.apiConversations, { headers: { Accept: 'application/json' } });
+      const res = await fetch(conversationsApiUrl(), { headers: { Accept: 'application/json' } });
       const data = await res.json();
       if (!data.success) return;
 
+      if (data.scope) {
+        viewScope = data.scope;
+        updateScopeUi();
+      }
+
       conversations = data.conversations || [];
       renderConversationList();
+      if (typeof data.totalUnread !== 'undefined') {
+        updateNavUnreadBadge(data.totalUnread);
+      }
     } catch (e) {
       console.error('Conversations load error', e);
     } finally {
-      els.listLoading?.remove();
+      els.listLoading?.classList.add('d-none');
     }
   }
 
@@ -109,7 +188,7 @@
     const query = (els.search?.value || '').trim().toLowerCase();
     const filtered = conversations.filter((conv) => {
       if (!query) return true;
-      const name = conv.partner?.name?.toLowerCase() || '';
+      const name = (conv.displayName || conv.partner?.name || '').toLowerCase();
       const preview = conv.preview?.toLowerCase() || '';
       return name.includes(query) || preview.includes(query);
     });
@@ -121,21 +200,31 @@
 
     els.list.innerHTML = filtered.map((conv) => {
       const partner = conv.partner;
-      const isActive = activePartnerId === partner.id;
+      const isObserver = conv.observerMode === true;
+      const partnerIds = conv.participantIds || [partner.id];
+      const withUserId = isObserver ? partnerIds[0] : null;
+      const threadPartnerId = isObserver ? partnerIds[1] : partner.id;
+      const isActive = isObserver
+        ? activePartnerId === threadPartnerId && activeWithUserId === withUserId
+        : activePartnerId === partner.id && !activeWithUserId;
       const unread = conv.unreadCount > 0;
       const previewPrefix = conv.isMine && conv.lastMessage ? 'Vous : ' : '';
       const previewClass = unread ? 'messages-conversation-item__preview messages-conversation-item__preview--unread' : 'messages-conversation-item__preview';
+      const displayName = conv.displayName || partner.name;
+      const initials = isObserver ? '↔' : partner.initials;
 
       return `
         <button type="button"
-                class="messages-conversation-item${isActive ? ' is-active' : ''}"
-                data-partner-id="${partner.id}"
+                class="messages-conversation-item${isActive ? ' is-active' : ''}${isObserver ? ' messages-conversation-item--observer' : ''}"
+                data-partner-id="${threadPartnerId}"
+                data-with-user-id="${withUserId || ''}"
+                data-observer-mode="${isObserver ? '1' : '0'}"
                 role="option"
                 aria-selected="${isActive}">
-          <span class="messages-avatar" aria-hidden="true">${escapeHtml(partner.initials)}</span>
+          <span class="messages-avatar" aria-hidden="true">${escapeHtml(initials)}</span>
           <span class="messages-conversation-item__body">
             <span class="messages-conversation-item__top">
-              <span class="messages-conversation-item__name">${escapeHtml(partner.name)}</span>
+              <span class="messages-conversation-item__name">${escapeHtml(displayName)}</span>
               <span class="messages-conversation-item__time">${formatListTime(conv.sentAt)}</span>
             </span>
             <p class="${previewClass}">${escapeHtml(previewPrefix + (conv.preview || ''))}</p>
@@ -146,14 +235,20 @@
     }).join('');
 
     els.list.querySelectorAll('.messages-conversation-item').forEach((btn) => {
-      btn.addEventListener('click', () => openThread(parseInt(btn.dataset.partnerId, 10)));
+      btn.addEventListener('click', () => {
+        const partnerId = parseInt(btn.dataset.partnerId, 10);
+        const withUserId = parseInt(btn.dataset.withUserId, 10) || null;
+        openThread(partnerId, withUserId);
+      });
     });
   }
 
-  async function openThread(partnerId) {
+  async function openThread(partnerId, withUserId = null) {
     if (!partnerId) return;
 
     activePartnerId = partnerId;
+    activeWithUserId = withUserId;
+    observerMode = withUserId !== null && withUserId > 0;
     threadMessages = [];
     renderConversationList();
 
@@ -164,14 +259,15 @@
     els.threadBody.innerHTML = '';
     els.threadLoading?.classList.remove('d-none');
 
-    updateThreadUrl(partnerId);
+    updateThreadUrl(partnerId, withUserId);
+    setComposeMode(observerMode);
 
-    await refreshThread(partnerId, true);
+    await refreshThread(partnerId, withUserId, true);
   }
 
-  async function refreshThread(partnerId, scrollToEnd) {
+  async function refreshThread(partnerId, withUserId, scrollToEnd) {
     try {
-      const res = await fetch(apiUrl(config.apiThread, partnerId), { headers: { Accept: 'application/json' } });
+      const res = await fetch(apiUrl(config.apiThread, partnerId, withUserId), { headers: { Accept: 'application/json' } });
       const data = await res.json();
 
       if (!data.success) {
@@ -179,10 +275,15 @@
         return;
       }
 
+      observerMode = data.observerMode === true;
       activePartner = data.partner;
       threadMessages = data.messages || [];
-      updateThreadHeader(data.partner);
+      updateThreadHeader(data);
+      setComposeMode(observerMode);
       renderMessages(threadMessages, scrollToEnd);
+      if (typeof data.totalUnread !== 'undefined') {
+        updateNavUnreadBadge(data.totalUnread);
+      }
       loadConversations();
     } catch (e) {
       console.error('Thread load error', e);
@@ -192,11 +293,21 @@
     }
   }
 
-  function updateThreadHeader(partner) {
+  function updateThreadHeader(data) {
+    const partner = data.partner;
     if (!partner) return;
-    if (els.threadName) els.threadName.textContent = partner.name;
-    if (els.threadRole) els.threadRole.textContent = partner.role;
-    if (els.threadAvatar) els.threadAvatar.textContent = partner.initials;
+    const title = data.displayName || partner.name;
+    const role = data.observerMode && data.participants
+      ? data.participants.map((p) => p.role).join(' · ')
+      : partner.role;
+    if (els.threadName) els.threadName.textContent = title;
+    if (els.threadRole) els.threadRole.textContent = role;
+    if (els.threadAvatar) els.threadAvatar.textContent = data.observerMode ? '↔' : partner.initials;
+  }
+
+  function setComposeMode(isObserver) {
+    els.observerNotice?.classList.toggle('d-none', !isObserver);
+    els.composeFooter?.classList.toggle('d-none', isObserver);
   }
 
   function renderMessages(messages, scrollToEnd) {
@@ -278,7 +389,7 @@
 
   async function onSend(e) {
     e.preventDefault();
-    if (!activePartnerId || !els.composeInput) return;
+    if (!activePartnerId || !els.composeInput || observerMode) return;
 
     const contenu = els.composeInput.value.trim();
     if (!contenu) return;
@@ -363,12 +474,16 @@
   function closeThreadMobile() {
     els.shell?.classList.remove('is-thread-open');
     activePartnerId = null;
+    activeWithUserId = null;
     activePartner = null;
-    updateThreadUrl(0);
+    observerMode = false;
+    setComposeMode(false);
+    updateThreadUrl(0, null);
     renderConversationList();
   }
 
   function openNewModal() {
+    if (viewScope === 'global') return;
     newModalInstance?.show();
     if (els.contactSearch) {
       els.contactSearch.value = '';
@@ -403,7 +518,7 @@
     stopPolling();
     pollTimer = window.setInterval(() => {
       if (activePartnerId) {
-        refreshThread(activePartnerId, false);
+        refreshThread(activePartnerId, activeWithUserId, false);
       } else {
         loadConversations();
       }
@@ -417,12 +532,18 @@
     }
   }
 
-  function updateThreadUrl(partnerId) {
+  function updateThreadUrl(partnerId, withUserId) {
     const url = new URL(window.location.href);
     if (partnerId > 0) {
       url.searchParams.set('user', String(partnerId));
+      if (withUserId) {
+        url.searchParams.set('with', String(withUserId));
+      } else {
+        url.searchParams.delete('with');
+      }
     } else {
       url.searchParams.delete('user');
+      url.searchParams.delete('with');
     }
     history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : ''));
   }
@@ -479,6 +600,24 @@
     }
     console.log(`[${type}] ${message}`);
   }
+
+  function updateNavUnreadBadge(count) {
+    document.querySelectorAll('[data-nav-messages-unread]').forEach((badge) => {
+      const value = Math.max(0, parseInt(count, 10) || 0);
+      if (value <= 0) {
+        badge.classList.add('d-none');
+        badge.textContent = '0';
+        badge.setAttribute('aria-label', '0 message non lu');
+        return;
+      }
+
+      badge.classList.remove('d-none');
+      badge.textContent = value > 99 ? '99+' : String(value);
+      badge.setAttribute('aria-label', `${value} message(s) non lu(s)`);
+    });
+  }
+
+  window.updateMessagesUnreadBadge = updateNavUnreadBadge;
 
   init();
 })();

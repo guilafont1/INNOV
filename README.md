@@ -76,45 +76,18 @@ ROLE_ETUDIANT     →  ROLE_USER
 
 **Mot de passe commun :** `Demo2026!`
 
+La liste complète des **23 comptes** (emails, rôles, classes) est dans **[COMPTES.md](COMPTES.md)**.
+
+Comptes rapides :
+
+| Rôle | Email |
+| ---- | ----- |
+| Super admin | `admin@merj.fr` |
+| Admin école | `admin.ecole@merj.fr` |
+| Enseignant | `prof1@merj.fr` |
+| Étudiant | `etudiant1@merj.fr` |
+
 **Connexion :** [http://localhost:8000/login](http://localhost:8000/login)
-
-### Administrateurs
-
-| Nom | Email | Rôle |
-| --- | ----- | ---- |
-| Super Administrateur | `admin@merj.fr` | Super admin (développeur) |
-| Sophie Rousseau | `admin.ecole@merj.fr` | Administration école |
-| Pierre Lambert | `scolarite@merj.fr` | Administration école (scolarité) |
-| Amélie Gérard | `vie.scolaire@merj.fr` | Administration école (vie scolaire) |
-
-### Enseignants
-
-| Nom | Email | Classe(s) principale(s) |
-| --- | ----- | ----------------------- |
-| Marie Dupont | `prof1@merj.fr` | M1 Dev Web |
-| Karim Benali | `prof2@merj.fr` | M2 EISI |
-| Julie Martin | `prof3@merj.fr` | B3 DevOps |
-
-### Étudiants
-
-| Nom | Email | Classe |
-| --- | ----- | ------ |
-| Alice Bernard | `etudiant1@merj.fr` | M1 Dev Web |
-| Hugo Lefèvre | `etudiant2@merj.fr` | M1 Dev Web |
-| Maya Nguyen | `etudiant3@merj.fr` | M1 Dev Web |
-| Nathan Moreau | `etudiant4@merj.fr` | M1 Dev Web |
-| Sarah Petit | `etudiant5@merj.fr` | M2 EISI |
-| Yanis Said | `etudiant6@merj.fr` | M2 EISI |
-| Emma Robin | `etudiant7@merj.fr` | M2 EISI |
-| Louis Giraud | `etudiant8@merj.fr` | M2 EISI |
-| Chloé Fournier | `etudiant9@merj.fr` | B3 DevOps |
-| Samir Kacem | `etudiant10@merj.fr` | B3 DevOps |
-| Zoé Chevalier | `etudiant11@merj.fr` | B3 DevOps |
-| Thomas Marchand | `etudiant12@merj.fr` | B3 DevOps |
-| Léa Fontaine | `etudiant13@merj.fr` | L3 Alternance Web |
-| Noah Perrin | `etudiant14@merj.fr` | L3 Alternance Web |
-| Inès Blanc | `etudiant15@merj.fr` | L3 Alternance Web |
-| Lucas Renard | `etudiant16@merj.fr` | L3 Alternance Web |
 
 ---
 

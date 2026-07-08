@@ -5,12 +5,15 @@
 {% block body %}
 {% include 'partials/_page_header.html.twig' with {
     eyebrow: 'Administration',
-    title: 'Tableau de bord',
-    description: 'Vue d\'ensemble de la plateforme MERJ Learn',
+    title: isSuperAdmin|default(false) ? 'Tableau de bord — Super admin' : 'Tableau de bord',
+    description: isSuperAdmin|default(false)
+        ? 'Vue analytique de la plateforme MERJ Learn'
+        : 'Suivi pédagogique — étudiants, notes et classes',
     actions: '<a href="' ~ path('admin_classes') ~ '" class="btn btn-outline-primary btn-sm"><i class="bi bi-building me-1"></i>Classes</a>
               <a href="' ~ path('admin_users') ~ '" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Nouvel utilisateur</a>'
 } %}
 
+{% if isSuperAdmin|default(false) %}
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
         {% include 'partials/_stat_card.html.twig' with { icon: 'building', value: stats.totalClasses, label: 'Classes' } %}
@@ -24,7 +27,300 @@
     <div class="col-sm-6 col-xl-3">
         {% include 'partials/_stat_card.html.twig' with { icon: 'book', value: stats.totalCours, label: 'Cours' } %}
     </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'chat-dots', value: stats.totalMessages, label: 'Messages' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'chat-square-text', value: stats.totalForumPosts, label: 'Posts forum' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'calendar3', value: stats.totalPlanningEvents, label: 'Événements planning' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'envelope-exclamation', value: stats.unreadMessages, label: 'Messages non lus' } %}
+    </div>
 </div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card admin-chart-card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h2 class="h6 mb-1">Activité plateforme</h2>
+                        <p class="text-muted small mb-0">Messages, forum et connexions — 7 derniers jours</p>
+                    </div>
+                    <div class="admin-chart-legend">
+                        <span class="admin-chart-legend__item"><i class="admin-chart-legend__dot admin-chart-legend__dot--brand"></i>Messages</span>
+                        <span class="admin-chart-legend__item"><i class="admin-chart-legend__dot admin-chart-legend__dot--violet"></i>Forum</span>
+                        <span class="admin-chart-legend__item"><i class="admin-chart-legend__dot admin-chart-legend__dot--ok"></i>Connexions</span>
+                    </div>
+                </div>
+                <div class="admin-chart-wrap">
+                    <canvas id="chart-activity" aria-label="Activité sur 7 jours"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card admin-chart-card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Étudiants par classe</h2>
+                <p class="text-muted small mb-3">Répartition des effectifs</p>
+                <div class="admin-chart-wrap admin-chart-wrap--bar">
+                    <canvas id="chart-students-class" aria-label="Étudiants par classe"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card admin-chart-card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Répartition des rôles</h2>
+                <p class="text-muted small mb-3">{{ stats.totalUsers }} comptes sur la plateforme</p>
+                <div class="admin-chart-wrap admin-chart-wrap--doughnut">
+                    <canvas id="chart-roles" aria-label="Répartition des rôles"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalModules }}</span>
+            <span class="admin-kpi-pill__label">Modules</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalNotes }}</span>
+            <span class="admin-kpi-pill__label">Notes</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalProgressions }}</span>
+            <span class="admin-kpi-pill__label">Progressions</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalEvaluations }}</span>
+            <span class="admin-kpi-pill__label">Évaluations</span>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'building', value: stats.totalClasses, label: 'Classes' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'mortarboard', value: stats.totalEtudiants, label: 'Étudiants' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'person-workspace', value: stats.totalEnseignants, label: 'Enseignants' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'book', value: stats.totalCours, label: 'Cours' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'journal-text', value: stats.totalNotes, label: 'Notes attribuées' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'graph-up', value: stats.averageGrade is not null ? stats.averageGrade ~ '/20' : '—', label: 'Moyenne générale' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'check-circle', value: stats.passRate ~ '%', label: 'Taux de réussite (≥10)' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'calendar3', value: stats.totalPlanningEvents, label: 'Événements planning' } %}
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card admin-chart-card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h2 class="h6 mb-1">Notes attribuées</h2>
+                        <p class="text-muted small mb-0">Évolution sur les 7 derniers jours</p>
+                    </div>
+                </div>
+                <div class="admin-chart-wrap">
+                    <canvas id="chart-notes-activity" aria-label="Notes sur 7 jours"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card admin-chart-card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Étudiants par classe</h2>
+                <p class="text-muted small mb-3">Effectifs par promotion</p>
+                <div class="admin-chart-wrap admin-chart-wrap--bar">
+                    <canvas id="chart-students-class" aria-label="Étudiants par classe"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card admin-chart-card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Moyenne par classe</h2>
+                <p class="text-muted small mb-3">Sur 20 — toutes notes confondues</p>
+                <div class="admin-chart-wrap admin-chart-wrap--bar">
+                    <canvas id="chart-grades-class" aria-label="Moyenne par classe"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="card admin-chart-card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Répartition des notes</h2>
+                <p class="text-muted small mb-3">Distribution par tranche de résultat</p>
+                <div class="admin-chart-wrap admin-chart-wrap--doughnut">
+                    <canvas id="chart-grade-distribution" aria-label="Répartition des notes"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Synthèse par classe</h2>
+                {% if class_summaries|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Classe</th>
+                                    <th class="text-end">Étudiants</th>
+                                    <th class="text-end">Notes</th>
+                                    <th class="text-end">Moyenne /20</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in class_summaries %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ row.name }}</td>
+                                        <td class="text-end tabular-nums">{{ row.students }}</td>
+                                        <td class="text-end tabular-nums">{{ row.notesCount }}</td>
+                                        <td class="text-end tabular-nums">
+                                            {% if row.average is not null %}
+                                                <span class="badge {% if row.average >= 14 %}text-bg-success{% elseif row.average >= 10 %}text-bg-warning{% else %}text-bg-danger{% endif %}">
+                                                    {{ row.average }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">Aucune classe pour le moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-3"><i class="bi bi-trophy me-1 text-warning"></i>Meilleurs résultats</h2>
+                {% if top_students|length > 0 %}
+                    <ul class="activity-list mb-0">
+                        {% for student in top_students %}
+                            <li class="activity-item">
+                                <div class="activity-item__icon"><i class="bi bi-mortarboard"></i></div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <div>
+                                            <div class="activity-item__text fw-semibold">{{ student.name }}</div>
+                                            <div class="activity-item__meta">{{ student.className }} · {{ student.notesCount }} note(s)</div>
+                                        </div>
+                                        <span class="badge text-bg-success tabular-nums">{{ student.average }}/20</span>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small mb-0">Aucune note enregistrée.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-3"><i class="bi bi-exclamation-triangle me-1 text-danger"></i>À surveiller</h2>
+                {% if students_to_watch|length > 0 %}
+                    <ul class="activity-list mb-0">
+                        {% for student in students_to_watch %}
+                            <li class="activity-item">
+                                <div class="activity-item__icon"><i class="bi bi-mortarboard"></i></div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <div>
+                                            <div class="activity-item__text fw-semibold">
+                                                <a href="{{ path('admin_users_show', {id: student.id}) }}" class="text-decoration-none">{{ student.name }}</a>
+                                            </div>
+                                            <div class="activity-item__meta">{{ student.className }} · {{ student.notesCount }} note(s)</div>
+                                        </div>
+                                        <span class="badge {% if student.average >= 10 %}text-bg-warning{% else %}text-bg-danger{% endif %} tabular-nums">{{ student.average }}/20</span>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small mb-0">Aucun étudiant avec des notes.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-4">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalProgressions }}</span>
+            <span class="admin-kpi-pill__label">Progressions</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalEvaluations }}</span>
+            <span class="admin-kpi-pill__label">Évaluations</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+        <div class="admin-kpi-pill">
+            <span class="admin-kpi-pill__value tabular-nums">{{ stats.totalNotes }}</span>
+            <span class="admin-kpi-pill__label">Notes totales</span>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="row g-4">
     <div class="col-lg-7">
@@ -107,16 +403,26 @@
                             <li class="activity-item">
                                 <div class="avatar">{{ user_initials(user) }}</div>
                                 <div class="flex-grow-1">
-                                    <div class="activity-item__text fw-semibold">{{ user_full_name(user) }}</div>
-                                    <div class="activity-item__meta">{{ user.email }}</div>
-                                    <div class="mt-1">
-                                        {% include 'partials/_role_badge.html.twig' with { role: user_role_label(user) } %}
-                                    </div>
-                                    {% if user.derniereConnexion %}
-                                        <div class="activity-item__meta mt-1">
-                                            <i class="bi bi-clock me-1"></i>Connecté le {{ user.derniereConnexion|date('d/m/Y à H:i') }}
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <div>
+                                            <div class="activity-item__text fw-semibold">{{ user_full_name(user) }}</div>
+                                            <div class="activity-item__meta">{{ user.email }}</div>
+                                            <div class="mt-1">
+                                                {% include 'partials/_role_badge.html.twig' with { role: user_role_label(user) } %}
+                                            </div>
+                                            {% if user.derniereConnexion %}
+                                                <div class="activity-item__meta mt-1">
+                                                    <i class="bi bi-clock me-1"></i>Connecté le {{ user.derniereConnexion|date('d/m/Y à H:i') }}
+                                                </div>
+                                            {% endif %}
                                         </div>
-                                    {% endif %}
+                                        <div class="d-flex gap-1 flex-shrink-0">
+                                            {% include 'partials/_switch_user_link.html.twig' with { user: user } %}
+                                            <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-icon-ghost" title="Voir le profil" aria-label="Voir {{ user_full_name(user) }}">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </li>
                         {% endfor %}
@@ -133,4 +439,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if dashboardMode|default('') in ['super_admin', 'school_admin'] %}
+        <script id="admin-dashboard-data" type="application/json" data-dashboard-mode="{{ dashboardMode }}">{{ charts|json_encode|raw }}</script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <script src="/js/admin-dashboard.js"></script>
+    {% endif %}
 {% endblock %}

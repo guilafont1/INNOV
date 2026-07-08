@@ -1,7 +1,9 @@
 {% set currentRoute = app.request.get('_route') %}
 
 <aside class="app-sidebar d-none d-lg-flex">
-    <a href="{{ path('app_home') }}" class="app-sidebar__brand text-decoration-none">MERJ Learn</a>
+    <a href="{{ path('app_home') }}" class="app-sidebar__brand text-decoration-none">
+        {% include 'partials/_app_brand.html.twig' %}
+    </a>
 
     <nav class="app-sidebar__nav" aria-label="Navigation principale">
         {% if is_granted('ROLE_ADMIN_ECOLE') %}
@@ -50,7 +52,7 @@
         {% endif %}
 
         <a href="{{ path('app_messages_inbox') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'app_messages_inbox') ? 'is-active' : '' }}">
-            <i class="bi bi-chat-dots"></i> Messages
+            {% include 'partials/_sidebar_messages_link.html.twig' %}
         </a>
     </nav>
 
@@ -73,7 +75,9 @@
 
 <div class="offcanvas offcanvas-start app-sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel" style="background: var(--sidebar); color: #E2E8F0; width: var(--sidebar-width);">
     <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-        <h5 class="offcanvas-title font-display" id="sidebarOffcanvasLabel" style="font-family: var(--font-display); font-weight: 700;">MERJ Learn</h5>
+        <h5 class="offcanvas-title font-display d-flex align-items-center" id="sidebarOffcanvasLabel" style="font-family: var(--font-display); font-weight: 700;">
+            {% include 'partials/_app_brand.html.twig' %}
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
     </div>
     <div class="offcanvas-body p-0 d-flex flex-column">
@@ -96,7 +100,9 @@
                 <a href="{{ path('etudiant_notes') }}" class="app-sidebar__link"><i class="bi bi-clipboard-data"></i> Mes notes</a>
                 <a href="{{ path('etudiant_planning') }}" class="app-sidebar__link"><i class="bi bi-calendar3"></i> Planning</a>
             {% endif %}
-            <a href="{{ path('app_messages_inbox') }}" class="app-sidebar__link"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="{{ path('app_messages_inbox') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'app_messages_inbox') ? 'is-active' : '' }}">
+                {% include 'partials/_sidebar_messages_link.html.twig' %}
+            </a>
         </nav>
         <div class="app-sidebar__user">
             <div class="app-sidebar__user-card">

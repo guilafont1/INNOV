@@ -147,6 +147,11 @@
         {% set canManageUser = not isTargetSuperAdmin or (can_manage_super_admin|default(false)) %}
         {% if canManageUser %}
         <div class="d-flex flex-wrap gap-2">
+            {% if can_switch_to_user(user) %}
+                <a href="{{ path('app_redirect', {_switch_user: user.userIdentifier}) }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-person-badge me-1"></i>Se connecter en tant que
+                </a>
+            {% endif %}
             {% if 'ROLE_ADMIN_ECOLE' not in user.roles and 'ROLE_SUPER_ADMIN' not in user.roles %}
                 <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
                     <input type="hidden" name="role" value="ROLE_ADMIN_ECOLE">

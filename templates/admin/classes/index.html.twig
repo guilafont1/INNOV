@@ -35,7 +35,7 @@
     </div>
 </div>
 
-<div class="card">
+<div class="card admin-table-card">
     <div class="card-body p-0">
         {% if classes|length > 0 %}
             <div class="table-responsive">
@@ -110,16 +110,16 @@
 {% if classes|length > 0 %}
 <script type="module">
     import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@9.0.4/+esm';
-    new DataTable('#datatable-classes', {
-        searchable: true,
-        perPage: 15,
+    import { createAdminDataTableOptions } from '/js/admin-datatable.mjs';
+
+    new DataTable('#datatable-classes', createAdminDataTableOptions({
+        columns: [{ select: 5, sortable: false }],
         labels: {
-            placeholder: 'Rechercher…',
-            perPage: 'Lignes par page',
-            noRows: 'Aucune classe',
-            info: '{start} à {end} sur {rows}',
-        }
-    });
+            placeholder: 'Rechercher une classe…',
+            noRows: 'Aucune classe trouvée',
+            info: '{start}–{end} sur {rows} classes',
+        },
+    }));
 </script>
 {% endif %}
 {% endblock %}

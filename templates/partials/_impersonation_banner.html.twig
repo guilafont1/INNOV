@@ -1,0 +1,14 @@
+{% if is_granted('IS_IMPERSONATOR') %}
+<div class="impersonation-banner" role="status">
+    <div class="impersonation-banner__inner">
+        <i class="bi bi-person-badge" aria-hidden="true"></i>
+        <span>
+            Mode impersonation — vous naviguez en tant que <strong>{{ user_full_name(app.user) }}</strong>
+            <span class="text-muted">({{ app.user.userIdentifier }})</span>
+        </span>
+        <a href="{{ path('app_redirect', {_switch_user: '_exit'}) }}" class="btn btn-sm btn-warning ms-auto">
+            <i class="bi bi-box-arrow-left me-1"></i>Revenir à mon compte
+        </a>
+    </div>
+</div>
+{% endif %}

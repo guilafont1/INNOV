@@ -1,0 +1,32 @@
+{% set currentRoute = app.request.attributes.get('_route') %}
+
+<aside class="account-sidebar">
+    <div class="account-profile">
+        <div class="account-profile__avatar" aria-hidden="true">{{ user_initials(app.user) }}</div>
+        <div class="account-profile__body">
+            <div class="account-profile__name">{{ user_full_name(app.user) }}</div>
+            <div class="account-profile__email">{{ app.user.email }}</div>
+            <div class="mt-2">
+                {% include 'partials/_role_badge.html.twig' with { role: user_role_label(app.user) } %}
+            </div>
+        </div>
+    </div>
+
+    <nav class="account-nav" aria-label="Paramètres du compte">
+        <a href="{{ path('app_account') }}"
+           class="account-nav__link{{ currentRoute == 'app_account' ? ' is-active' : '' }}">
+            <i class="bi bi-grid-1x2"></i>
+            Vue d'ensemble
+        </a>
+        <a href="{{ path('app_account_edit') }}"
+           class="account-nav__link{{ currentRoute == 'app_account_edit' ? ' is-active' : '' }}">
+            <i class="bi bi-person"></i>
+            Informations personnelles
+        </a>
+        <a href="{{ path('app_account_password') }}"
+           class="account-nav__link{{ currentRoute == 'app_account_password' ? ' is-active' : '' }}">
+            <i class="bi bi-shield-lock"></i>
+            Sécurité
+        </a>
+    </nav>
+</aside>

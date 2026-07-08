@@ -5,7 +5,9 @@
 {% block layout %}
     <div class="login-layout">
         <aside class="login-panel">
-            <div class="login-panel__logo">MERJ Learn</div>
+            <div class="login-panel__logo">
+                {% include 'partials/_app_brand.html.twig' %}
+            </div>
             <p class="login-panel__baseline">
                 Plateforme pédagogique de gestion des cours, classes et plannings.
             </p>

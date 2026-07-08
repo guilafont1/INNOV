@@ -40,4 +40,27 @@ class ForumPostRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function countGroupedByDaySince(\DateTimeImmutable $since): array
+    {
+        $posts = $this->createQueryBuilder('f')
+            ->where('f.createdAt >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($posts as $post) {
+            $day = $post->getCreatedAt()?->format('Y-m-d');
+            if ($day === null) {
+                continue;
+            }
+            $counts[$day] = ($counts[$day] ?? 0) + 1;
+        }
+
+        return $counts;
+    }
 }

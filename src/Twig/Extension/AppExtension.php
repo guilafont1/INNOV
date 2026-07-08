@@ -4,6 +4,9 @@ namespace App\Twig\Extension;
 
 use App\Entity\User;
 use App\Security\UserRole;
+use App\Service\DatabaseHealthChecker;
+use App\Service\MessageUnreadService;
+use App\Service\SwitchUserAuthorization;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
@@ -13,23 +16,36 @@ use Symfony\Bundle\SecurityBundle\Security;
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
     private Security $security;
+    private DatabaseHealthChecker $databaseHealthChecker;
+    private SwitchUserAuthorization $switchUserAuthorization;
+    private MessageUnreadService $messageUnreadService;
 
-    public function __construct(Security $security)
-    {
+    public function __construct(
+        Security $security,
+        DatabaseHealthChecker $databaseHealthChecker,
+        SwitchUserAuthorization $switchUserAuthorization,
+        MessageUnreadService $messageUnreadService,
+    ) {
         $this->security = $security;
+        $this->databaseHealthChecker = $databaseHealthChecker;
+        $this->switchUserAuthorization = $switchUserAuthorization;
+        $this->messageUnreadService = $messageUnreadService;
     }
 
     public function getGlobals(): array
     {
         $user = $this->security->getUser();
         $roleLabel = null;
+        $messagesUnreadCount = 0;
 
         if ($user instanceof User) {
             $roleLabel = $this->getRoleLabel($user);
+            $messagesUnreadCount = $this->messageUnreadService->countUnread($user);
         }
 
         return [
             'userRoleLabel' => $roleLabel,
+            'messagesUnreadCount' => $messagesUnreadCount,
         ];
     }
 
@@ -49,6 +65,8 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('role_badge_class', [$this, 'getRoleBadgeClass']),
             new TwigFunction('user_role_label', [$this, 'getUserRoleLabelForUser']),
             new TwigFunction('route_is_active', [$this, 'isRouteActive']),
+            new TwigFunction('db_is_connected', [$this->databaseHealthChecker, 'isConnected']),
+            new TwigFunction('can_switch_to_user', [$this, 'canSwitchToUser']),
         ];
     }
 
@@ -157,5 +175,17 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     private function getRoleLabel(User $user): string
     {
         return UserRole::label($user->getRoles());
+    }
+
+    public function canSwitchToUser(?User $target): bool
+    {
+        if (!$target instanceof User) {
+            return false;
+        }
+
+        $actor = $this->security->getUser();
+
+        return $actor instanceof User
+            && $this->switchUserAuthorization->canSwitchTo($actor, $target);
     }
 }

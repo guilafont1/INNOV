@@ -3,15 +3,32 @@
 namespace App\Service;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Security\UserRole;
 
 class MessageAccessService
 {
+    public function __construct(
+        private readonly UserRepository $userRepository,
+    ) {
+    }
+
+    public function isGlobalViewer(User $user): bool
+    {
+        return UserRole::isSuperAdmin($user->getRoles());
+    }
+
     /**
      * @return array<int, User>
      */
     public function getEligibleContacts(User $user): array
     {
+        if ($this->isGlobalViewer($user)) {
+            return $this->indexUsersById(
+                $this->userRepository->findAllExcept($user),
+            );
+        }
+
         $contacts = [];
 
         $classes = [];
@@ -33,6 +50,56 @@ class MessageAccessService
 
         unset($contacts[$user->getId()]);
 
+        return $this->sortContacts($contacts);
+    }
+
+    public function canMessage(User $from, User $to): bool
+    {
+        if ($from->getId() === $to->getId()) {
+            return false;
+        }
+
+        if ($this->isGlobalViewer($from)) {
+            return true;
+        }
+
+        $contacts = $this->getEligibleContacts($from);
+
+        return isset($contacts[$to->getId()]);
+    }
+
+    public function canAccessThread(User $viewer, User $partner, ?User $with = null): bool
+    {
+        if ($with !== null) {
+            if ($partner->getId() === $with->getId()) {
+                return false;
+            }
+
+            if ($this->isGlobalViewer($viewer)) {
+                return true;
+            }
+
+            return $viewer->getId() === $partner->getId() || $viewer->getId() === $with->getId();
+        }
+
+        if ($this->isGlobalViewer($viewer)) {
+            return true;
+        }
+
+        return $this->canMessage($viewer, $partner);
+    }
+
+    public function getConversationDisplayName(User $userA, User $userB): string
+    {
+        return $this->getUserDisplayName($userA) . ' ↔ ' . $this->getUserDisplayName($userB);
+    }
+
+    /**
+     * @param array<int, User> $contacts
+     * @return array<int, User>
+     */
+    private function sortContacts(array $contacts): array
+    {
         uasort($contacts, static function (User $a, User $b): int {
             $nameA = ($a->getPrenom() ?? '') . ' ' . ($a->getNom() ?? '');
             $nameB = ($b->getPrenom() ?? '') . ' ' . ($b->getNom() ?? '');
@@ -43,11 +110,18 @@ class MessageAccessService
         return $contacts;
     }
 
-    public function canMessage(User $from, User $to): bool
+    /**
+     * @param list<User> $users
+     * @return array<int, User>
+     */
+    private function indexUsersById(array $users): array
     {
-        $contacts = $this->getEligibleContacts($from);
+        $contacts = [];
+        foreach ($users as $user) {
+            $contacts[$user->getId()] = $user;
+        }
 
-        return isset($contacts[$to->getId()]);
+        return $this->sortContacts($contacts);
     }
 
     public function getUserDisplayName(User $user): string

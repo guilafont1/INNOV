@@ -90,4 +90,64 @@ class NoteRepository extends ServiceEntityRepository
 
         return round($result ?? 0, 2);
     }
+
+    /**
+     * @return Note[]
+     */
+    public function findAllOrdered(): array
+    {
+        return $this->createQueryBuilder('n')
+            ->leftJoin('n.etudiant', 'e')->addSelect('e')
+            ->leftJoin('n.module', 'm')->addSelect('m')
+            ->orderBy('n.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function countGroupedByDaySince(\DateTimeImmutable $since): array
+    {
+        $notes = $this->createQueryBuilder('n')
+            ->where('n.createdAt >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($notes as $note) {
+            $day = $note->getCreatedAt()?->format('Y-m-d');
+            if ($day === null) {
+                continue;
+            }
+            $counts[$day] = ($counts[$day] ?? 0) + 1;
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @return Note[]
+     */
+    public function findByClasse(Classe $classe): array
+    {
+        return $this->createQueryBuilder('n')
+            ->join('n.etudiant', 'e')
+            ->join('e.classes', 'c')
+            ->where('c = :classe')
+            ->setParameter('classe', $classe)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function scoreOn20(Note $note): float
+    {
+        $max = (float) ($note->getNoteMax() ?? 0);
+        if ($max <= 0) {
+            return 0.0;
+        }
+
+        return round(((float) $note->getNote() / $max) * 20, 2);
+    }
 }

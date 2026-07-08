@@ -3,60 +3,129 @@
 {% block title %}Mon compte{% endblock %}
 
 {% block body %}
-{% set headerActions %}
-    <a href="{{ path('app_account_edit') }}" class="btn btn-outline-primary btn-sm">
-        <i class="bi bi-pencil me-1"></i> Modifier
-    </a>
-    <a href="{{ path('app_account_password') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-key me-1"></i> Mot de passe
-    </a>
-{% endset %}
-
 {% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Paramètres',
     title: 'Mon compte',
-    description: 'Informations personnelles et sécurité.',
-    actions: headerActions
+    description: 'Gérez vos informations personnelles et la sécurité de votre compte.',
 } only %}
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h2 class="h6 mb-3">Informations personnelles</h2>
-                <dl class="row mb-0">
-                    <dt class="col-sm-4 text-muted">Email</dt>
-                    <dd class="col-sm-8">{{ user.email }}</dd>
-                    <dt class="col-sm-4 text-muted">Nom</dt>
-                    <dd class="col-sm-8">{{ user.nom ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Prénom</dt>
-                    <dd class="col-sm-8">{{ user.prenom ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Rôle</dt>
-                    <dd class="col-sm-8">
-                        {% include 'partials/_role_badge.html.twig' %}
-                    </dd>
-                </dl>
+<div class="row g-4 account-layout">
+    <div class="col-lg-4 col-xl-3">
+        {% include 'partials/_account_sidebar.html.twig' %}
+    </div>
+
+    <div class="col-lg-8 col-xl-9">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <a href="{{ path('app_account_edit') }}" class="account-action-card">
+                    <span class="account-action-card__icon"><i class="bi bi-pencil"></i></span>
+                    <span class="account-action-card__body">
+                        <span class="account-action-card__title">Modifier le profil</span>
+                        <span class="account-action-card__desc">Nom, prénom et adresse email</span>
+                    </span>
+                    <i class="bi bi-chevron-right account-action-card__arrow"></i>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ path('app_account_password') }}" class="account-action-card">
+                    <span class="account-action-card__icon account-action-card__icon--security"><i class="bi bi-key"></i></span>
+                    <span class="account-action-card__body">
+                        <span class="account-action-card__title">Changer le mot de passe</span>
+                        <span class="account-action-card__desc">Mettre à jour votre mot de passe de connexion</span>
+                    </span>
+                    <i class="bi bi-chevron-right account-action-card__arrow"></i>
+                </a>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-body">
-                <h2 class="h6 mb-3">Sécurité</h2>
-                <dl class="row mb-0">
-                    <dt class="col-sm-4 text-muted">Mot de passe</dt>
-                    <dd class="col-sm-8">
-                        <span class="text-muted">••••••••</span>
-                        <div class="text-muted small mt-1">
-                            Dernière modification :
-                            {% if user.passwordUpdatedAt %}
-                                {{ user.passwordUpdatedAt|date('d/m/Y') }}
-                            {% else %}
-                                jamais modifié
-                            {% endif %}
-                        </div>
-                    </dd>
-                </dl>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3"><i class="bi bi-person me-2 text-muted"></i>Informations personnelles</h2>
+                        <dl class="account-dl mb-0">
+                            <dt>Prénom</dt>
+                            <dd>{{ user.prenom ?? '—' }}</dd>
+                            <dt>Nom</dt>
+                            <dd>{{ user.nom ?? '—' }}</dd>
+                            <dt>Email</dt>
+                            <dd>{{ user.email }}</dd>
+                            <dt>Rôle</dt>
+                            <dd>{% include 'partials/_role_badge.html.twig' with { role: user_role_label(user) } %}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3"><i class="bi bi-shield-check me-2 text-muted"></i>Sécurité & activité</h2>
+                        <dl class="account-dl mb-0">
+                            <dt>Mot de passe</dt>
+                            <dd>
+                                <span class="text-muted">••••••••</span>
+                                <div class="text-muted small mt-1">
+                                    Dernière modification :
+                                    {% if user.passwordUpdatedAt %}
+                                        {{ user.passwordUpdatedAt|date('d/m/Y') }}
+                                    {% else %}
+                                        jamais modifié
+                                    {% endif %}
+                                </div>
+                            </dd>
+                            <dt>Dernière connexion</dt>
+                            <dd>
+                                {% if user.derniereConnexion %}
+                                    {{ user.derniereConnexion|date('d/m/Y H:i') }}
+                                    <span class="text-muted small">({{ user.derniereConnexion|time_ago }})</span>
+                                {% else %}
+                                    Non disponible
+                                {% endif %}
+                            </dd>
+                            <dt>Dernière déconnexion</dt>
+                            <dd>
+                                {% if user.derniereDeconnexion %}
+                                    {{ user.derniereDeconnexion|date('d/m/Y H:i') }}
+                                {% else %}
+                                    Non disponible
+                                {% endif %}
+                            </dd>
+                            <dt>Statut</dt>
+                            <dd><span class="badge bg-success-subtle text-success border">Compte actif</span></dd>
+                        </dl>
+                    </div>
+                </div>
             </div>
         </div>
+
+        {% if is_granted('ROLE_ETUDIANT') and user.classes|length > 0 %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h2 class="h6 mb-3"><i class="bi bi-mortarboard me-2 text-muted"></i>Ma classe</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for classe in user.classes %}
+                            <span class="account-class-badge">{{ classe.nom }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if is_granted('ROLE_ENSEIGNANT') and user.classesEnseignees|length > 0 %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h2 class="h6 mb-3"><i class="bi bi-building me-2 text-muted"></i>Classes enseignées</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for classe in user.classesEnseignees %}
+                            <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="account-class-badge account-class-badge--link">
+                                {{ classe.nom }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

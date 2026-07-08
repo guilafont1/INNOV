@@ -1,0 +1,15 @@
+{% if can_switch_to_user(user) %}
+    <a
+        href="{{ path('app_redirect', {_switch_user: user.userIdentifier}) }}"
+        class="{{ link_class|default('btn btn-icon-ghost') }}"
+        title="Se connecter en tant que {{ user_full_name(user) }}"
+        aria-label="Se connecter en tant que {{ user_full_name(user) }}"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+    >
+        <i class="bi bi-person-badge"></i>
+        {% if show_label|default(false) %}
+            <span class="ms-1">Se connecter en tant que</span>
+        {% endif %}
+    </a>
+{% endif %}

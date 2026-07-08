@@ -1,0 +1,11 @@
+{% set db_ok = db_is_connected() %}
+<span class="app-brand">
+    <span class="app-brand__name">{{ brand_text|default('MERJ Learn') }}</span>
+    <span
+        class="db-status {{ db_ok ? 'db-status--ok' : 'db-status--error' }}"
+        title="{{ db_ok ? 'Base de données connectée' : 'Base de données inaccessible' }}"
+        aria-label="{{ db_ok ? 'Base de données connectée' : 'Base de données inaccessible' }}"
+    >
+        <i class="bi {{ db_ok ? 'bi-database-check' : 'bi-database-exclamation' }}" aria-hidden="true"></i>
+    </span>
+</span>

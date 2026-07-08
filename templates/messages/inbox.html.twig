@@ -17,15 +17,32 @@
      data-api-thread="{{ path('api_messages_thread', {partnerId: 0}) }}"
      data-api-send="{{ path('api_messages_send') }}"
      data-api-read="{{ path('api_messages_read', {partnerId: 0}) }}"
-     data-current-user-id="{{ app.user.id }}">
+     data-current-user-id="{{ app.user.id }}"
+     data-global-viewer="{{ isGlobalViewer|default(false) ? '1' : '0' }}">
 
     <div class="messages-shell">
         {# Liste des conversations #}
         <aside class="messages-list-panel" id="messages-list-panel">
             <header class="messages-list-panel__header">
-                <div>
+                <div class="messages-list-panel__intro">
                     <h1 class="messages-list-panel__title">Messages</h1>
-                    <p class="messages-list-panel__subtitle">Conversations avec votre classe</p>
+                    <p class="messages-list-panel__subtitle" id="messages-subtitle">
+                        {% if isGlobalViewer|default(false) %}
+                            Vos conversations personnelles
+                        {% else %}
+                            Conversations avec votre classe
+                        {% endif %}
+                    </p>
+                    {% if isGlobalViewer|default(false) %}
+                        <div class="messages-scope-toggle" id="messages-scope-toggle" role="group" aria-label="Mode d'affichage des messages">
+                            <button type="button" class="messages-scope-toggle__btn is-active" data-scope="personal">
+                                <i class="bi bi-person me-1"></i>Mes messages
+                            </button>
+                            <button type="button" class="messages-scope-toggle__btn" data-scope="global">
+                                <i class="bi bi-globe me-1"></i>Vue plateforme
+                            </button>
+                        </div>
+                    {% endif %}
                 </div>
                 <button type="button"
                         class="btn btn-primary btn-sm messages-list-panel__new"
@@ -96,6 +113,10 @@
                         </button>
                     </div>
                 </header>
+
+                <div class="messages-observer-notice d-none" id="messages-observer-notice">
+                    <i class="bi bi-eye me-1"></i>Lecture seule — conversation entre deux autres utilisateurs
+                </div>
 
                 <div class="messages-thread__body" id="messages-thread-body" role="log" aria-live="polite" aria-relevant="additions">
                     <div class="messages-thread__loading" id="messages-thread-loading">

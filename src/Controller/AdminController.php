@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Service\AdminDashboardAnalyticsService;
 use App\Service\PlanningPageService;
 use App\Security\UserRole;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -30,22 +31,38 @@ class AdminController extends AbstractController
     public function dashboard(
         ClasseRepository $classeRepository,
         UserRepository $userRepository,
-        CoursRepository $coursRepository
+        CoursRepository $coursRepository,
+        AdminDashboardAnalyticsService $dashboardAnalytics,
     ): Response {
-        $stats = [
-            'totalClasses' => $classeRepository->count([]),
-            'totalEtudiants' => count($userRepository->findByRole(UserRole::ETUDIANT)),
-            'totalEnseignants' => count($userRepository->findByRole(UserRole::ENSEIGNANT)),
-            'totalCours' => $coursRepository->count([]),
-        ];
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $isSuperAdmin = $currentUser instanceof User && UserRole::isSuperAdmin($currentUser->getRoles());
 
-        $recentClasses = $classeRepository->findBy([], ['createdAt' => 'DESC'], 5);
-        $recentUsers = $userRepository->findBy([], ['id' => 'DESC'], 5);
+        if ($isSuperAdmin) {
+            $analytics = $dashboardAnalytics->buildSuperAdmin();
+
+            return $this->render('admin/dashboard.html.twig', [
+                'dashboardMode' => 'super_admin',
+                'isSuperAdmin' => true,
+                'stats' => $analytics['stats'],
+                'charts' => $analytics['charts'],
+                'recent_classes' => $classeRepository->findBy([], ['createdAt' => 'DESC'], 5),
+                'recent_users' => $userRepository->findBy([], ['id' => 'DESC'], 5),
+            ]);
+        }
+
+        $analytics = $dashboardAnalytics->buildSchoolAdmin();
 
         return $this->render('admin/dashboard.html.twig', [
-            'stats' => $stats,
-            'recent_classes' => $recentClasses,
-            'recent_users' => $recentUsers,
+            'dashboardMode' => 'school_admin',
+            'isSuperAdmin' => false,
+            'stats' => $analytics['stats'],
+            'charts' => $analytics['charts'],
+            'class_summaries' => $analytics['classSummaries'],
+            'top_students' => $analytics['topStudents'],
+            'students_to_watch' => $analytics['studentsToWatch'],
+            'recent_classes' => $classeRepository->findBy([], ['createdAt' => 'DESC'], 5),
+            'recent_users' => $userRepository->findBy([], ['id' => 'DESC'], 5),
         ]);
     }
 
