@@ -12,3 +12,10 @@
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+###> fichiers locaux / debug ###
+/cookies.txt
+/headers.txt
+/login.html
+/export.pdf
+###< fichiers locaux / debug ###
