@@ -1,0 +1,11 @@
+{% include 'errors/_page.html.twig' with {
+    code: 405,
+    title: 'Méthode non autorisée',
+    message: 'Cette action n\'est pas permise sur la ressource demandée.',
+    icon: 'sign-stop',
+    tone: 'warn',
+    hint: 'Utilisez les boutons et liens de l\'application plutôt que de modifier l\'URL manuellement.',
+    primary_label: 'Retour à l\'accueil',
+    primary_url: path('app_home'),
+    primary_icon: 'house',
+} %}

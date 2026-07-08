@@ -14,8 +14,8 @@
 ###< lexik/jwt-authentication-bundle ###
 
 ###> fichiers locaux / debug ###
-/cookies.txt
+/cookies*.txt
 /headers.txt
-/login.html
 /export.pdf
+/*.html
 ###< fichiers locaux / debug ###

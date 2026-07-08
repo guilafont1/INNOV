@@ -1,0 +1,14 @@
+{% include 'errors/_page.html.twig' with {
+    code: 401,
+    title: 'Authentification requise',
+    message: 'Vous devez être connecté pour accéder à cette page.',
+    icon: 'person-lock',
+    tone: 'info',
+    hint: 'Connectez-vous avec votre compte MERJ Learn pour continuer.',
+    primary_label: 'Se connecter',
+    primary_url: path('app_login'),
+    primary_icon: 'box-arrow-in-right',
+    secondary_label: 'Accueil',
+    secondary_url: path('app_home'),
+    secondary_icon: 'house',
+} %}

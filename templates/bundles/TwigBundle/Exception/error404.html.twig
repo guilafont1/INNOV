@@ -1,0 +1,14 @@
+{% include 'errors/_page.html.twig' with {
+    code: 404,
+    title: 'Page introuvable',
+    message: 'La page que vous recherchez n\'existe pas ou a été déplacée.',
+    icon: 'compass',
+    tone: 'info',
+    hint: 'Vérifiez l\'adresse dans la barre de navigation ou retournez à l\'accueil.',
+    primary_label: 'Retour à l\'accueil',
+    primary_url: path('app_home'),
+    primary_icon: 'house',
+    secondary_label: app.user ? 'Mon espace' : 'Se connecter',
+    secondary_url: app.user ? path('app_redirect') : path('app_login'),
+    secondary_icon: app.user ? 'grid' : 'box-arrow-in-right',
+} %}

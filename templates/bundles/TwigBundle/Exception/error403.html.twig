@@ -1,0 +1,32 @@
+{% if app.user %}
+    {% set hint = 'Vous êtes connecté en tant que ' ~ app.user.userIdentifier ~ '. Cette section est réservée à un autre type de compte (étudiant, enseignant ou administrateur).' %}
+    {% set primary_label = 'Mon espace' %}
+    {% set primary_url = path('app_redirect') %}
+    {% set primary_icon = 'grid' %}
+    {% set secondary_label = 'Se déconnecter' %}
+    {% set secondary_url = path('app_logout') %}
+    {% set secondary_icon = 'box-arrow-right' %}
+{% else %}
+    {% set hint = 'Connectez-vous avec un compte disposant des droits nécessaires.' %}
+    {% set primary_label = 'Se connecter' %}
+    {% set primary_url = path('app_login') %}
+    {% set primary_icon = 'box-arrow-in-right' %}
+    {% set secondary_label = 'Accueil' %}
+    {% set secondary_url = path('app_home') %}
+    {% set secondary_icon = 'house' %}
+{% endif %}
+
+{% include 'errors/_page.html.twig' with {
+    code: 403,
+    title: 'Accès refusé',
+    message: 'Vous n\'avez pas les droits nécessaires pour consulter cette page.',
+    icon: 'shield-lock',
+    tone: 'danger',
+    hint: hint,
+    primary_label: primary_label,
+    primary_url: primary_url,
+    primary_icon: primary_icon,
+    secondary_label: secondary_label,
+    secondary_url: secondary_url,
+    secondary_icon: secondary_icon,
+} %}

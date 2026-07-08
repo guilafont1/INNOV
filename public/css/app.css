@@ -1384,6 +1384,107 @@ button, a, input, select, textarea, .btn, .nav-link, .form-control, .form-select
   .planning-grid { grid-template-columns: repeat(7, minmax(100px, 1fr)); }
 }
 
+/* Error pages */
+.error-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.error-panel {
+  background: var(--sidebar);
+  color: #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.error-panel__brand {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2rem;
+}
+
+.error-panel__code {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  opacity: .15;
+  margin-bottom: 1rem;
+}
+
+.error-panel__tagline {
+  color: #94A3B8;
+  font-size: .9375rem;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--canvas);
+}
+
+.error-content__wrap {
+  width: 100%;
+  max-width: 440px;
+}
+
+.error-content__icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.error-content__icon--danger {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.error-content__icon--warn {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+
+.error-content__icon--info {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+.error-content__hint {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: .875rem 1rem;
+  font-size: .875rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.error-content__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+@media (max-width: 991.98px) {
+  .error-layout { grid-template-columns: 1fr; }
+  .error-panel { display: none; }
+}
+
 @media (max-width: 767.98px) {
   .app-content { padding: 1rem; }
 

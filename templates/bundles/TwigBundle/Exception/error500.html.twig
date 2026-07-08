@@ -1,0 +1,14 @@
+{% include 'errors/_page.html.twig' with {
+    code: 500,
+    title: 'Erreur interne',
+    message: 'Une erreur inattendue s\'est produite. Nos équipes en ont été informées.',
+    icon: 'bug',
+    tone: 'danger',
+    hint: 'Si le problème persiste, réessayez dans quelques minutes ou contactez l\'administrateur.',
+    primary_label: 'Retour à l\'accueil',
+    primary_url: path('app_home'),
+    primary_icon: 'house',
+    secondary_label: 'Réessayer',
+    secondary_url: app.request.uri,
+    secondary_icon: 'arrow-clockwise',
+} %}

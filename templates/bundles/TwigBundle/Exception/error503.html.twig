@@ -1,0 +1,14 @@
+{% include 'errors/_page.html.twig' with {
+    code: 503,
+    title: 'Service indisponible',
+    message: 'L\'application est temporairement indisponible pour maintenance ou surcharge.',
+    icon: 'tools',
+    tone: 'warn',
+    hint: 'Le service devrait revenir sous peu. Merci de votre patience.',
+    primary_label: 'Réessayer',
+    primary_url: app.request.uri,
+    primary_icon: 'arrow-clockwise',
+    secondary_label: 'Accueil',
+    secondary_url: path('app_home'),
+    secondary_icon: 'house',
+} %}
