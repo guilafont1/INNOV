@@ -25,6 +25,7 @@ class Chapitre
     private ?string $fichierMedia = null;
 
     #[ORM\ManyToOne(inversedBy: 'chapitres')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Module $module = null;
 
     public function getId(): ?int

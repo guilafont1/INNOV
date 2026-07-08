@@ -2,148 +2,48 @@
 
 {% block title %}Planning - {{ classe.nom }}{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .planning-card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-        }
-        .planning-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-        .planning-card.upcoming {
-            border-left: 4px solid #28a745;
-        }
-        .planning-card.past {
-            border-left: 4px solid #6c757d;
-            opacity: 0.7;
-        }
-        .planning-card.today {
-            border-left: 4px solid #007bff;
-            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
-        }
-        .classe-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .time-badge {
-            background: rgba(0, 123, 255, 0.1);
-            color: #007bff;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .cours-badge {
-            background: rgba(40, 167, 69, 0.1);
-            color: #28a745;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-        }
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
-<div class="container mt-4">
-    <!-- En-tête de la classe -->
-    <div class="classe-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="mb-2">📅 Planning - {{ classe.nom }}</h1>
-                <p class="mb-0">{{ classe.description ?? 'Planning des cours pour cette classe' }}</p>
-                <small class="opacity-75">{{ classe.etudiants|length }} étudiants • {{ classe.cours|length }} cours</small>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <div class="d-flex justify-content-md-end gap-2">
-                    <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left"></i> Retour à la classe
-                    </a>
-                </div>
-            </div>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: classe.nom,
+    title: 'Planning de la classe',
+    description: classe.description ?? (classe.etudiants|length ~ ' étudiants · ' ~ classe.cours|length ~ ' cours'),
+    actions: '<a href="' ~ path('enseignant_planning') ~ '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour au planning</a>'
+} %}
+
+{% if planning|length > 0 %}
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table-app">
+                <thead>
+                    <tr>
+                        <th>Événement</th>
+                        <th>Cours</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evenement in planning %}
+                        <tr>
+                            <td>
+                                <div class="fw-medium">{{ evenement.titre }}</div>
+                                {% if evenement.description %}
+                                    <div class="small text-muted">{{ evenement.description|slice(0, 80) }}</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ evenement.cours.titre }}</td>
+                            <td><span class="planning-chip planning-chip--{{ evenement.type|default('cours') }} d-inline-block">{{ evenement.type|default('cours')|capitalize }}</span></td>
+                            <td class="text-muted">{{ evenement.dateDebut|date('d/m/Y H:i') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <!-- Liste des événements -->
-    {% if planning|length > 0 %}
-        <div class="row">
-            {% for evenement in planning %}
-                {% set isToday = evenement.dateDebut.format('Y-m-d') == "now"|date('Y-m-d') %}
-                {% set isPast = evenement.dateDebut < date() %}
-                {% set isUpcoming = evenement.dateDebut > date() %}
-                
-                <div class="col-12 mb-3">
-                    <div class="planning-card card {{ isToday ? 'today' : (isPast ? 'past' : 'upcoming') }}">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h5 class="card-title mb-2">
-                                        <i class="fas fa-calendar-check"></i> {{ evenement.titre }}
-                                    </h5>
-                                    <p class="card-text text-muted mb-3">{{ evenement.description }}</p>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <span class="cours-badge">
-                                            <i class="fas fa-book"></i> {{ evenement.cours.titre }}
-                                        </span>
-                                        <span class="time-badge">
-                                            <i class="fas fa-clock"></i> {{ evenement.dateDebut.format('d/m/Y à H:i') }}
-                                        </span>
-                                        {% if isToday %}
-                                            <span class="badge bg-primary">Aujourd'hui</span>
-                                        {% elseif isPast %}
-                                            <span class="badge bg-secondary">Terminé</span>
-                                        {% else %}
-                                            <span class="badge bg-success">À venir</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="col-md-4 text-md-end">
-                                    <div class="d-flex justify-content-md-end gap-2">
-                                        <a href="{{ path('enseignant_planning_edit', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </a>
-                                        <form method="post" action="{{ path('enseignant_planning_delete', {id: evenement.id}) }}" style="display: inline;">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
-                                                <i class="fas fa-trash"></i> Supprimer
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <i class="fas fa-calendar-times"></i>
-            <h3>Aucun événement planifié</h3>
-            <p>Aucun événement n'a été planifié pour les cours de cette classe</p>
-            <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-primary">
-                <i class="fas fa-arrow-left"></i> Retour à la classe
-            </a>
-        </div>
-    {% endif %}
-</div>
+{% else %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'calendar-event',
+        text: 'Aucun événement planifié pour les cours de cette classe.'
+    } %}
+{% endif %}
 {% endblock %}

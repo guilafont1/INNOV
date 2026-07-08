@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Chapitre;
 use App\Entity\Module;
+use App\Entity\Progression;
 use App\Form\ChapitreType;
 use App\Repository\ChapitreRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +22,7 @@ class ChapitreController extends AbstractController
             $user = $this->getUser();
             
             // Si l'utilisateur est admin, récupérer tous les chapitres
-            if ($this->isGranted('ROLE_ADMIN')) {
+            if ($this->isGranted('ROLE_ADMIN_ECOLE')) {
                 $chapitres = $chapitreRepository->findAll();
             } else {
                 // Sinon, récupérer uniquement les chapitres des cours de l'utilisateur connecté
@@ -29,7 +30,7 @@ class ChapitreController extends AbstractController
             }
             
             if (empty($chapitres)) {
-                $message = $this->isGranted('ROLE_ADMIN') 
+                $message = $this->isGranted('ROLE_ADMIN_ECOLE') 
                     ? 'Aucun chapitre disponible pour le moment.'
                     : 'Vous n\'avez accès à aucun chapitre pour le moment.';
                 $this->addFlash('info', $message);
@@ -45,10 +46,10 @@ class ChapitreController extends AbstractController
     }
 
     #[Route('/chapitre/{id}', name: 'app_chapitre_show', requirements: ['id' => '\d+'])]
-    public function show(Chapitre $chapitre, ChapitreRepository $chapitreRepository): Response
+    public function show(Chapitre $chapitre, ChapitreRepository $chapitreRepository, EntityManagerInterface $em): Response
     {
         // Si l'utilisateur n'est pas admin, vérifier qu'il a accès au chapitre
-        if (!$this->isGranted('ROLE_ADMIN')) {
+        if (!$this->isGranted('ROLE_ADMIN_ECOLE')) {
             $user = $this->getUser();
             $userChapitres = $chapitreRepository->findByUser($user);
             
@@ -63,6 +64,44 @@ class ChapitreController extends AbstractController
             if (!$hasAccess) {
                 $this->addFlash('error', 'Vous n\'avez pas accès à ce chapitre.');
                 return $this->redirectToRoute('app_chapitre_index');
+            }
+        }
+
+        // Suivi de progression réel : un étudiant met à jour sa progression quand il consulte un chapitre.
+        if ($this->isGranted('ROLE_ETUDIANT')) {
+            $user = $this->getUser();
+            $module = $chapitre->getModule();
+            $cours = $module?->getCours();
+
+            if ($user && $cours) {
+                $totalChapitres = 0;
+                foreach ($cours->getModules() as $m) {
+                    $totalChapitres += $m->getChapitres()->count();
+                }
+
+                /** @var Progression|null $progression */
+                $progression = $em->getRepository(Progression::class)->findOneBy([
+                    'user' => $user,
+                    'cours' => $cours,
+                ]);
+
+                if (!$progression) {
+                    $progression = new Progression();
+                    $progression->setUser($user);
+                    $progression->setCours($cours);
+                }
+
+                $progression->addChapitreConsulte($chapitre);
+                $progression->setDernierChapitre($chapitre);
+
+                $chapitresConsultees = $progression->getChapitresConsultees()->count();
+                $avancement = $totalChapitres > 0 ? ($chapitresConsultees / $totalChapitres) * 100 : 0;
+
+                $progression->setAvancement(round($avancement, 2));
+                $progression->setUpdatedAt(new \DateTimeImmutable());
+
+                $em->persist($progression);
+                $em->flush();
             }
         }
         
@@ -99,7 +138,7 @@ class ChapitreController extends AbstractController
                 $em->persist($chapitre);
                 $em->flush();
 
-                $this->addFlash('success', 'Chapitre ajouté avec succès.');
+                $this->addFlash('success', 'Chapitre ajouté.');
                 
                 // Rediriger vers la configuration du cours pour continuer le processus
                 return $this->redirectToRoute('app_cours_setup', ['id' => $module->getCours()->getId()]);
@@ -130,7 +169,7 @@ class ChapitreController extends AbstractController
                 $em->persist($chapitre);
                 $em->flush();
 
-                $this->addFlash('success', 'Chapitre ajouté avec succès.');
+                $this->addFlash('success', 'Chapitre ajouté.');
                 return $this->redirectToRoute('app_cours_show', ['id' => $module->getCours()->getId()]);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création du chapitre.');
@@ -155,7 +194,7 @@ class ChapitreController extends AbstractController
             try {
                 $em->flush();
 
-                $this->addFlash('success', 'Chapitre modifié avec succès.');
+                $this->addFlash('success', 'Chapitre modifié.');
                 return $this->redirectToRoute('app_chapitre_show', ['id' => $chapitre->getId()]);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification du chapitre.');
@@ -179,7 +218,7 @@ class ChapitreController extends AbstractController
                 $em->remove($chapitre);
                 $em->flush();
 
-                $this->addFlash('success', 'Chapitre supprimé avec succès.');
+                $this->addFlash('success', 'Chapitre supprimé.');
                 return $this->redirectToRoute('app_cours_show', ['id' => $moduleId]);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression du chapitre.');

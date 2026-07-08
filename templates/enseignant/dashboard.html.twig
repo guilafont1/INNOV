@@ -2,454 +2,171 @@
 
 {% block title %}Dashboard Enseignant{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
-    <style>
-        .dashboard-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        }
-        .stat-card.success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        .stat-card.warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        .stat-card.info {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 0;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 0.5rem;
-        }
-        .activity-item {
-            border-left: 4px solid #007bff;
-            padding-left: 1rem;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        .course-card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .course-card:hover {
-            transform: translateY(-3px);
-        }
-        .progress-bar {
-            height: 8px;
-            border-radius: 4px;
-        }
-        .welcome-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .btn-custom {
-            border-radius: 8px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        .btn-custom:hover {
-            transform: translateY(-2px);
-        }
-        .chart-container {
-            position: relative;
-            height: 250px;
-            margin: 1rem 0;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
-<div class="container mt-4">
-    <!-- Section de bienvenue -->
-    <div class="welcome-section">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="mb-2">👋 Bienvenue sur votre Dashboard</h1>
-                <p class="mb-0">Gérez vos cours, suivez vos étudiants et analysez vos performances.</p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <div class="action-buttons">
-                    <a href="{{ path('app_cours_new') }}" class="btn btn-light btn-custom">
-                        <i class="fas fa-plus"></i> Nouveau Cours
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Espace enseignant',
+    title: 'Tableau de bord',
+    description: 'Gérez vos cours, suivez vos étudiants et consultez votre planning.',
+    actions: '<a href="' ~ path('app_cours_new') ~ '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nouveau cours</a>'
+} %}
 
-    <!-- Statistiques -->
-    <div class="row mb-3">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.totalCours ?? 0 }}</div>
-                <div class="stat-label">📚 Cours Total</div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card success">
-                <div class="stat-number">{{ stats.totalModules ?? 0 }}</div>
-                <div class="stat-label">📦 Modules</div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card warning">
-                <div class="stat-number">{{ stats.totalChapitres ?? 0 }}</div>
-                <div class="stat-label">📖 Chapitres</div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card info">
-                <div class="stat-number">{{ stats.totalEtudiants ?? 0 }}</div>
-                <div class="stat-label">👨‍🎓 Étudiants</div>
-            </div>
-        </div>
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'book', value: stats.totalCours ?? 0, label: 'Cours' } %}
     </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'collection', value: stats.totalModules ?? 0, label: 'Modules' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'journal-text', value: stats.totalChapitres ?? 0, label: 'Chapitres' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'people', value: stats.totalEtudiants ?? 0, label: 'Étudiants' } %}
+    </div>
+</div>
 
-    <div class="row">
-        <!-- Cours récents -->
-        <div class="col-lg-8">
-            <div class="card dashboard-card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">📚 Mes Cours</h5>
-                    {% if totalCours > 5 %}
-                        <a href="{{ path('enseignant_cours') }}" class="btn btn-sm btn-outline-primary">
-                            Voir tous ({{ totalCours }})
-                        </a>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% if cours|length > 0 %}
-                        <div class="row">
-                            {% for c in cours %}
-                                <div class="col-md-6 mb-3">
-                                    <div class="course-card card">
-                                        <div class="card-body p-3">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="card-title mb-0">{{ c.titre }}</h6>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="{{ path('app_cours_show', {id: c.id}) }}"><i class="fas fa-eye me-2"></i>Voir</a></li>
-                                                        <li><a class="dropdown-item" href="{{ path('app_cours_edit', {id: c.id}) }}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                        <li><a class="dropdown-item" href="{{ path('app_module_new', {id: c.id}) }}"><i class="fas fa-plus me-2"></i>Ajouter module</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ c.id }})"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
-                                                    </ul>
-                                                </div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h2 class="h6 mb-0">Mes cours</h2>
+                {% if totalCours > 5 %}
+                    <a href="{{ path('enseignant_cours') }}" class="btn btn-sm btn-outline-primary">Voir tout ({{ totalCours }})</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if cours|length > 0 %}
+                    <div class="row g-3">
+                        {% for c in cours %}
+                            {% set progressionMoyenne = 0 %}
+                            {% if c.progressions|length > 0 %}
+                                {% set totalAvancement = 0 %}
+                                {% for p in c.progressions %}
+                                    {% set totalAvancement = totalAvancement + (p.avancement ?? 0) %}
+                                {% endfor %}
+                                {% set progressionMoyenne = (totalAvancement / c.progressions|length)|round %}
+                            {% endif %}
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2 dropdown-elevated">
+                                            <h3 class="h6 mb-0">{{ c.titre }}</h3>
+                                            <div class="dropdown">
+                                                <button class="btn-icon-ghost" type="button" data-bs-toggle="dropdown" aria-label="Actions">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="{{ path('app_cours_show', {id: c.id}) }}"><i class="bi bi-eye me-2"></i>Voir</a></li>
+                                                    <li><a class="dropdown-item" href="{{ path('app_cours_edit', {id: c.id}) }}"><i class="bi bi-pencil me-2"></i>Modifier</a></li>
+                                                    <li><a class="dropdown-item" href="{{ path('app_module_new') }}?coursId={{ c.id }}"><i class="bi bi-plus me-2"></i>Ajouter module</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form id="delete-cours-{{ c.id }}" method="post" action="{{ path('app_cours_delete', {id: c.id}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
+                                                        </form>
+                                                        <button type="button" class="dropdown-item text-danger"
+                                                                data-confirm-delete
+                                                                data-confirm-form="delete-cours-{{ c.id }}"
+                                                                data-confirm-name="{{ c.titre }}"
+                                                                data-confirm-message="Ce cours et tout son contenu seront supprimés définitivement.">
+                                                            <i class="bi bi-trash me-2"></i>Supprimer
+                                                        </button>
+                                                    </li>
+                                                </ul>
                                             </div>
-                                            <p class="card-text text-muted small mb-2">{{ c.description|slice(0, 80) }}...</p>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <small class="text-muted">
-                                                    <i class="fas fa-layer-group me-1"></i>{{ c.modules|length }} module(s)
-                                                </small>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-calendar me-1"></i>{{ c.createdAt ? c.createdAt.format('d/m/Y') : 'N/A' }}
-                                                </small>
+                                        </div>
+                                        <p class="text-muted small mb-2">{{ c.description|slice(0, 80) }}{% if c.description|length > 80 %}…{% endif %}</p>
+                                        <div class="d-flex justify-content-between align-items-center small text-muted mb-2">
+                                            <span><i class="bi bi-layers me-1"></i>{{ c.modules|length }} module(s)</span>
+                                            <span><i class="bi bi-calendar3 me-1"></i>{{ c.createdAt ? c.createdAt|date('d/m/Y') : '—' }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress-thin flex-grow-1">
+                                                <div class="progress-thin__fill" style="width: {{ progressionMoyenne }}%"></div>
                                             </div>
-                                            <div class="progress" style="height: 6px;">
-                                                <div class="progress-bar" role="progressbar" style="width: {{ random(30, 90) }}%"></div>
-                                            </div>
+                                            <span class="small text-muted tabular-nums">{{ progressionMoyenne }}%</span>
                                         </div>
                                     </div>
                                 </div>
-                            {% endfor %}
-                        </div>
-                        {% if totalCours > 5 %}
-                            <div class="text-center mt-3">
-                                <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Voir {{ totalCours - 5 }} cours de plus
-                                </a>
                             </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="text-center py-4">
-                            <div class="mb-3">
-                                <i class="fas fa-book-open fa-3x text-muted"></i>
-                            </div>
-                            <h6 class="text-muted">Aucun cours créé</h6>
-                            <p class="text-muted small mb-3">Commencez par créer votre premier cours pour voir apparaître vos statistiques.</p>
-                            <a href="{{ path('app_cours_new') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Créer mon premier cours
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {% include 'partials/_empty_state.html.twig' with {
+                        icon: 'book',
+                        text: 'Aucun cours créé. Commencez par créer votre premier cours.',
+                        cta_url: path('app_cours_new'),
+                        cta_label: 'Créer un cours'
+                    } %}
+                {% endif %}
             </div>
         </div>
+    </div>
 
-        <!-- Activité récente et graphiques -->
-        <div class="col-lg-4">
-            <!-- Événements à venir -->
-            <div class="card dashboard-card mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">📅 Événements à Venir</h5>
-                    <a href="{{ path('enseignant_planning') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-calendar"></i> Voir tout
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if evenementsAvenir|length > 0 %}
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h2 class="h6 mb-0">Événements à venir</h2>
+                <a href="{{ path('enseignant_planning') }}" class="btn btn-sm btn-outline-primary">Planning</a>
+            </div>
+            <div class="card-body">
+                {% if evenementsAvenir|length > 0 %}
+                    <ul class="event-list list-unstyled mb-0">
                         {% for evenement in evenementsAvenir %}
-                            <div class="activity-item">
-                                <div class="d-flex align-items-center">
-                                    <span class="me-2">📅</span>
-                                    <div>
-                                        <div class="fw-bold">{{ evenement.titre }}</div>
-                                        <small class="text-muted">{{ evenement.cours.titre }}</small>
-                                        <br>
-                                        <small class="text-primary">{{ evenement.dateDebut.format('d/m/Y H:i') }}</small>
+                            <li class="event-item mb-2">
+                                <a href="{{ path('enseignant_planning', {date: evenement.dateDebut|date('Y-m-d')}) }}" class="dashboard-event-link p-2">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <span class="event-type-dot event-type-dot--{{ evenement.type|default('autre') }} mt-1"></span>
+                                        <div class="min-w-0">
+                                            <div class="small text-muted">{{ evenement.dateDebut|planning_short_date }}</div>
+                                            <div class="fw-medium text-truncate">{{ evenement.titre }}</div>
+                                            {% if evenement.lieu %}
+                                                <div class="small text-muted text-truncate">{{ evenement.lieu }}</div>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                </a>
+                            </li>
                         {% endfor %}
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-calendar-times fa-2x text-muted"></i>
-                            <p class="text-muted mt-2">Aucun événement à venir</p>
-                            <a href="{{ path('enseignant_planning') }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-plus"></i> Créer un événement
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
+                    </ul>
+                {% else %}
+                    {% include 'partials/_empty_state.html.twig' with {
+                        icon: 'calendar-event',
+                        text: 'Aucun événement planifié.',
+                        cta_url: path('enseignant_planning'),
+                        cta_label: 'Voir le planning'
+                    } %}
+                {% endif %}
             </div>
+        </div>
 
-            <!-- Activité récente -->
-            <div class="card dashboard-card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">🔔 Activité Récente</h5>
-                </div>
-                <div class="card-body">
-                    {% if activiteRecente|length > 0 %}
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h2 class="h6 mb-0">Activité récente</h2>
+            </div>
+            <div class="card-body">
+                {% if activiteRecente|length > 0 %}
+                    <ul class="activity-list">
                         {% for activite in activiteRecente %}
-                            <div class="activity-item">
-                                <div class="d-flex align-items-center">
-                                    <span class="me-2">{{ activite.icon }}</span>
-                                    <div>
-                                        <div class="fw-bold">{{ activite.message }}</div>
-                                        <small class="text-muted">{{ activite.date.format('d/m/Y H:i') }}</small>
-                                    </div>
+                            <li class="activity-item">
+                                <div class="activity-item__icon">
+                                    <i class="bi bi-{{ activite.type == 'cours_created' ? 'book' : 'clock-history' }}"></i>
                                 </div>
-                            </div>
+                                <div>
+                                    <div class="activity-item__text">{{ activite.message }}</div>
+                                    <div class="activity-item__meta">{{ activite.date|date('d/m/Y H:i') }}</div>
+                                </div>
+                            </li>
                         {% endfor %}
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-bell-slash fa-2x text-muted"></i>
-                            <p class="text-muted mt-2">Aucune activité récente</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Graphique des performances -->
-            <div class="card dashboard-card">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">📊 Performances</h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="performanceChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions rapides -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card dashboard-card">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">⚡ Actions Rapides</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ path('app_cours_new') }}" class="btn btn-outline-primary btn-custom w-100">
-                                <i class="fas fa-plus-circle"></i><br>
-                                Créer un Cours
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-success btn-custom w-100">
-                                <i class="fas fa-list"></i><br>
-                                Gérer les Cours
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ path('enseignant_planning') }}" class="btn btn-outline-warning btn-custom w-100">
-                                <i class="fas fa-calendar"></i><br>
-                                Planning
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ path('enseignant_classes') }}" class="btn btn-outline-info btn-custom w-100">
-                                <i class="fas fa-users"></i><br>
-                                Mes Classes
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                    </ul>
+                {% else %}
+                    {% include 'partials/_empty_state.html.twig' with {
+                        icon: 'clock-history',
+                        text: 'Aucune activité récente.'
+                    } %}
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
-
-<!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Supprimer</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script>
-        // Graphique des performances
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        
-        // Données du graphique
-        const coursData = {{ stats.totalCours ?? 0 }};
-        const modulesData = {{ stats.totalModules ?? 0 }};
-        const chapitresData = {{ stats.totalChapitres ?? 0 }};
-        
-        // Vérifier si nous avons des données
-        if (coursData === 0 && modulesData === 0 && chapitresData === 0) {
-            // Afficher un message si aucune donnée
-            document.getElementById('performanceChart').parentElement.innerHTML = 
-                '<div class="text-center py-4">' +
-                '<i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>' +
-                '<p class="text-muted">Aucune donnée disponible</p>' +
-                '<p class="text-muted small">Créez des cours pour voir vos statistiques</p>' +
-                '</div>';
-        } else {
-            const performanceChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Cours', 'Modules', 'Chapitres'],
-                    datasets: [{
-                        data: [coursData, modulesData, chapitresData],
-                        backgroundColor: [
-                            '#667eea',
-                            '#38ef7d',
-                            '#f5576c'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 15,
-                                usePointStyle: true,
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Fonction de confirmation de suppression
-        function confirmDelete(coursId) {
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            document.getElementById('confirmDeleteBtn').onclick = function() {
-                // Créer un formulaire pour envoyer la requête POST avec token CSRF
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/cours/' + coursId + '/delete';
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token("delete") }}';
-                form.appendChild(csrfToken);
-                
-                document.body.appendChild(form);
-                form.submit();
-            };
-            modal.show();
-        }
-
-        // Animation des cartes au scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.dashboard-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.6s ease';
-            observer.observe(card);
-        });
-    </script>
 {% endblock %}

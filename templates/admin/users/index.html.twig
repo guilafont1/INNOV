@@ -1,351 +1,183 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des Utilisateurs - Administration{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .admin-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .admin-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-        .admin-header {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .user-card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-        }
-        .user-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        }
-        .btn-admin {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            color: white;
-        }
-        .btn-admin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            color: white;
-        }
-        .stats-badge {
-            background: rgba(111, 66, 193, 0.1);
-            color: #6f42c1;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-        .stat-label {
-            font-size: 1rem;
-            margin-top: 0.5rem;
-            color: white;
-        }
-        .stat-card.total {
-            background: linear-gradient(135deg, #6f42c1 0%, #8540c9 100%);
-            color: white;
-        }
-        .stat-card.etudiants {
-            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
-            color: white;
-        }
-        .stat-card.enseignants {
-            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-            color: white;
-        }
-        .stat-card.admins {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            color: white;
-        }
-        .role-badge {
-            font-size: 0.75rem;
-            padding: 0.35em 0.65em;
-            border-radius: 30px;
-        }
-        .role-admin {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
-        }
-        .role-enseignant {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: #fd7e14;
-        }
-        .role-etudiant {
-            background-color: rgba(25, 135, 84, 0.1);
-            color: #198754;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-        }
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-    </style>
-{% endblock %}
+{% block title %}Gestion des utilisateurs{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <!-- En-tête -->
-    <div class="admin-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="mb-2">👥 Gestion des Utilisateurs</h1>
-                <p class="mb-0">Gérez tous les utilisateurs de la plateforme</p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <div class="d-flex justify-content-md-end gap-2">
-                    <a href="{{ path('admin_users_new') }}" class="btn btn-light">
-                        <i class="fas fa-user-plus"></i> Nouvel Utilisateur
-                    </a>
-                    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left"></i> Retour
-                    </a>
-                </div>
-            </div>
-        </div>
+{% set etudiants = users|filter(u => 'ROLE_ETUDIANT' in u.roles) %}
+{% set enseignants = users|filter(u => 'ROLE_ENSEIGNANT' in u.roles) %}
+{% set admins_ecole = users|filter(u => 'ROLE_ADMIN_ECOLE' in u.roles) %}
+{% set super_admins = users|filter(u => 'ROLE_SUPER_ADMIN' in u.roles) %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Administration',
+    title: 'Utilisateurs',
+    description: 'Gérez les comptes étudiants, enseignants et administrateurs',
+    actions: '<a href="' ~ path('admin_dashboard') ~ '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+              <a href="' ~ path('admin_users_new') ~ '" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Nouvel utilisateur</a>'
+} %}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'people', value: users|length, label: 'Total' } %}
     </div>
-
-    <!-- Statistiques rapides -->
-    <div class="row mb-4">
-        {% set etudiants = users|filter(u => 'ROLE_ETUDIANT' in u.roles) %}
-        {% set enseignants = users|filter(u => 'ROLE_ENSEIGNANT' in u.roles) %}
-        {% set admins = users|filter(u => 'ROLE_ADMIN' in u.roles) %}
-
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card total">
-                <div class="stat-number">{{ users|length }}</div>
-                <div class="stat-label">Total Utilisateurs</div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card etudiants">
-                <div class="stat-number">{{ etudiants|length }}</div>
-                <div class="stat-label">Étudiants</div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card enseignants">
-                <div class="stat-number">{{ enseignants|length }}</div>
-                <div class="stat-label">Enseignants</div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card admins">
-                <div class="stat-number">{{ admins|length }}</div>
-                <div class="stat-label">Administrateurs</div>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'mortarboard', value: etudiants|length, label: 'Étudiants' } %}
     </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'person-workspace', value: enseignants|length, label: 'Enseignants' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'shield-check', value: admins_ecole|length + super_admins|length, label: 'Administrateurs' } %}
+    </div>
+</div>
 
-    <!-- Liste des utilisateurs -->
-    <div class="card admin-card">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">📋 Liste des utilisateurs</h5>
-            <a href="{{ path('admin_users_new') }}" class="btn btn-admin">
-                <i class="fas fa-user-plus"></i> Nouvel utilisateur
-            </a>
-        </div>
-        <div class="card-body">
+<div class="card">
+    <div class="card-body p-0">
+        {% if users|length > 0 %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                <table id="datatable-users" class="table-app">
+                    <thead>
                         <tr>
-                            <th style="width: 5%;">ID</th>
-                            <th style="width: 25%;">Utilisateur</th>
-                            <th style="width: 25%;">Email</th>
-                            <th style="width: 15%;">Rôle</th>
-                            <th style="width: 15%;">Dernière connexion</th>
-                            <th style="width: 15%;" class="text-center">Actions</th>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Dernière connexion</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for user in users %}
+                            {% set isTargetSuperAdmin = 'ROLE_SUPER_ADMIN' in user.roles %}
+                            {% set canManageUser = not isTargetSuperAdmin or is_granted('ROLE_SUPER_ADMIN') %}
                             <tr>
-                                <td>{{ user.id }}</td>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar me-2">
-                                            {% if 'ROLE_ADMIN' in user.roles %}
-                                                <i class="fas fa-user-shield text-danger"></i>
-                                            {% elseif 'ROLE_ENSEIGNANT' in user.roles %}
-                                                <i class="fas fa-chalkboard-teacher text-warning"></i>
-                                            {% elseif 'ROLE_ETUDIANT' in user.roles %}
-                                                <i class="fas fa-user-graduate text-success"></i>
-                                            {% else %}
-                                                <i class="fas fa-user text-secondary"></i>
-                                            {% endif %}
-                                        </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="avatar">{{ user_initials(user) }}</span>
                                         <div>
-                                            <span class="fw-bold">{{ user.nom ?? '' }} {{ user.prenom ?? '' }}</span>
+                                            <div class="fw-semibold">{{ user_full_name(user) }}</div>
                                             {% if user.classes is defined and user.classes|length > 0 %}
-                                                <br><small class="text-muted">
-                                                    <i class="fas fa-school me-1"></i>
-                                                    {{ user.classes|first.nom }}
-                                                </small>
+                                                <small class="text-muted"><i class="bi bi-building me-1"></i>{{ user.classes|first.nom }}</small>
                                             {% elseif 'ROLE_ETUDIANT' in user.roles %}
-                                                <br><small class="text-muted fst-italic">Non assigné à une classe</small>
+                                                <small class="text-muted">Non assigné à une classe</small>
                                             {% endif %}
                                         </div>
                                     </div>
                                 </td>
                                 <td>{{ user.email }}</td>
                                 <td>
-                                    {% if 'ROLE_ADMIN' in user.roles %}
-                                        <span class="badge role-badge role-admin">Administrateur</span>
-                                    {% elseif 'ROLE_ENSEIGNANT' in user.roles %}
-                                        <span class="badge role-badge role-enseignant">Enseignant</span>
-                                    {% elseif 'ROLE_ETUDIANT' in user.roles %}
-                                        <span class="badge role-badge role-etudiant">Étudiant</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Utilisateur</span>
-                                    {% endif %}
+                                    {% include 'partials/_role_badge.html.twig' with { role: user_role_label(user) } %}
                                 </td>
                                 <td>
                                     {% if user.derniereConnexion %}
-                                        <span class="text-success">
-                                            <i class="fas fa-check-circle me-1"></i>
-                                            {{ user.derniereConnexion|date('d/m/Y H:i') }}
-                                        </span>
+                                        <span class="text-muted">{{ user.derniereConnexion|date('d/m/Y H:i') }}</span>
                                     {% else %}
-                                        <span class="text-muted">
-                                            <i class="fas fa-times-circle me-1"></i>
-                                            Jamais connecté
-                                        </span>
+                                        <span class="text-muted">Jamais connecté</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
+                                <td class="text-end">
+                                    {% if canManageUser %}
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-icon-ghost" title="Voir">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><h6 class="dropdown-header">Changer le rôle</h6></li>
-                                            {% if 'ROLE_ETUDIANT' not in user.roles %}
-                                                <li>
-                                                    <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}" class="d-inline">
-                                                        <input type="hidden" name="role" value="ROLE_ETUDIANT">
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="fas fa-user-graduate"></i> Étudiant
+                                        <div class="dropdown">
+                                            <button class="btn btn-icon-ghost" type="button" data-bs-toggle="dropdown" aria-label="Plus d'actions">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><h6 class="dropdown-header">Changer le rôle</h6></li>
+                                                {% if 'ROLE_ETUDIANT' not in user.roles %}
+                                                    <li>
+                                                        <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                                                            <input type="hidden" name="role" value="ROLE_ETUDIANT">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                                                            <button type="submit" class="dropdown-item"><i class="bi bi-mortarboard me-2"></i>Étudiant</button>
+                                                        </form>
+                                                    </li>
+                                                {% endif %}
+                                                {% if 'ROLE_ENSEIGNANT' not in user.roles %}
+                                                    <li>
+                                                        <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                                                            <input type="hidden" name="role" value="ROLE_ENSEIGNANT">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                                                            <button type="submit" class="dropdown-item"><i class="bi bi-person-workspace me-2"></i>Enseignant</button>
+                                                        </form>
+                                                    </li>
+                                                {% endif %}
+                                                {% if 'ROLE_ADMIN_ECOLE' not in user.roles %}
+                                                    <li>
+                                                        <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                                                            <input type="hidden" name="role" value="ROLE_ADMIN_ECOLE">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                                                            <button type="submit" class="dropdown-item"><i class="bi bi-building me-2"></i>Administration école</button>
+                                                        </form>
+                                                    </li>
+                                                {% endif %}
+                                                {% if is_granted('ROLE_SUPER_ADMIN') and 'ROLE_SUPER_ADMIN' not in user.roles %}
+                                                    <li>
+                                                        <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                                                            <input type="hidden" name="role" value="ROLE_SUPER_ADMIN">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                                                            <button type="submit" class="dropdown-item"><i class="bi bi-shield-lock me-2"></i>Super administrateur</button>
+                                                        </form>
+                                                    </li>
+                                                {% endif %}
+                                                {% if app.user and user.id != app.user.id %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form id="delete-user-{{ user.id }}" method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_users_delete_' ~ user.id) }}">
+                                                        </form>
+                                                        <button type="button" class="dropdown-item text-danger"
+                                                            data-confirm-delete
+                                                            data-confirm-form="delete-user-{{ user.id }}"
+                                                            data-confirm-name="{{ user_full_name(user) }}"
+                                                            data-confirm-message="Le compte sera définitivement supprimé. Cette action est irréversible.">
+                                                            <i class="bi bi-trash me-2"></i>Supprimer
                                                         </button>
-                                                    </form>
-                                                </li>
-                                            {% endif %}
-                                            {% if 'ROLE_ENSEIGNANT' not in user.roles %}
-                                                <li>
-                                                    <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}" class="d-inline">
-                                                        <input type="hidden" name="role" value="ROLE_ENSEIGNANT">
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="fas fa-chalkboard-teacher"></i> Enseignant
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            {% endif %}
-                                            {% if 'ROLE_ADMIN' not in user.roles %}
-                                                <li>
-                                                    <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}" class="d-inline">
-                                                        <input type="hidden" name="role" value="ROLE_ADMIN">
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="fas fa-user-shield"></i> Administrateur
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            {% endif %}
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="{{ path('admin_users_show', {id: user.id}) }}">
-                                                <i class="fas fa-eye"></i> Voir détails
-                                            </a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="fas fa-trash"></i> Supprimer
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
                                     </div>
-                                    {% if not app.user or user.id != app.user.id %}
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ user.id }}, '{{ csrf_token('delete' ~ user.id) }}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    {% else %}
+                                        <span class="text-muted small">Protégé</span>
                                     {% endif %}
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="6">
-                                    <div class="empty-state">
-                                        <i class="fas fa-users fa-3x text-muted"></i>
-                                        <h3>Aucun utilisateur trouvé</h3>
-                                        <p>Commencez par ajouter votre premier utilisateur</p>
-                                        <a href="{{ path('admin_users_new') }}" class="btn btn-admin">
-                                            <i class="fas fa-user-plus"></i> Ajouter un utilisateur
-                                        </a>
-                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </div>
+        {% else %}
+            <div class="p-4">
+                {% include 'partials/_empty_state.html.twig' with {
+                    icon: 'people',
+                    text: 'Aucun utilisateur enregistré',
+                    cta_url: path('admin_users_new'),
+                    cta_label: 'Ajouter un utilisateur'
+                } %}
+            </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
 
-<script>
-function confirmDelete(userId, csrfToken) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/users/${userId}/delete`;
-        
-        const token = document.createElement('input');
-        token.type = 'hidden';
-        token.name = '_token';
-        token.value = csrfToken;
-        
-        form.appendChild(token);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
+{% block javascripts %}
+{{ parent() }}
+{% if users|length > 0 %}
+<script type="module">
+    import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@9.0.4/+esm';
+    new DataTable('#datatable-users', {
+        searchable: true,
+        perPage: 15,
+        labels: {
+            placeholder: 'Rechercher…',
+            perPage: 'Lignes par page',
+            noRows: 'Aucun utilisateur',
+            info: '{start} à {end} sur {rows}',
+        }
+    });
 </script>
+{% endif %}
 {% endblock %}

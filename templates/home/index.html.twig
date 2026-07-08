@@ -1,17 +1,29 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_public.html.twig' %}
 
-{% block title %}Bienvenue sur JEAI Learn{% endblock %}
+{% block title %}MERJ{% endblock %}
 
-{% block body %}
-<div class="container text-center mt-5">
-    <h1 class="mb-3">🎓 Bienvenue sur <strong>JEAI Learn</strong></h1>
-    <p class="lead mb-4">Une plateforme intuitive pour apprendre, partager et progresser.</p>
+{% block layout %}
+    <div class="login-layout">
+        <aside class="login-panel">
+            <div class="login-panel__logo">MERJ</div>
+            <p class="login-panel__baseline">
+                Plateforme pédagogique de gestion des cours, classes et plannings.
+            </p>
+        </aside>
 
-    {% if not app.user %}
-        <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg me-2">S'inscrire</a>
-        <a href="{{ path('app_login') }}" class="btn btn-outline-secondary btn-lg">Se connecter</a>
-    {% else %}
-        <a href="{{ path('app_cours') }}" class="btn btn-success btn-lg">Voir les cours</a>
-    {% endif %}
-</div>
+        <div class="login-form-side">
+            <div class="login-form-wrap">
+                <h1 class="h4 mb-1">Bienvenue</h1>
+                <p class="text-muted mb-4">Connectez-vous pour accéder à votre espace personnel</p>
+
+                <a href="{{ path('app_login') }}" class="btn btn-primary w-100">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
+                </a>
+
+                <p class="text-center text-muted small mt-4 mb-0">
+                    Comptes créés par l'administrateur
+                </p>
+            </div>
+        </div>
+    </div>
 {% endblock %}

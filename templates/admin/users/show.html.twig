@@ -1,229 +1,189 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails de l'utilisateur {{ user.nom }} {{ user.prenom }}{% endblock %}
+{% block title %}{{ user_full_name(user) }}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-user"></i> Détails de l'utilisateur</h1>
-                <div>
-                    <a href="{{ path('admin_users') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour à la liste
-                    </a>
-                </div>
-            </div>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Administration',
+    title: user_full_name(user),
+    description: user.email,
+    actions: '<a href="' ~ path('admin_users') ~ '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>'
+} %}
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-info-circle"></i> Informations personnelles</h5>
-                        </div>
-                        <div class="card-body">
-                            <dl class="row">
-                                <dt class="col-sm-4">Nom :</dt>
-                                <dd class="col-sm-8">{{ user.nom }}</dd>
-                                
-                                <dt class="col-sm-4">Prénom :</dt>
-                                <dd class="col-sm-8">{{ user.prenom }}</dd>
-                                
-                                <dt class="col-sm-4">Email :</dt>
-                                <dd class="col-sm-8">{{ user.email }}</dd>
-                                
-                                <dt class="col-sm-4">Dernière connexion :</dt>
-                                <dd class="col-sm-8">{{ user.derniereConnexion ? user.derniereConnexion|date('d/m/Y H:i') : 'Jamais connecté' }}</dd>
-                                
-                                <dt class="col-sm-4">Dernière déconnexion :</dt>
-                                <dd class="col-sm-8">{{ user.derniereDeconnexion ? user.derniereDeconnexion|date('d/m/Y H:i') : 'Non disponible' }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-shield-alt"></i> Informations du compte</h5>
-                        </div>
-                        <div class="card-body">
-                            <dl class="row">
-                                <dt class="col-sm-4">Rôles :</dt>
-                                <dd class="col-sm-8">
-                                    {% for role in user.roles %}
-                                        {% if role == 'ROLE_ADMIN' %}
-                                            <span class="badge bg-danger">{{ role }}</span>
-                                        {% elseif role == 'ROLE_ENSEIGNANT' %}
-                                            <span class="badge bg-warning">{{ role }}</span>
-                                        {% elseif role == 'ROLE_ETUDIANT' %}
-                                            <span class="badge bg-primary">{{ role }}</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ role }}</span>
-                                        {% endif %}
-                                    {% endfor %}
-                                </dd>
-                                
-                                <dt class="col-sm-4">Statut :</dt>
-                                <dd class="col-sm-8">
-                                    <span class="badge bg-success">Actif</span>
-                                </dd>
-                                
-                                <dt class="col-sm-4">ID utilisateur :</dt>
-                                <dd class="col-sm-8">{{ user.id }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {% if 'ROLE_ETUDIANT' in user.roles and user.classes is defined and user.classes|length > 0 %}
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-graduation-cap"></i> Informations étudiant</h5>
-                        </div>
-                        <div class="card-body">
-                            <dl class="row">
-                                <dt class="col-sm-3">Classes :</dt>
-                                <dd class="col-sm-9">
-                                    {% for classe in user.classes %}
-                                        <a href="{{ path('admin_classes_show', {id: classe.id}) }}" class="text-decoration-none me-2">
-                                            <span class="badge bg-info">{{ classe.nom }}</span>
-                                        </a>
-                                    {% endfor %}
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if 'ROLE_ENSEIGNANT' in user.roles %}
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-chalkboard-teacher"></i> Classes enseignées</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if user.classesEnseignees is defined and user.classesEnseignees|length > 0 %}
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Nom de la classe</th>
-                                                <th>Description</th>
-                                                <th>Nombre d'étudiants</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for classe in user.classesEnseignees %}
-                                            <tr>
-                                                <td>{{ classe.nom }}</td>
-                                                <td>{{ classe.description|slice(0, 50) }}{% if classe.description|length > 50 %}...{% endif %}</td>
-                                                <td>{{ classe.etudiants|length }}</td>
-                                                <td>
-                                                    <a href="{{ path('admin_classes_show', {id: classe.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-eye"></i> Voir
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> Cet enseignant n'est assigné à aucune classe.
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if 'ROLE_ENSEIGNANT' in user.roles and user.coursCreated is defined and user.coursCreated|length > 0 %}
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-book"></i> Cours créés</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Titre</th>
-                                            <th>Description</th>
-                                            <th>Modules</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for cours in user.coursCreated %}
-                                        <tr>
-                                            <td>{{ cours.titre }}</td>
-                                            <td>{{ cours.description|slice(0, 50) }}{% if cours.description|length > 50 %}...{% endif %}</td>
-                                            <td>{{ cours.modules|length }}</td>
-                                            <td>
-                                                <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i> Voir
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-tools"></i> Actions administratives</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex gap-2">
-                                {% if 'ROLE_ADMIN' not in user.roles %}
-                                <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
-                                    <input type="hidden" name="role" value="ROLE_ADMIN">
-                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir donner les droits administrateur à cet utilisateur ?')">
-                                        <i class="fas fa-user-shield"></i> Promouvoir Admin
-                                    </button>
-                                </form>
-                                {% endif %}
-                                
-                                {% if 'ROLE_ENSEIGNANT' not in user.roles %}
-                                <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
-                                    <input type="hidden" name="role" value="ROLE_ENSEIGNANT">
-                                    <button type="submit" class="btn btn-outline-warning">
-                                        <i class="fas fa-chalkboard-teacher"></i> Promouvoir Enseignant
-                                    </button>
-                                </form>
-                                {% endif %}
-                                
-                                <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                    <button type="submit" class="btn btn-outline-danger">
-                                        <i class="fas fa-trash"></i> Supprimer
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-3"><i class="bi bi-person me-2 text-muted"></i>Informations personnelles</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Nom</dt>
+                    <dd class="col-sm-7">{{ user.nom }}</dd>
+                    <dt class="col-sm-5 text-muted">Prénom</dt>
+                    <dd class="col-sm-7">{{ user.prenom }}</dd>
+                    <dt class="col-sm-5 text-muted">Email</dt>
+                    <dd class="col-sm-7">{{ user.email }}</dd>
+                    <dt class="col-sm-5 text-muted">Dernière connexion</dt>
+                    <dd class="col-sm-7">{{ user.derniereConnexion ? user.derniereConnexion|date('d/m/Y H:i') : 'Jamais connecté' }}</dd>
+                    <dt class="col-sm-5 text-muted">Dernière déconnexion</dt>
+                    <dd class="col-sm-7">{{ user.derniereDeconnexion ? user.derniereDeconnexion|date('d/m/Y H:i') : 'Non disponible' }}</dd>
+                </dl>
             </div>
         </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 mb-3"><i class="bi bi-shield-check me-2 text-muted"></i>Compte</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Rôles</dt>
+                    <dd class="col-sm-7">
+                        {% include 'partials/_role_badge.html.twig' with { role: user_role_label(user) } %}
+                    </dd>
+                    <dt class="col-sm-5 text-muted">Statut</dt>
+                    <dd class="col-sm-7"><span class="badge bg-success-subtle text-success border">Actif</span></dd>
+                    <dt class="col-sm-5 text-muted">Identifiant</dt>
+                    <dd class="col-sm-7 tabular-nums">{{ user.id }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if 'ROLE_ETUDIANT' in user.roles and user.classes is defined and user.classes|length > 0 %}
+<div class="card mt-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-mortarboard me-2 text-muted"></i>Classes</h2>
+        <div class="d-flex flex-wrap gap-2">
+            {% for classe in user.classes %}
+                <a href="{{ path('admin_classes_show', {id: classe.id}) }}" class="badge bg-light text-dark border text-decoration-none">{{ classe.nom }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if 'ROLE_ENSEIGNANT' in user.roles %}
+<div class="card mt-4">
+    <div class="card-body p-0">
+        <div class="p-3 border-bottom">
+            <h2 class="h6 mb-0"><i class="bi bi-building me-2 text-muted"></i>Classes enseignées</h2>
+        </div>
+        {% if user.classesEnseignees is defined and user.classesEnseignees|length > 0 %}
+            <div class="table-responsive">
+                <table class="table-app">
+                    <thead>
+                        <tr>
+                            <th>Classe</th>
+                            <th>Description</th>
+                            <th>Étudiants</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for classe in user.classesEnseignees %}
+                            <tr>
+                                <td class="fw-semibold">{{ classe.nom }}</td>
+                                <td class="text-muted">{{ classe.description|slice(0, 60) }}{% if classe.description|length > 60 %}…{% endif %}</td>
+                                <td class="tabular-nums">{{ classe.etudiants|length }}</td>
+                                <td class="text-end">
+                                    <a href="{{ path('admin_classes_show', {id: classe.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4">
+                {% include 'partials/_empty_state.html.twig' with {
+                    icon: 'building',
+                    text: 'Cet enseignant n\'est assigné à aucune classe'
+                } %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if 'ROLE_ENSEIGNANT' in user.roles and user.coursCreated is defined and user.coursCreated|length > 0 %}
+<div class="card mt-4">
+    <div class="card-body p-0">
+        <div class="p-3 border-bottom">
+            <h2 class="h6 mb-0"><i class="bi bi-book me-2 text-muted"></i>Cours créés</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table-app">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Modules</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cours in user.coursCreated %}
+                        <tr>
+                            <td class="fw-semibold">{{ cours.titre }}</td>
+                            <td class="text-muted">{{ cours.description|slice(0, 60) }}{% if cours.description|length > 60 %}…{% endif %}</td>
+                            <td class="tabular-nums">{{ cours.modules|length }}</td>
+                            <td class="text-end">
+                                <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-gear me-2 text-muted"></i>Actions</h2>
+        {% set isTargetSuperAdmin = 'ROLE_SUPER_ADMIN' in user.roles %}
+        {% set canManageUser = not isTargetSuperAdmin or (can_manage_super_admin|default(false)) %}
+        {% if canManageUser %}
+        <div class="d-flex flex-wrap gap-2">
+            {% if 'ROLE_ADMIN_ECOLE' not in user.roles and 'ROLE_SUPER_ADMIN' not in user.roles %}
+                <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                    <input type="hidden" name="role" value="ROLE_ADMIN_ECOLE">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                    <button type="submit" class="btn btn-outline-warning btn-sm"><i class="bi bi-building me-1"></i>Administration école</button>
+                </form>
+            {% endif %}
+            {% if can_manage_super_admin|default(false) and 'ROLE_SUPER_ADMIN' not in user.roles %}
+                <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                    <input type="hidden" name="role" value="ROLE_SUPER_ADMIN">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-shield-lock me-1"></i>Super administrateur</button>
+                </form>
+            {% endif %}
+            {% if 'ROLE_ENSEIGNANT' not in user.roles %}
+                <form method="POST" action="{{ path('admin_users_toggle_role', {id: user.id}) }}">
+                    <input type="hidden" name="role" value="ROLE_ENSEIGNANT">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_users_toggle_role_' ~ user.id) }}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-person-workspace me-1"></i>Promouvoir enseignant</button>
+                </form>
+            {% endif %}
+            {% if app.user and user.id != app.user.id %}
+                <form id="delete-user-show-{{ user.id }}" method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_users_delete_' ~ user.id) }}">
+                </form>
+                <button type="button" class="btn btn-outline-danger btn-sm"
+                    data-confirm-delete
+                    data-confirm-form="delete-user-show-{{ user.id }}"
+                    data-confirm-name="{{ user_full_name(user) }}"
+                    data-confirm-message="Le compte sera définitivement supprimé. Cette action est irréversible.">
+                    <i class="bi bi-trash me-1"></i>Supprimer
+                </button>
+            {% endif %}
+        </div>
+        {% else %}
+            <p class="text-muted small mb-0">Ce compte super administrateur ne peut être modifié que par un autre super administrateur.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

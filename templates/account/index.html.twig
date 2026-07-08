@@ -3,94 +3,58 @@
 {% block title %}Mon compte{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">👤 Mon compte</h2>
-                <div>
-                    <a href="{{ path('app_account_edit') }}" class="btn btn-outline-primary btn-sm me-2" title="Modifier mes informations">
-                        <i class="fas fa-edit"></i> Modifier le profil
-                    </a>
-                    <a href="{{ path('app_account_password') }}" class="btn btn-outline-warning btn-sm" title="Changer le mot de passe">
-                        <i class="fas fa-key"></i> Changer le mot de passe
-                    </a>
-                </div>
-            </div>
+{% set headerActions %}
+    <a href="{{ path('app_account_edit') }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-pencil me-1"></i> Modifier
+    </a>
+    <a href="{{ path('app_account_password') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-key me-1"></i> Mot de passe
+    </a>
+{% endset %}
 
-            <!-- Informations personnelles -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-user"></i> Informations personnelles</h5>
-                    <a href="{{ path('app_account_edit') }}" class="btn btn-link p-0" title="Modifier">
-                        <i class="fas fa-pencil-alt text-primary"></i>
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <strong>Email :</strong>
-                        </div>
-                        <div class="col-sm-8">
-                            {{ user.email }}
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <strong>Nom :</strong>
-                        </div>
-                        <div class="col-sm-8">
-                            {{ user.nom ?? 'Non défini' }}
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <strong>Prénom :</strong>
-                        </div>
-                        <div class="col-sm-8">
-                            {{ user.prenom ?? 'Non défini' }}
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <strong>Rôle :</strong>
-                        </div>
-                        <div class="col-sm-8">
-                            <span class="badge bg-primary">{{ user.roles[0] ?? 'ROLE_USER' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+{% include 'partials/_page_header.html.twig' with {
+    title: 'Mon compte',
+    description: 'Informations personnelles et sécurité.',
+    actions: headerActions
+} only %}
 
-            <!-- Sécurité -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Sécurité</h5>
-                    <a href="{{ path('app_account_password') }}" class="btn btn-link p-0" title="Changer le mot de passe">
-                        <i class="fas fa-pencil-alt text-warning"></i>
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <strong>Mot de passe :</strong>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Informations personnelles</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Email</dt>
+                    <dd class="col-sm-8">{{ user.email }}</dd>
+                    <dt class="col-sm-4 text-muted">Nom</dt>
+                    <dd class="col-sm-8">{{ user.nom ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Prénom</dt>
+                    <dd class="col-sm-8">{{ user.prenom ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Rôle</dt>
+                    <dd class="col-sm-8">
+                        {% include 'partials/_role_badge.html.twig' %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Sécurité</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Mot de passe</dt>
+                    <dd class="col-sm-8">
+                        <span class="text-muted">••••••••</span>
+                        <div class="text-muted small mt-1">
+                            Dernière modification :
+                            {% if user.passwordUpdatedAt %}
+                                {{ user.passwordUpdatedAt|date('d/m/Y') }}
+                            {% else %}
+                                jamais modifié
+                            {% endif %}
                         </div>
-                        <div class="col-sm-8">
-                            <span class="text-muted">••••••••</span>
-                            <small class="text-muted d-block">
-                                Dernière modification : 
-                                {% if user.passwordUpdatedAt %}
-                                    {{ user.passwordUpdatedAt|date('d/m/Y à H:i') }}
-                                {% else %}
-                                    <span class="text-warning">Jamais modifié</span>
-                                {% endif %}
-                            </small>
-                        </div>
-                    </div>
-                </div>
+                    </dd>
+                </dl>
             </div>
         </div>
     </div>

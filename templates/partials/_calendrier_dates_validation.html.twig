@@ -1,0 +1,64 @@
+<script>
+(function () {
+  const startEl = document.getElementById('{{ startId }}');
+  const endEl = document.getElementById('{{ endId }}');
+  const form = startEl?.closest('form');
+  if (!startEl || !endEl || !form) return;
+
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function toLocalDatetime(date) {
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
+      'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+  }
+
+  function validateDates() {
+    if (!startEl.value || !endEl.value) {
+      endEl.setCustomValidity('');
+      return true;
+    }
+
+    if (endEl.value <= startEl.value) {
+      endEl.setCustomValidity('La date de fin doit être postérieure à la date de début.');
+      return false;
+    }
+
+    endEl.setCustomValidity('');
+    return true;
+  }
+
+  function syncEndMin() {
+    if (startEl.value) {
+      endEl.min = startEl.value;
+    }
+    validateDates();
+  }
+
+  startEl.addEventListener('change', function () {
+    if (!startEl.value) return;
+
+    if (!endEl.value || endEl.value <= startEl.value) {
+      const next = new Date(startEl.value);
+      next.setMinutes(next.getMinutes() + 30);
+      endEl.value = toLocalDatetime(next);
+    }
+
+    syncEndMin();
+  });
+
+  endEl.addEventListener('change', syncEndMin);
+  endEl.addEventListener('input', syncEndMin);
+
+  form.addEventListener('submit', function (e) {
+    syncEndMin();
+    if (!validateDates()) {
+      e.preventDefault();
+      endEl.reportValidity();
+    }
+  });
+
+  syncEndMin();
+})();
+</script>

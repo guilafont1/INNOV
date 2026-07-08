@@ -1,251 +1,125 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des Classes - Administration{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .admin-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .admin-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-        .admin-header {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .classe-card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-        }
-        .classe-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        }
-        .btn-admin {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            color: white;
-        }
-        .btn-admin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            color: white;
-        }
-        .stats-badge {
-            background: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-        }
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-    </style>
-{% endblock %}
+{% block title %}Gestion des classes{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <!-- En-tête -->
-    <div class="admin-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="mb-2">🏫 Gestion des Classes</h1>
-                <p class="mb-0">Créez et gérez toutes les classes de la plateforme</p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <div class="d-flex justify-content-md-end gap-2">
-                    <a href="{{ path('admin_classes_new') }}" class="btn btn-light">
-                        <i class="fas fa-plus"></i> Nouvelle Classe
-                    </a>
-                    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left"></i> Retour
-                    </a>
-                </div>
-            </div>
-        </div>
+{% set totalEtudiants = 0 %}
+{% set totalProfs = 0 %}
+{% set totalCours = 0 %}
+{% for classe in classes %}
+    {% set totalEtudiants = totalEtudiants + classe.etudiants|length %}
+    {% set totalProfs = totalProfs + classe.professeurs|length %}
+    {% set totalCours = totalCours + classe.cours|length %}
+{% endfor %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Administration',
+    title: 'Classes',
+    description: 'Créez et gérez les classes de la plateforme',
+    actions: '<a href="' ~ path('admin_dashboard') ~ '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+              <a href="' ~ path('admin_classes_new') ~ '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nouvelle classe</a>'
+} %}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'building', value: classes|length, label: 'Classes' } %}
     </div>
-
-    <!-- Statistiques rapides -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card admin-card text-center">
-                <div class="card-body">
-                    <h3 class="text-primary">{{ classes|length }}</h3>
-                    <p class="text-muted mb-0">Classes Total</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card admin-card text-center">
-                <div class="card-body">
-                    <h3 class="text-success">
-                        {% set totalEtudiants = 0 %}
-                        {% for classe in classes %}
-                            {% set totalEtudiants = totalEtudiants + classe.etudiants|length %}
-                        {% endfor %}
-                        {{ totalEtudiants }}
-                    </h3>
-                    <p class="text-muted mb-0">Étudiants Inscrits</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card admin-card text-center">
-                <div class="card-body">
-                    <h3 class="text-warning">
-                        {% set totalProfs = 0 %}
-                        {% for classe in classes %}
-                            {% set totalProfs = totalProfs + classe.professeurs|length %}
-                        {% endfor %}
-                        {{ totalProfs }}
-                    </h3>
-                    <p class="text-muted mb-0">Professeurs Assignés</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card admin-card text-center">
-                <div class="card-body">
-                    <h3 class="text-info">
-                        {% set totalCours = 0 %}
-                        {% for classe in classes %}
-                            {% set totalCours = totalCours + classe.cours|length %}
-                        {% endfor %}
-                        {{ totalCours }}
-                    </h3>
-                    <p class="text-muted mb-0">Cours Associés</p>
-                </div>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'mortarboard', value: totalEtudiants, label: 'Étudiants inscrits' } %}
     </div>
-
-    <!-- Liste des classes -->
-    <div class="card admin-card">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">📋 Liste des Classes</h5>
-            <a href="{{ path('admin_classes_new') }}" class="btn btn-admin">
-                <i class="fas fa-plus"></i> Créer une classe
-            </a>
-        </div>
-        <div class="card-body">
-            {% if classes|length > 0 %}
-                <div class="row">
-                    {% for classe in classes %}
-                        <div class="col-lg-6 mb-3">
-                            <div class="classe-card card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h5 class="card-title mb-1">{{ classe.nom }}</h5>
-                                            <p class="card-text text-muted small mb-2">
-                                                {{ classe.description ?? 'Aucune description' }}
-                                            </p>
-                                        </div>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="{{ path('admin_classes_show', {id: classe.id}) }}">
-                                                    <i class="fas fa-eye"></i> Voir détails
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="{{ path('admin_classes_edit', {id: classe.id}) }}">
-                                                    <i class="fas fa-edit"></i> Modifier
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="{{ path('admin_planning') }}">
-                                                    <i class="fas fa-calendar"></i> Planning
-                                                </a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ classe.id }}, '{{ csrf_token("delete" ~ classe.id) }}')">
-                                                    <i class="fas fa-trash"></i> Supprimer
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-flex flex-wrap gap-2 mb-3">
-                                        <span class="stats-badge">
-                                            <i class="fas fa-users"></i> {{ classe.etudiants|length }} étudiants
-                                        </span>
-                                        <span class="stats-badge">
-                                            <i class="fas fa-chalkboard-teacher"></i> {{ classe.professeurs|length }} professeurs
-                                        </span>
-                                        <span class="stats-badge">
-                                            <i class="fas fa-book"></i> {{ classe.cours|length }} cours
-                                        </span>
-                                    </div>
-
-                                    <div class="d-flex gap-2">
-                                        <a href="{{ path('admin_classes_show', {id: classe.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> Voir
-                                        </a>
-                                        <a href="{{ path('admin_classes_edit', {id: classe.id}) }}" class="btn btn-sm btn-outline-warning">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </a>
-                                        <a href="{{ path('admin_classes_manage', {id: classe.id}) }}" class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-cog"></i> Gérer
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-school"></i>
-                    <h3>Aucune classe créée</h3>
-                    <p>Commencez par créer votre première classe pour organiser vos cours</p>
-                    <a href="{{ path('admin_classes_new') }}" class="btn btn-admin">
-                        <i class="fas fa-plus"></i> Créer ma première classe
-                    </a>
-                </div>
-            {% endif %}
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'person-workspace', value: totalProfs, label: 'Enseignants assignés' } %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'book', value: totalCours, label: 'Cours associés' } %}
     </div>
 </div>
 
-<script>
-function confirmDelete(classeId, csrfToken) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Cette action supprimera aussi toutes les données associées (notes, progressions, etc.).')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/classes/${classeId}/delete`;
-        
-        const token = document.createElement('input');
-        token.type = 'hidden';
-        token.name = '_token';
-        token.value = csrfToken;
-        
-        form.appendChild(token);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
+<div class="card">
+    <div class="card-body p-0">
+        {% if classes|length > 0 %}
+            <div class="table-responsive">
+                <table id="datatable-classes" class="table-app">
+                    <thead>
+                        <tr>
+                            <th>Classe</th>
+                            <th>Description</th>
+                            <th>Étudiants</th>
+                            <th>Enseignants</th>
+                            <th>Cours</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for classe in classes %}
+                            <tr>
+                                <td class="fw-semibold">{{ classe.nom }}</td>
+                                <td class="text-muted">{{ classe.description ? classe.description|slice(0, 60) ~ (classe.description|length > 60 ? '…' : '') : '—' }}</td>
+                                <td class="tabular-nums">{{ classe.etudiants|length }}</td>
+                                <td class="tabular-nums">{{ classe.professeurs|length }}</td>
+                                <td class="tabular-nums">{{ classe.cours|length }}</td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{{ path('admin_classes_show', {id: classe.id}) }}" class="btn btn-icon-ghost" title="Voir"><i class="bi bi-eye"></i></a>
+                                        <a href="{{ path('admin_classes_manage', {id: classe.id}) }}" class="btn btn-icon-ghost" title="Gérer"><i class="bi bi-gear"></i></a>
+                                        <div class="dropdown">
+                                            <button class="btn btn-icon-ghost" type="button" data-bs-toggle="dropdown" aria-label="Plus d'actions">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{{ path('admin_classes_edit', {id: classe.id}) }}"><i class="bi bi-pencil me-2"></i>Modifier</a></li>
+                                                <li><a class="dropdown-item" href="{{ path('admin_planning', {classe: classe.id}) }}"><i class="bi bi-calendar3 me-2"></i>Planning</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form id="delete-classe-{{ classe.id }}" method="POST" action="{{ path('admin_classes_delete', {id: classe.id}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_classes_delete_' ~ classe.id) }}">
+                                                    </form>
+                                                    <button type="button" class="dropdown-item text-danger"
+                                                        data-confirm-delete
+                                                        data-confirm-form="delete-classe-{{ classe.id }}"
+                                                        data-confirm-name="{{ classe.nom }}"
+                                                        data-confirm-message="La classe et les données associées seront supprimées. Cette action est irréversible.">
+                                                        <i class="bi bi-trash me-2"></i>Supprimer
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4">
+                {% include 'partials/_empty_state.html.twig' with {
+                    icon: 'building',
+                    text: 'Aucune classe créée',
+                    cta_url: path('admin_classes_new'),
+                    cta_label: 'Créer une classe'
+                } %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{% if classes|length > 0 %}
+<script type="module">
+    import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@9.0.4/+esm';
+    new DataTable('#datatable-classes', {
+        searchable: true,
+        perPage: 15,
+        labels: {
+            placeholder: 'Rechercher…',
+            perPage: 'Lignes par page',
+            noRows: 'Aucune classe',
+            info: '{start} à {end} sur {rows}',
+        }
+    });
 </script>
+{% endif %}
 {% endblock %}

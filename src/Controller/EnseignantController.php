@@ -18,11 +18,10 @@ class EnseignantController extends AbstractController
         try {
             $user = $this->getUser();
             
-            // Pour l'instant, récupérer tous les cours car la relation createdBy n'est pas configurée
-            $cours = $coursRepository->findAll();
+            $cours = $coursRepository->findForEnseignant($user);
 
             if (empty($cours)) {
-                $message = $this->isGranted('ROLE_ADMIN') 
+                $message = $this->isGranted('ROLE_ADMIN_ECOLE') 
                     ? 'Aucun cours disponible pour le moment.'
                     : 'Aucun cours disponible pour le moment.';
                 $this->addFlash('info', $message);
@@ -45,8 +44,7 @@ class EnseignantController extends AbstractController
         try {
             $user = $this->getUser();
             
-            // Pour l'instant, récupérer tous les cours car la relation createdBy n'est pas configurée
-            $cours = $coursRepository->findAll();
+            $cours = $coursRepository->findForEnseignant($user);
 
             // Vérifier si $cours est bien un tableau
             if (!is_array($cours)) {
@@ -73,9 +71,6 @@ class EnseignantController extends AbstractController
                 'evenementsAvenir' => $evenementsAvenir,
             ]);
         } catch (\Exception $e) {
-            // Log l'erreur pour le debugging
-            error_log('Erreur dashboard: ' . $e->getMessage());
-            
             $this->addFlash('error', 'Erreur lors du chargement du tableau de bord.');
             return $this->render('enseignant/dashboard.html.twig', [
                 'cours' => [],
@@ -125,7 +120,7 @@ class EnseignantController extends AbstractController
                     'type' => 'cours_created',
                     'message' => 'Nouveau cours créé: ' . $c->getTitre(),
                     'date' => $c->getCreatedAt(),
-                    'icon' => '📚',
+                    'icon' => 'bi-journal-text',
                 ];
             }
         }

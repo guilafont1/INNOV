@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modules{% endblock %}
+
+{% block body %}
+{% include 'partials/_page_header.html.twig' with {
+    title: 'Modules',
+    description: 'Liste des modules disponibles.'
+} only %}
+
+{% if modules is empty %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'layers',
+        text: 'Aucun module disponible pour le moment.'
+    } only %}
+{% else %}
+    <div class="row g-3">
+        {% for module in modules %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h5 mb-2">{{ module.titre }}</h2>
+                        {% if module.cours %}
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-journal-bookmark me-1"></i>
+                                <a href="{{ path('app_cours_show', {id: module.cours.id}) }}">{{ module.cours.titre }}</a>
+                            </p>
+                        {% endif %}
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-file-text me-1"></i> {{ module.chapitres|length }} chapitre(s)
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            <a href="{{ path('app_module_show', {id: module.id}) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye me-1"></i> Voir
+                            </a>
+                            {% if is_granted('ROLE_ENSEIGNANT') %}
+                                <a href="{{ path('app_module_edit', {id: module.id}) }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i> Modifier
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if is_granted('ROLE_ENSEIGNANT') %}
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <form method="post" action="{{ path('app_module_delete', {id: module.id}) }}" id="delete-module-{{ module.id }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}">
+                                <button type="button" class="btn btn-outline-danger btn-sm w-100"
+                                        data-confirm-delete
+                                        data-confirm-form="delete-module-{{ module.id }}"
+                                        data-confirm-name="ce module">
+                                    <i class="bi bi-trash me-1"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

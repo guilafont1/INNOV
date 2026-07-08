@@ -1,4 +1,10 @@
 security:
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN_ECOLE]
+        ROLE_ADMIN_ECOLE: [ROLE_USER]
+        ROLE_ENSEIGNANT: [ROLE_USER]
+        ROLE_ETUDIANT: [ROLE_USER]
+
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -19,7 +25,8 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
-                default_target_path: app_home
+                enable_csrf: true
+                default_target_path: app_redirect
                 always_use_default_target_path: false
             logout:
                 path: app_logout
@@ -36,11 +43,15 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/cours, roles: ROLE_USER }
-        - { path: ^/modules, roles: ROLE_USER }
-        - { path: ^/chapitres, roles: ROLE_USER }
+        - { path: ^/module, roles: ROLE_USER }
+        - { path: ^/chapitre, roles: ROLE_USER }
         - { path: ^/forum, roles: ROLE_USER }
         - { path: ^/messages, roles: ROLE_USER }
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/evaluations, roles: ROLE_USER }
+        - { path: ^/api/planning, roles: ROLE_USER }
+        - { path: ^/api/messages, roles: ROLE_USER }
+        - { path: ^/planning/export, roles: ROLE_USER }
+        - { path: ^/admin, roles: ROLE_ADMIN_ECOLE }
         - { path: ^/mon-compte, roles: ROLE_USER }
 
 

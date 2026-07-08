@@ -2,219 +2,173 @@
 
 {% block title %}{{ cours.titre }}{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .module-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        .module-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
-        }
-        .chapitre-item {
-            border: none;
-            border-left: 3px solid #28a745;
-            padding: 10px 15px;
-            margin-bottom: 5px;
-            background-color: #f8f9fa;
-            border-radius: 0 5px 5px 0;
-        }
-        .no-chapitres {
-            border-left: 3px solid #ffc107;
-            background-color: #fff3cd;
-            color: #856404;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
-<div class="container mt-4">
-    <!-- En-tête du cours -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="text-primary">📚 {{ cours.titre }}</h1>
-            <p class="text-muted fs-5">{{ cours.description }}</p>
-            <small class="text-secondary">
-                Créé le {{ cours.createdAt|date('d/m/Y à H:i') }}
-                {% if cours.createdBy %}
-                    par {{ cours.createdBy.prenom }} {{ cours.createdBy.nom }}
-                {% endif %}
-            </small>
-        </div>
-        <div class="d-flex gap-2">
-            {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
-                <a href="{{ path('app_cours_edit', {id: cours.id}) }}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> Modifier
-                </a>
-                <a href="{{ path('app_module_new') }}?coursId={{ cours.id }}" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Ajouter un module
-                </a>
-            {% endif %}
-        </div>
+{% set totalChapitres = 0 %}
+{% for module in modules %}
+    {% set totalChapitres = totalChapitres + module.chapitres|length %}
+{% endfor %}
+
+{% set headerActions %}
+    {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
+        <a href="{{ path('app_cours_edit', {id: cours.id}) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Modifier
+        </a>
+        <a href="{{ path('app_module_new') }}?coursId={{ cours.id }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Module
+        </a>
+    {% endif %}
+{% endset %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Cours',
+    title: cours.titre,
+    description: cours.description,
+    actions: headerActions
+} only %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'layers', value: modules|length, label: 'Modules' } only %}
     </div>
-
-    <!-- Statistiques rapides -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h3 class="text-primary">{{ modules|length }}</h3>
-                    <small class="text-muted">Module(s)</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    {% set totalChapitres = 0 %}
-                    {% for module in modules %}
-                        {% set totalChapitres = totalChapitres + module.chapitres|length %}
-                    {% endfor %}
-                    <h3 class="text-success">{{ totalChapitres }}</h3>
-                    <small class="text-muted">Chapitre(s)</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h3 class="text-info">{{ cours.classes|length }}</h3>
-                    <small class="text-muted">Classe(s)</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h3 class="text-warning">{{ cours.progressions|length }}</h3>
-                    <small class="text-muted">Étudiant(s)</small>
-                </div>
-            </div>
-        </div>
+    <div class="col-6 col-md-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'file-text', value: totalChapitres, label: 'Chapitres' } only %}
     </div>
+    <div class="col-6 col-md-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'people', value: cours.classes|length, label: 'Classes' } only %}
+    </div>
+    <div class="col-6 col-md-3">
+        {% include 'partials/_stat_card.html.twig' with { icon: 'person-check', value: cours.progressions|length, label: 'Étudiants' } only %}
+    </div>
+</div>
 
-    <!-- Modules et chapitres -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4><i class="fas fa-layer-group"></i> Modules et Chapitres</h4>
-                {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user and modules|length > 0 %}
-                    <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-plus"></i> Ajouter un chapitre
-                        </button>
-                        <ul class="dropdown-menu">
-                            {% for module in modules %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}">
-                                        Dans "{{ module.titre }}"
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-            </div>
+{% if progression is defined and progression %}
+    {% set consulted_ids = progression.chapitresConsultees|map(c => c.id)|default([]) %}
+{% else %}
+    {% set consulted_ids = [] %}
+{% endif %}
 
-            {% if modules|length > 0 %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 mb-0">Modules et chapitres</h2>
+    {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user and modules|length > 0 %}
+        <div class="dropdown">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-plus-lg me-1"></i> Chapitre
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
                 {% for module in modules %}
-                    <div class="card module-card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="fas fa-folder text-primary"></i> {{ module.titre }}
-                            </h5>
-                            {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}" class="btn btn-outline-success">
-                                        <i class="fas fa-plus"></i> Chapitre
-                                    </a>
-                                    <a href="{{ path('app_module_edit', {id: module.id}) }}" class="btn btn-outline-warning">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            {% if module.chapitres|length > 0 %}
+                    <li>
+                        <a class="dropdown-item" href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}">
+                            {{ module.titre }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+{% if modules|length > 0 %}
+    <div class="accordion mb-4" id="modulesAccordion">
+        {% for module in modules %}
+            <div class="accordion-item">
+                <h3 class="accordion-header" id="module-heading-{{ module.id }}">
+                    <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#module-collapse-{{ module.id }}"
+                            aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+                            aria-controls="module-collapse-{{ module.id }}">
+                        <i class="bi bi-folder2 me-2"></i> {{ module.titre }}
+                        <span class="badge bg-light text-muted ms-2">{{ module.chapitres|length }}</span>
+                    </button>
+                </h3>
+                <div id="module-collapse-{{ module.id }}"
+                     class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+                     aria-labelledby="module-heading-{{ module.id }}"
+                     data-bs-parent="#modulesAccordion">
+                    <div class="accordion-body p-0">
+                        {% if module.chapitres|length > 0 %}
+                            <ul class="list-group list-group-flush">
                                 {% for chapitre in module.chapitres %}
-                                    <div class="chapitre-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-file-alt text-success"></i>
-                                            <strong>{{ chapitre.titre }}</strong>
-                                            {% if chapitre.contenu %}
-                                                <p class="mb-0 text-muted mt-1">{{ chapitre.contenu|slice(0, 100) }}...</p>
+                                    <li class="list-group-item d-flex align-items-center justify-content-between gap-2">
+                                        <div class="d-flex align-items-center gap-2 min-w-0">
+                                            {% if progression is defined and progression %}
+                                                {% if chapitre.id in consulted_ids %}
+                                                    <i class="bi bi-check-circle-fill text-success flex-shrink-0" title="Consulté"></i>
+                                                {% else %}
+                                                    <i class="bi bi-circle text-muted flex-shrink-0" title="Non consulté"></i>
+                                                {% endif %}
                                             {% endif %}
+                                            <a href="{{ path('app_chapitre_show', {id: chapitre.id}) }}" class="text-truncate">
+                                                {{ chapitre.titre }}
+                                            </a>
                                         </div>
                                         {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{{ path('app_chapitre_show', {id: chapitre.id}) }}" class="btn btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ path('app_chapitre_edit', {id: chapitre.id}) }}" class="btn btn-outline-warning">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </div>
+                                            <a href="{{ path('app_chapitre_edit', {id: chapitre.id}) }}" class="btn btn-icon-ghost flex-shrink-0" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
                                         {% endif %}
-                                    </div>
+                                    </li>
                                 {% endfor %}
-                            {% else %}
-                                <div class="chapitre-item no-chapitres text-center">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <strong>Aucun chapitre dans ce module</strong>
-                                    {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
-                                        <br>
-                                        <a href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}" class="btn btn-sm btn-warning mt-2">
-                                            <i class="fas fa-plus"></i> Créer le premier chapitre
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Aucun module pour ce cours</h5>
-                        <p class="text-muted">Commencez par créer des modules pour structurer votre cours.</p>
+                            </ul>
+                        {% else %}
+                            <div class="p-3 text-muted small">
+                                Aucun chapitre dans ce module.
+                                {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
+                                    <a href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}" class="ms-1">Créer un chapitre</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
                         {% if is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user %}
-                            <a href="{{ path('app_module_new') }}?coursId={{ cours.id }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Créer le premier module
-                            </a>
+                            <div class="p-2 border-top d-flex gap-2">
+                                <a href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-plus-lg me-1"></i> Chapitre
+                                </a>
+                                <a href="{{ path('app_module_edit', {id: module.id}) }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i> Module
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Boutons de navigation -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="d-flex gap-2">
-                {% if is_granted('ROLE_ENSEIGNANT') %}
-                    <a href="{{ path('enseignant_cours') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour aux cours
-                    </a>
-                    {% if cours.createdBy == app.user %}
-                        <a href="{{ path('app_cours_setup', {id: cours.id}) }}" class="btn btn-outline-primary">
-                            <i class="fas fa-cogs"></i> Configuration
-                        </a>
-                        <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-outline-info">
-                            <i class="fas fa-calendar"></i> Planning
-                        </a>
-                    {% endif %}
-                {% else %}
-                    <a href="{{ path('app_cours') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour aux cours
-                    </a>
-                {% endif %}
             </div>
-        </div>
+        {% endfor %}
     </div>
+{% else %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'folder2-open',
+        text: 'Aucun module pour ce cours.',
+        cta_url: is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user ? path('app_module_new') ~ '?coursId=' ~ cours.id : null,
+        cta_label: is_granted('ROLE_ENSEIGNANT') and cours.createdBy == app.user ? 'Créer un module' : null
+    } only %}
+{% endif %}
+
+<div class="d-flex flex-wrap gap-2">
+    {% if is_granted('ROLE_ENSEIGNANT') %}
+        <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Mes cours
+        </a>
+        {% if cours.createdBy == app.user %}
+            <a href="{{ path('app_cours_setup', {id: cours.id}) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i> Configuration
+            </a>
+        {% endif %}
+    {% else %}
+        <a href="{{ path('app_cours') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Retour
+        </a>
+    {% endif %}
+    <a href="{{ path('app_forum_cours', {id: cours.id}) }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-chat-left-text me-1"></i> Forum
+    </a>
+    <a href="{{ path('app_evaluations_cours', {id: cours.id}) }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-clipboard-check me-1"></i> Évaluations
+    </a>
 </div>
+
+{% if cours.createdAt %}
+    <p class="text-muted small mt-4 mb-0">
+        Créé le {{ cours.createdAt|date('d/m/Y') }}
+        {% if cours.createdBy %}par {{ cours.createdBy.prenom }} {{ cours.createdBy.nom }}{% endif %}
+    </p>
+{% endif %}
 {% endblock %}

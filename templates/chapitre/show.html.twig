@@ -3,99 +3,59 @@
 {% block title %}{{ chapitre.titre }}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+{% set headerActions %}
+    {% if chapitre.module and chapitre.module.cours %}
+        <a href="{{ path('app_cours_show', {id: chapitre.module.cours.id}) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Cours
+        </a>
+    {% else %}
+        <a href="{{ path('app_chapitre_index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Liste
+        </a>
+    {% endif %}
+    {% if is_granted('ROLE_ENSEIGNANT') %}
+        <a href="{{ path('app_chapitre_edit', {id: chapitre.id}) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Modifier
+        </a>
+        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash me-1"></i> Supprimer
+        </button>
+    {% endif %}
+{% endset %}
 
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h1 class="mb-0">{{ chapitre.titre }}</h1>
-                    {% if is_granted('ROLE_ENSEIGNANT') %}
-                        <div class="btn-group">
-                            <a href="{{ path('app_chapitre_edit', {'id': chapitre.id}) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit"></i> Modifier
-                            </a>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% if chapitre.module %}
-                        <p class="text-muted mb-3">
-                            <strong>Module :</strong> {{ chapitre.module.titre ?? 'Non défini' }}
-                            {% if chapitre.module.cours %}
-                                | <strong>Cours :</strong> {{ chapitre.module.cours.titre ?? 'Non défini' }}
-                            {% endif %}
-                        </p>
-                    {% endif %}
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: chapitre.module ? chapitre.module.titre : 'Chapitre',
+    title: chapitre.titre,
+    actions: headerActions
+} only %}
 
-                    <div class="content">
-                        {{ chapitre.contenu|nl2br }}
-                    </div>
+<article class="reading-content mx-auto">
+    {{ chapitre.contenu|nl2br }}
 
-                    {% if chapitre.fichierMedia %}
-                        <div class="mt-4">
-                            <h5>Fichier média :</h5>
-                            <p><strong>{{ chapitre.fichierMedia }}</strong></p>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                        {% if chapitre.module and chapitre.module.cours %}
-                            <a href="{{ path('app_cours_show', {'id': chapitre.module.cours.id}) }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Retour au cours
-                            </a>
-                        {% else %}
-                            <a href="{{ path('app_chapitre_index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Retour à la liste
-                            </a>
-                        {% endif %}
-                        
-                        {% if is_granted('ROLE_ENSEIGNANT') and chapitre.module %}
-                            <a href="{{ path('app_chapitre_new', {'id': chapitre.module.id}) }}" class="btn btn-success">
-                                <i class="fas fa-plus"></i> Ajouter un nouveau chapitre
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+    {% if chapitre.fichierMedia %}
+        <div class="mt-4 pt-4 border-top">
+            <h2 class="h6 text-muted mb-2">Fichier média</h2>
+            <p class="mb-0">{{ chapitre.fichierMedia }}</p>
         </div>
-    </div>
-</div>
+    {% endif %}
+</article>
 
 {% if is_granted('ROLE_ENSEIGNANT') %}
-<!-- Modal de confirmation de suppression -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="deleteModalLabel">Supprimer ce chapitre</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer le chapitre "{{ chapitre.titre }}" ? Cette action est irréversible.
+                <p class="text-muted mb-0">Confirmer la suppression de <strong>{{ chapitre.titre }}</strong>. Cette action est irréversible.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form method="post" action="{{ path('app_chapitre_delete', {'id': chapitre.id}) }}" style="display: inline;">
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('app_chapitre_delete', {id: chapitre.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ chapitre.id) }}">
-                    <button type="submit" class="btn btn-danger">Supprimer définitivement</button>
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
                 </form>
             </div>
         </div>

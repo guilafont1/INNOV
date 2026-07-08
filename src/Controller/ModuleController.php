@@ -20,7 +20,7 @@ class ModuleController extends AbstractController
             $user = $this->getUser();
             
             // Si l'utilisateur est admin, récupérer tous les modules
-            if ($this->isGranted('ROLE_ADMIN')) {
+            if ($this->isGranted('ROLE_ADMIN_ECOLE')) {
                 $modules = $moduleRepository->findAll();
             } else {
                 // Sinon, récupérer uniquement les modules des cours de l'utilisateur connecté
@@ -28,7 +28,7 @@ class ModuleController extends AbstractController
             }
             
             if (empty($modules)) {
-                $message = $this->isGranted('ROLE_ADMIN') 
+                $message = $this->isGranted('ROLE_ADMIN_ECOLE') 
                     ? 'Aucun module disponible pour le moment.'
                     : 'Vous n\'avez accès à aucun module pour le moment.';
                 $this->addFlash('info', $message);
@@ -47,7 +47,7 @@ class ModuleController extends AbstractController
     public function show(Module $module, ModuleRepository $moduleRepository): Response
     {
         // Si l'utilisateur n'est pas admin, vérifier qu'il a accès au module
-        if (!$this->isGranted('ROLE_ADMIN')) {
+        if (!$this->isGranted('ROLE_ADMIN_ECOLE')) {
             $user = $this->getUser();
             $userModules = $moduleRepository->findByUser($user);
             
@@ -94,7 +94,7 @@ class ModuleController extends AbstractController
                 $em->persist($module);
                 $em->flush();
 
-                $this->addFlash('success', 'Module créé avec succès !');
+                $this->addFlash('success', 'Module créé.');
                 
                 // Rediriger vers la page de configuration du cours si un cours est associé
                 if ($module->getCours()) {
@@ -125,7 +125,7 @@ class ModuleController extends AbstractController
             try {
                 $em->flush();
 
-                $this->addFlash('success', 'Module modifié avec succès !');
+                $this->addFlash('success', 'Module modifié.');
                 return $this->redirectToRoute('app_module_show', ['id' => $module->getId()]);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification du module.');
@@ -148,7 +148,7 @@ class ModuleController extends AbstractController
                 $em->remove($module);
                 $em->flush();
 
-                $this->addFlash('success', 'Module supprimé avec succès !');
+                $this->addFlash('success', 'Module supprimé.');
                 return $this->redirectToRoute('app_module_index');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression du module.');

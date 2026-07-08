@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Repository\CoursRepository;
 use App\Repository\CalendrierRepository;
+use App\Repository\ProgressionRepository;
+use App\Repository\NoteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -11,7 +13,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class EtudiantController extends AbstractController
 {
     #[Route('/etudiant/dashboard', name: 'etudiant_dashboard')]
-    public function dashboard(CoursRepository $coursRepository, CalendrierRepository $calendrierRepository, \App\Repository\ClasseRepository $classeRepository): Response
+    public function dashboard(
+        CoursRepository $coursRepository,
+        CalendrierRepository $calendrierRepository,
+        \App\Repository\ClasseRepository $classeRepository,
+        ProgressionRepository $progressionRepository
+    ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
 
@@ -24,14 +31,32 @@ class EtudiantController extends AbstractController
             // Limiter à 5 cours pour le dashboard
             $coursLimites = array_slice($cours, 0, 5);
             
+            // Progressions réelles de l'étudiant (pour calculs/affichage)
+            $progressionsUser = $progressionRepository->findBy(['user' => $user]);
+            $progressionsByCoursId = [];
+            foreach ($progressionsUser as $progression) {
+                $coursId = $progression->getCours()?->getId();
+                if ($coursId !== null) {
+                    $progressionsByCoursId[$coursId] = $progression;
+                }
+            }
+
             // Calcul des statistiques
-            $stats = $this->calculateStats($cours, $user);
-            
-            // Activité récente (simulée pour l'exemple)
-            $activiteRecente = $this->getRecentActivity($cours, $user);
-            
-            // Cours récents avec progression
-            $coursAvecProgression = $this->getCoursAvecProgression($coursLimites, $user);
+            $stats = $this->calculateStats($cours, $progressionsByCoursId);
+
+            // Activité récente : dernières progressions (updatedAt DESC)
+            $recentProgressions = $progressionRepository->createQueryBuilder('p')
+                ->andWhere('p.user = :user')
+                ->setParameter('user', $user)
+                ->orderBy('p.updatedAt', 'DESC')
+                ->setMaxResults(10)
+                ->getQuery()
+                ->getResult();
+
+            $activiteRecente = $this->getRecentActivity($recentProgressions);
+
+            // Cours avec progression réelle
+            $coursAvecProgression = $this->getCoursAvecProgression($coursLimites, $progressionsByCoursId);
 
             // Récupérer les événements à venir pour l'étudiant
             $evenementsAvenir = [];
@@ -40,17 +65,19 @@ class EtudiantController extends AbstractController
                 $classes = $classeRepository->findByEtudiant($user);
                 
                 foreach ($classes as $classe) {
-                    foreach ($classe->getCours() as $cours) {
-                        $calendriers = $calendrierRepository->findUpcomingByCours($cours);
+                    foreach ($classe->getCours() as $coursClasse) {
+                        $calendriers = $calendrierRepository->findUpcomingByCours($coursClasse);
                         foreach ($calendriers as $calendrier) {
-                            $evenementsAvenir[] = $calendrier;
+                            $evenementsAvenir[$calendrier->getId()] = $calendrier;
                         }
                     }
                 }
             } catch (\Exception $e) {
-                // Log the error but continue without events
-                error_log('Error getting upcoming events: ' . $e->getMessage());
+                // On continue sans événements si la requête échoue.
             }
+
+            // Dédoublonnage par id
+            $evenementsAvenir = array_values($evenementsAvenir);
             
             // Trier par date et limiter à 5
             usort($evenementsAvenir, function($a, $b) {
@@ -60,15 +87,12 @@ class EtudiantController extends AbstractController
 
             return $this->render('etudiant/dashboard.html.twig', [
                 'cours' => $coursAvecProgression,
-                'totalCours' => is_array($cours) ? count($cours) : 1, 
+                'totalCours' => count($cours),
                 'stats' => $stats,
                 'activiteRecente' => $activiteRecente,
                 'evenementsAvenir' => $evenementsAvenir,
             ]);
         } catch (\Exception $e) {
-            // Log l'erreur pour le debugging
-            error_log('Erreur dashboard étudiant: ' . $e->getMessage());
-            
             $this->addFlash('error', 'Erreur lors du chargement du tableau de bord.');
             return $this->render('etudiant/dashboard.html.twig', [
                 'cours' => [],
@@ -85,13 +109,68 @@ class EtudiantController extends AbstractController
         }
     }
 
-    private function calculateStats(array $cours, $user): array
+    #[Route('/etudiant/notes', name: 'etudiant_notes')]
+    public function notes(NoteRepository $noteRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
+
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
+        $notes = $noteRepository->findByEtudiant($user);
+        $moyenneGenerale = $noteRepository->getMoyenneEtudiant($user);
+
+        $notesParCours = [];
+        foreach ($notes as $note) {
+            $module = $note->getModule();
+            $cours = $module?->getCours();
+
+            if (!$cours || !$module) {
+                continue;
+            }
+
+            $coursId = $cours->getId();
+            $moduleId = $module->getId();
+
+            if (!isset($notesParCours[$coursId])) {
+                $notesParCours[$coursId] = [
+                    'cours' => $cours,
+                    'modules' => [],
+                ];
+            }
+
+            if (!isset($notesParCours[$coursId]['modules'][$moduleId])) {
+                $notesParCours[$coursId]['modules'][$moduleId] = [
+                    'module' => $module,
+                    'notes' => [],
+                ];
+            }
+
+            $notesParCours[$coursId]['modules'][$moduleId]['notes'][] = $note;
+        }
+
+        // Réindexation pour un rendu Twig plus simple
+        $notesParCours = array_values($notesParCours);
+        foreach ($notesParCours as &$coursBlock) {
+            $coursBlock['modules'] = array_values($coursBlock['modules']);
+        }
+        unset($coursBlock);
+
+        return $this->render('etudiant/notes.html.twig', [
+            'notesParCours' => $notesParCours,
+            'moyenneGenerale' => $moyenneGenerale,
+        ]);
+    }
+
+    private function calculateStats(array $cours, array $progressionsByCoursId): array
     {
         $totalCours = count($cours);
         $totalModules = 0;
         $totalChapitres = 0;
-        $progressionTotale = 0;
-        $nbProgressions = 0;
+        $progressionTotale = 0.0;
+        $nbCoursPourMoyenne = 0;
 
         foreach ($cours as $c) {
             $totalModules += $c->getModules()->count();
@@ -99,13 +178,16 @@ class EtudiantController extends AbstractController
                 $totalChapitres += $module->getChapitres()->count();
             }
             
-            // Calculer la progression pour ce cours (simulée)
-            $progression = rand(0, 100);
-            $progressionTotale += $progression;
-            $nbProgressions++;
+            $coursId = $c->getId();
+            $progression = $coursId !== null && isset($progressionsByCoursId[$coursId])
+                ? ($progressionsByCoursId[$coursId]->getAvancement() ?? 0)
+                : 0;
+
+            $progressionTotale += (float) $progression;
+            $nbCoursPourMoyenne++;
         }
 
-        $progressionMoyenne = $nbProgressions > 0 ? round($progressionTotale / $nbProgressions) : 0;
+        $progressionMoyenne = $nbCoursPourMoyenne > 0 ? round($progressionTotale / $nbCoursPourMoyenne) : 0;
 
         return [
             'totalCours' => $totalCours,
@@ -115,45 +197,44 @@ class EtudiantController extends AbstractController
         ];
     }
 
-    private function getRecentActivity(array $cours, $user): array
+    private function getRecentActivity(array $recentProgressions): array
     {
         $activites = [];
-        
-        foreach ($cours as $c) {
-            // Simuler de l'activité récente
-            if (rand(0, 1)) {
-                $activites[] = [
-                    'type' => 'cours_started',
-                    'message' => 'Cours commencé: ' . $c->getTitre(),
-                    'date' => new \DateTimeImmutable('-' . rand(1, 7) . ' days'),
-                    'icon' => '📚',
-                ];
+
+        foreach ($recentProgressions as $progression) {
+            $cours = $progression->getCours();
+            if (!$cours) {
+                continue;
             }
-            
-            if (rand(0, 1)) {
-                $activites[] = [
-                    'type' => 'module_completed',
-                    'message' => 'Module terminé dans: ' . $c->getTitre(),
-                    'date' => new \DateTimeImmutable('-' . rand(1, 5) . ' days'),
-                    'icon' => '✅',
-                ];
-            }
+
+            $dernierChapitre = $progression->getDernierChapitre();
+            $date = $progression->getUpdatedAt() ?? new \DateTimeImmutable();
+
+            $message = $dernierChapitre
+                ? 'Chapitre consulté : ' . $dernierChapitre->getTitre() . ' (' . $cours->getTitre() . ')'
+                : 'Progression mise à jour : ' . $cours->getTitre();
+
+            $activites[] = [
+                'type' => 'progression_update',
+                'message' => $message,
+                'date' => $date,
+                'icon' => $dernierChapitre ? 'bi-journal-text' : 'bi-graph-up',
+            ];
         }
-        
-        // Trier par date décroissante
-        usort($activites, function($a, $b) {
-            return $b['date'] <=> $a['date'];
-        });
-        
+
         return array_slice($activites, 0, 10);
     }
 
-    private function getCoursAvecProgression(array $cours, $user): array
+    private function getCoursAvecProgression(array $cours, array $progressionsByCoursId): array
     {
         $coursAvecProgression = [];
         
         foreach ($cours as $c) {
-            $progression = rand(0, 100); // Simuler la progression
+            $coursId = $c->getId();
+            $progression = $coursId !== null && isset($progressionsByCoursId[$coursId])
+                ? ($progressionsByCoursId[$coursId]->getAvancement() ?? 0)
+                : 0;
+
             $coursAvecProgression[] = [
                 'cours' => $c,
                 'progression' => $progression,

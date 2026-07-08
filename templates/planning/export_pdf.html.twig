@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Planning — {{ periodLabel }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 11px;
+            color: #0F172A;
+            margin: 0;
+            padding: 24px;
+        }
+        .header {
+            border-bottom: 2px solid #155E75;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+        .brand {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748B;
+            margin: 0 0 4px;
+        }
+        h1 {
+            font-size: 20px;
+            margin: 0 0 4px;
+            color: #155E75;
+        }
+        .meta {
+            font-size: 10px;
+            color: #64748B;
+            margin: 0;
+        }
+        .day {
+            margin-bottom: 16px;
+            page-break-inside: avoid;
+        }
+        .day__title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #155E75;
+            background: #EAF3F6;
+            padding: 6px 10px;
+            margin: 0 0 8px;
+            border-radius: 4px;
+        }
+        .day__empty {
+            color: #94A3B8;
+            font-style: italic;
+            padding: 4px 10px;
+        }
+        table.events {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.events th,
+        table.events td {
+            border: 1px solid #E5EAF0;
+            padding: 6px 8px;
+            vertical-align: top;
+            text-align: left;
+        }
+        table.events th {
+            background: #F8FAFC;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748B;
+        }
+        .time {
+            white-space: nowrap;
+            font-weight: bold;
+            width: 90px;
+        }
+        .type {
+            width: 70px;
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .type--cours { color: #155E75; }
+        .type--examen { color: #B91C1C; }
+        .type--reunion { color: #6D28D9; }
+        .type--autre { color: #64748B; }
+        .title { font-weight: bold; }
+        .details {
+            font-size: 9px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+        .footer {
+            margin-top: 24px;
+            padding-top: 10px;
+            border-top: 1px solid #E5EAF0;
+            font-size: 9px;
+            color: #94A3B8;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <p class="brand">MERJ</p>
+        <h1>Planning — {{ periodLabel }}</h1>
+        <p class="meta">
+            {{ user.prenom }} {{ user.nom }} · Généré le {{ generatedAt|date('d/m/Y à H:i') }}
+        </p>
+    </div>
+
+    {% for day in days %}
+        <div class="day">
+            <p class="day__title">{{ day.label }}</p>
+            {% if day.events is empty %}
+                <p class="day__empty">Aucun événement</p>
+            {% else %}
+                <table class="events">
+                    <thead>
+                        <tr>
+                            <th>Horaire</th>
+                            <th>Type</th>
+                            <th>Événement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in day.events %}
+                            {% set eventEnd = event.dateFin ?: event.dateDebut|date_modify('+2 hours') %}
+                            <tr>
+                                <td class="time">
+                                    {{ event.dateDebut|date('H:i') }} – {{ eventEnd|date('H:i') }}
+                                </td>
+                                <td class="type type--{{ event.type|default('autre') }}">
+                                    {{ typeLabels[event.type|default('autre')] ?? 'Autre' }}
+                                </td>
+                                <td>
+                                    <div class="title">{{ event.titre }}</div>
+                                    {% if event.lieu or event.classe or event.cours %}
+                                        <div class="details">
+                                            {% if event.lieu %}<span>{{ event.lieu }}</span>{% endif %}
+                                            {% if event.classe %}{% if event.lieu %} · {% endif %}<span>{{ event.classe.nom }}</span>{% endif %}
+                                            {% if event.cours %}{% if event.lieu or event.classe %} · {% endif %}<span>{{ event.cours.titre }}</span>{% endif %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="footer">
+        Document exporté depuis MERJ — {{ periodLabel }}
+    </div>
+</body>
+</html>

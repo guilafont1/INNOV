@@ -21,7 +21,7 @@ final class CoursController extends AbstractController
             $user = $this->getUser();
             
             // Si l'utilisateur est admin, récupérer tous les cours
-            if ($this->isGranted('ROLE_ADMIN')) {
+            if ($this->isGranted('ROLE_ADMIN_ECOLE')) {
                 $cours = $coursRepository->findAll();
             } elseif ($this->isGranted('ROLE_ENSEIGNANT')) {
                 // Si c'est un enseignant, récupérer tous les cours (car pas de relation createdBy pour l'instant)
@@ -32,7 +32,7 @@ final class CoursController extends AbstractController
             }
             
             if (empty($cours)) {
-                $message = $this->isGranted('ROLE_ADMIN') 
+                $message = $this->isGranted('ROLE_ADMIN_ECOLE') 
                     ? 'Aucun cours disponible pour le moment.'
                     : ($this->isGranted('ROLE_ENSEIGNANT') 
                         ? 'Aucun cours disponible pour le moment.'
@@ -48,10 +48,13 @@ final class CoursController extends AbstractController
     }
 
     #[Route('/cours/{id}', name: 'app_cours_show', requirements: ['id' => '\d+'])]
-    public function show(Cours $cours, CoursRepository $coursRepository): Response
-    {
+    public function show(
+        Cours $cours,
+        CoursRepository $coursRepository,
+        \App\Repository\ProgressionRepository $progressionRepository
+    ): Response {
         // Si l'utilisateur n'est pas admin ou enseignant, vérifier qu'il a accès au cours
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_ENSEIGNANT')) {
+        if (!$this->isGranted('ROLE_ADMIN_ECOLE') && !$this->isGranted('ROLE_ENSEIGNANT')) {
             $user = $this->getUser();
             $userCours = $coursRepository->findByUser($user);
             
@@ -69,11 +72,18 @@ final class CoursController extends AbstractController
             }
         }
         
-        // Si l'utilisateur vient de créer ou modifier un cours en tant qu'enseignant, 
-        // il sera redirigé vers la bonne vue ensuite
+        $progression = null;
+        if ($this->isGranted('ROLE_ETUDIANT')) {
+            $user = $this->getUser();
+            if ($user) {
+                $progression = $progressionRepository->findOneBy(['user' => $user, 'cours' => $cours]);
+            }
+        }
+
         return $this->render('cours/show.html.twig', [
             'cours' => $cours,
             'modules' => $cours->getModules(),
+            'progression' => $progression,
         ]);
     }
 
@@ -96,7 +106,7 @@ final class CoursController extends AbstractController
                 $em->persist($cours);
                 $em->flush();
 
-                $this->addFlash('success', 'Cours créé avec succès ! Vous pouvez maintenant ajouter des modules.');
+                $this->addFlash('success', 'Cours créé. Vous pouvez ajouter des modules.');
                 // Rediriger vers la page de gestion des modules du cours
                 return $this->redirectToRoute('app_cours_setup', ['id' => $cours->getId()]);
             } catch (\Exception $e) {
@@ -121,7 +131,7 @@ final class CoursController extends AbstractController
             try {
                 $em->flush();
 
-                $this->addFlash('success', 'Cours modifié avec succès !');
+                $this->addFlash('success', 'Cours modifié.');
                 return $this->redirectToRoute('app_cours_show', ['id' => $cours->getId()]);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification du cours.');
@@ -159,7 +169,7 @@ final class CoursController extends AbstractController
                 $em->remove($cours);
                 $em->flush();
 
-                $this->addFlash('success', 'Cours supprimé avec succès !');
+                $this->addFlash('success', 'Cours supprimé.');
                 // Rediriger en fonction du rôle de l'utilisateur
                 if ($this->isGranted('ROLE_ENSEIGNANT')) {
                     return $this->redirectToRoute('enseignant_cours');

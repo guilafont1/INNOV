@@ -1,87 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer un nouveau cours{% endblock %}
+{% block title %}Nouveau cours{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">➕ Créer un nouveau cours</h3>
-                </div>
-                <div class="card-body">
-                    <nav aria-label="breadcrumb" class="mb-4">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ path('enseignant_dashboard') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a href="{{ path('enseignant_cours') }}">Mes cours</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Nouveau cours</li>
-                        </ol>
-                    </nav>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Enseignant',
+    title: 'Créer un cours',
+    description: 'Définissez le titre et la description de votre nouveau cours.'
+} only %}
 
-                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
-                        <div class="mb-3">
-                            {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le titre du cours'}}) }}
-                            {{ form_errors(form.titre) }}
-                            <div class="form-text">Choisissez un titre clair et descriptif pour votre cours.</div>
-                        </div>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    {{ form_row(form.titre) }}
+                    {{ form_row(form.description) }}
 
-                        <div class="mb-3">
-                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez le contenu et les objectifs du cours'}}) }}
-                            {{ form_errors(form.description) }}
-                            <div class="form-text">Présentez les objectifs, le contenu et les prérequis de votre cours.</div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-plus"></i> ➕ Créer le cours
-                            </button>
-                            <a href="{{ path('enseignant_dashboard') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> 🚫 Annuler
-                            </a>
-                            <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-list"></i> 📚 Mes cours
-                            </a>
-                        </div>
-                    {{ form_end(form) }}
-                </div>
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> Créer le cours
+                        </button>
+                        <a href="{{ path('enseignant_cours') }}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
             </div>
+        </div>
 
-            <!-- Informations sur les prochaines étapes -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">� Après la création du cours</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Ne vous inquiétez pas !</strong> Vous serez guidé(e) étape par étape après la création du cours.</p>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-route text-primary"></i> Processus guidé :</h6>
-                            <ol>
-                                <li><strong>Créer des modules</strong> (thèmes principaux)</li>
-                                <li><strong>Ajouter des chapitres</strong> (contenu détaillé)</li>
-                                <li><strong>Planifier les séances</strong> (dates et horaires)</li>
-                                <li><strong>Inviter des étudiants</strong> (via les classes)</li>
-                            </ol>
-                        </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-clock text-success"></i> Temps estimé :</h6>
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-stopwatch"></i> Création des modules : <strong>5-10 min</strong></li>
-                                <li><i class="fas fa-stopwatch"></i> Ajout des chapitres : <strong>15-30 min</strong></li>
-                                <li><i class="fas fa-stopwatch"></i> Configuration complète : <strong>30-60 min</strong></li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-success mt-3">
-                        <i class="fas fa-magic"></i> 
-                        <strong>Astuce :</strong> Vous pouvez créer votre cours maintenant et continuer la configuration plus tard !
-                    </div>
-                </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Après la création</h2>
+                <ol class="text-muted small mb-0 ps-3">
+                    <li>Créer des modules (thèmes principaux)</li>
+                    <li>Ajouter des chapitres (contenu détaillé)</li>
+                    <li>Planifier les séances</li>
+                    <li>Assigner le cours aux classes</li>
+                </ol>
             </div>
         </div>
     </div>

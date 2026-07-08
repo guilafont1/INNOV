@@ -1,70 +1,47 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des chapitres{% endblock %}
+{% block title %}Chapitres{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h1 class="mb-4">Liste des chapitres</h1>
-            
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            
-            {% for message in app.flashes('info') %}
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+{% include 'partials/_page_header.html.twig' with {
+    title: 'Chapitres',
+    description: 'Liste des chapitres disponibles.'
+} only %}
 
-            {% if chapitres is empty %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Aucun chapitre disponible pour le moment.
-                </div>
-            {% else %}
-                <div class="row">
-                    {% for chapitre in chapitres %}
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">{{ chapitre.titre }}</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">{{ chapitre.contenu|slice(0, 100) }}{% if chapitre.contenu|length > 100 %}...{% endif %}</p>
-                                    {% if chapitre.module %}
-                                        <small class="text-muted">Module: {{ chapitre.module.titre ?? 'Non défini' }}</small>
-                                    {% endif %}
-                                </div>
-                                <div class="card-footer">
-                                    <div class="btn-group w-100" role="group">
-                                        <a href="{{ path('app_chapitre_show', {'id': chapitre.id}) }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-eye"></i> Voir
-                                        </a>
-                                        {% if is_granted('ROLE_ENSEIGNANT') %}
-                                            <a href="{{ path('app_chapitre_edit', {'id': chapitre.id}) }}" class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i> Modifier
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+{% if chapitres is empty %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'file-text',
+        text: 'Aucun chapitre disponible pour le moment.'
+    } only %}
+{% else %}
+    <div class="row g-3">
+        {% for chapitre in chapitres %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h5 mb-2">{{ chapitre.titre }}</h2>
+                        <p class="text-muted small flex-grow-1 mb-3">
+                            {{ chapitre.contenu|slice(0, 100) }}{% if chapitre.contenu|length > 100 %}…{% endif %}
+                        </p>
+                        {% if chapitre.module %}
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-layers me-1"></i> {{ chapitre.module.titre }}
+                            </p>
+                        {% endif %}
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            <a href="{{ path('app_chapitre_show', {id: chapitre.id}) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye me-1"></i> Lire
+                            </a>
+                            {% if is_granted('ROLE_ENSEIGNANT') %}
+                                <a href="{{ path('app_chapitre_edit', {id: chapitre.id}) }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i> Modifier
+                                </a>
+                            {% endif %}
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endfor %}
     </div>
-</div>
+{% endif %}
 {% endblock %}

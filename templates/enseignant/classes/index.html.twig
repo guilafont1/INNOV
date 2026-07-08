@@ -3,60 +3,41 @@
 {% block title %}Mes Classes{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>👥 Mes Classes</h2>
-    </div>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Espace enseignant',
+    title: 'Mes classes',
+    description: 'Consultez et gérez les classes dont vous êtes responsable.'
+} %}
 
-    {% if classes|length > 0 %}
-        <div class="row">
-            {% for classe in classes %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">{{ classe.nom }}</h5>
+{% if classes|length > 0 %}
+    <div class="row g-3">
+        {% for classe in classes %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h6 mb-2">{{ classe.nom }}</h2>
+                        {% if classe.description %}
+                            <p class="text-muted small flex-grow-1">{{ classe.description|slice(0, 100) }}{% if classe.description|length > 100 %}…{% endif %}</p>
+                        {% endif %}
+                        <div class="d-flex flex-wrap gap-3 small text-muted my-3">
+                            <span><i class="bi bi-people me-1"></i>{{ classe.etudiants|length }} étudiant(s)</span>
+                            <span><i class="bi bi-book me-1"></i>{{ classe.cours|length }} cours</span>
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ classe.createdAt|date('d/m/Y') }}</span>
                         </div>
-                        <div class="card-body">
-                            {% if classe.description %}
-                                <p class="card-text text-muted">{{ classe.description|slice(0, 100) }}...</p>
-                            {% endif %}
-                            
-                            <div class="mb-3">
-                                <small class="text-muted">
-                                    <i class="fas fa-users me-1"></i>{{ classe.etudiants|length }} étudiant(s)
-                                </small>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="fas fa-book me-1"></i>{{ classe.cours|length }} cours
-                                </small>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar me-1"></i>{{ classe.createdAt.format('d/m/Y') }}
-                                </small>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-light">
-                            <div class="btn-group w-100" role="group">
-                                <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-eye"></i> Voir
-                                </a>
-                                <a href="{{ path('enseignant_classe_notes', {id: classe.id}) }}" class="btn btn-outline-success btn-sm">
-                                    <i class="fas fa-clipboard-list"></i> Notes
-                                </a>
-                                <a href="{{ path('enseignant_classe_etudiants', {id: classe.id}) }}" class="btn btn-outline-info btn-sm">
-                                    <i class="fas fa-user-plus"></i> Étudiants
-                                </a>
-                            </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-primary btn-sm"><i class="bi bi-eye"></i> Voir</a>
+                            <a href="{{ path('enseignant_classe_notes', {id: classe.id}) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-clipboard-data"></i> Notes</a>
+                            <a href="{{ path('enseignant_classe_etudiants', {id: classe.id}) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person-plus"></i> Étudiants</a>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info text-center">
-            <h5>Aucune classe assignée</h5>
-            <p>Vous n'êtes professeur d'aucune classe pour le moment.</p>
-        </div>
-    {% endif %}
-</div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'people',
+        text: 'Vous n\'êtes assigné à aucune classe pour le moment.'
+    } %}
+{% endif %}
 {% endblock %}

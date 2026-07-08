@@ -20,18 +20,19 @@ class Module
     private ?string $titre = null;
 
     #[ORM\ManyToOne(inversedBy: 'modules')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Cours $cours = null;
 
     /**
      * @var Collection<int, Chapitre>
      */
-    #[ORM\OneToMany(targetEntity: Chapitre::class, mappedBy: 'module')]
+    #[ORM\OneToMany(targetEntity: Chapitre::class, mappedBy: 'module', cascade: ['remove'], orphanRemoval: true)]
     private Collection $chapitres;
 
     /**
      * @var Collection<int, Note>
      */
-    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'module')]
+    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'module', cascade: ['remove'], orphanRemoval: true)]
     private Collection $notes;
 
     public function __construct()

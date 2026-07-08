@@ -2,210 +2,40 @@
 
 {% block title %}Nouvel Événement - {{ cours.titre }}{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .form-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .form-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 15px 0 0;
-            padding: 1.5rem;
-        }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        .btn-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        .cours-info {
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card form-card">
-                <div class="form-header">
-                    <h2 class="mb-2">📅 Nouvel Événement</h2>
-                    <p class="mb-0">Créez un nouvel événement pour votre cours</p>
-                </div>
-                
-                <div class="card-body p-4">
-                    <!-- Informations du cours -->
-                    <div class="cours-info">
-                        <h5 class="text-primary mb-2">
-                            <i class="fas fa-book"></i> {{ cours.titre }}
-                        </h5>
-                        <p class="text-muted mb-0">{{ cours.description }}</p>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: cours.titre,
+    title: 'Nouvel événement',
+    description: 'Planifiez un cours, un examen ou une réunion.',
+    actions: '<a href="' ~ path('enseignant_planning_cours', {id: cours.id}) ~ '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>'
+} %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                {{ form_start(form) }}
+                    {{ form_row(form.titre) }}
+                    {{ form_row(form.description) }}
+                    {{ form_row(form.type) }}
+                    {{ form_row(form.dateDebut) }}
+                    {{ form_row(form.dateFin) }}
+                    {{ form_row(form.lieu) }}
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Créer</button>
                     </div>
-
-                    <!-- Formulaire -->
-                    <form method="post">
-                        <div class="mb-3">
-                            <label for="titre" class="form-label">
-                                <i class="fas fa-heading"></i> Titre de l'événement
-                            </label>
-                            <input type="text" class="form-control" id="titre" name="titre" 
-                                   placeholder="Ex: Cours sur les bases de données" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="description" class="form-label">
-                                <i class="fas fa-align-left"></i> Description
-                            </label>
-                            <textarea class="form-control" id="description" name="description" rows="4" 
-                                      placeholder="Décrivez le contenu de cet événement..." required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="type" class="form-label">
-                                <i class="fas fa-tag"></i> Type d'événement
-                            </label>
-                            <!-- Essai avec un champ input type radio pour voir si le problème vient du select -->
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="type" id="typeCours" value="cours" checked>
-                                <label class="form-check-label" for="typeCours">
-                                    Cours
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="type" id="typeExamen" value="examen">
-                                <label class="form-check-label" for="typeExamen">
-                                    Examen
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="type" id="typeReunion" value="reunion">
-                                <label class="form-check-label" for="typeReunion">
-                                    Réunion
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="type" id="typeAutre" value="autre">
-                                <label class="form-check-label" for="typeAutre">
-                                    Autre
-                                </label>
-                            </div>
-                            <!-- Champ caché pour compatibilité avec le code JavaScript existant -->
-                            <input type="hidden" id="type" value="cours">
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="dateDebut" class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Date et heure de début
-                            </label>
-                            <input type="datetime-local" class="form-control" id="dateDebut" name="dateDebut" 
-                                   min="{{ 'now'|date('Y-m-d\\TH:i') }}" required>
-                        </div>
-                        <div class="mb-4">
-                            <label for="dateFin" class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Date et heure de fin
-                            </label>
-                            <input type="datetime-local" class="form-control" id="dateFin" name="dateFin" 
-                                   min="{{ 'now'|date('Y-m-d\\TH:i') }}" required>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ path('enseignant_planning_cours', {id: cours.id}) }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left"></i> Retour
-                            </a>
-                            <button type="submit" class="btn btn-custom text-white">
-                                <i class="fas fa-save"></i> Créer l'événement
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <!-- Script pour le débogage amélioré -->
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            // Le champ caché utilisé pour compatibilité
-                            const typeHidden = document.getElementById('type');
-                            
-                            // Les boutons radio
-                            const radioInputs = document.querySelectorAll('input[name="type"]');
-                            console.log('Nombre de boutons radio:', radioInputs.length);
-                            
-                            // Écouter les changements sur tous les boutons radio
-                            radioInputs.forEach(radio => {
-                                radio.addEventListener('change', function() {
-                                    if (this.checked) {
-                                        console.log('Radio changé pour:', this.value);
-                                        // Mettre à jour le champ caché
-                                        typeHidden.value = this.value;
-                                    }
-                                });
-                            });
-                            
-                            // Loguer l'état initial des boutons radio
-                            console.log('État initial des boutons radio:', Array.from(radioInputs).map(r => ({
-                                id: r.id,
-                                value: r.value,
-                                checked: r.checked
-                            })));
-                            
-                            // Ajout d'un champ supplémentaire pour le test
-                            const testInput = document.createElement('input');
-                            testInput.type = 'hidden';
-                            testInput.name = 'type_test';
-                            testInput.value = 'test_value';
-                            document.querySelector('form').appendChild(testInput);
-                            console.log('Champ de test ajouté au formulaire');
-                            
-                            document.querySelector('form').addEventListener('submit', function(e) {
-                                // Trouver la valeur du type radio sélectionné
-                                let selectedType = '';
-                                document.querySelectorAll('input[name="type"]').forEach(r => {
-                                    if (r.checked) selectedType = r.value;
-                                });
-                                
-                                console.log('Type radio sélectionné au moment du submit:', selectedType);
-                                
-                                // Inspecter le formulaire et les données qui seront envoyées
-                                const formData = new FormData(this);
-                                const formDataEntries = {};
-                                for (let [key, value] of formData.entries()) {
-                                    formDataEntries[key] = value;
-                                }
-                                console.log('Données FormData qui seront envoyées:', formDataEntries);
-                                
-                                // Vérifier tous les champs du formulaire
-                                console.log('Valeurs des champs au submit:', {
-                                    titre: document.getElementById('titre').value,
-                                    description: document.getElementById('description').value,
-                                    typeRadio: selectedType,
-                                    typeHidden: typeHidden.value,
-                                    dateDebut: document.getElementById('dateDebut').value,
-                                    dateFin: document.getElementById('dateFin').value
-                                });
-                                
-                                // Ne pas bloquer le formulaire, laisser la soumission se poursuivre
-                            });
-                        });
-                    </script>
-                </div>
+                {{ form_end(form) }}
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% include 'partials/_calendrier_dates_validation.html.twig' with {
+        startId: form.dateDebut.vars.id,
+        endId: form.dateFin.vars.id,
+    } only %}
 {% endblock %}

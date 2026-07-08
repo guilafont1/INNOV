@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ForumPostRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 use App\Entity\Cours;
@@ -15,13 +16,15 @@ class ForumPost
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     private ?string $contenu = null;
 
     #[ORM\ManyToOne(inversedBy: 'forumPosts')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?User $auteur = null;
 
     #[ORM\ManyToOne(inversedBy: 'forumPosts')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Cours $cours = null;
 
     #[ORM\Column]

@@ -20,12 +20,14 @@ class Evaluation
     private ?string $titre = null;
 
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Cours $cours = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $questions = null;
 
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $createdBy = null;
 
     public function getId(): ?int

@@ -1,0 +1,858 @@
+/* Planning — tokens du design system */
+.planning-app {
+  --planning-cours: var(--brand, #155E75);
+  --planning-cours-bg: color-mix(in srgb, var(--planning-cours) 18%, white);
+  --planning-cours-border: color-mix(in srgb, var(--planning-cours) 35%, white);
+  --planning-examen: var(--danger, #B91C1C);
+  --planning-examen-bg: color-mix(in srgb, var(--planning-examen) 16%, white);
+  --planning-examen-border: color-mix(in srgb, var(--planning-examen) 32%, white);
+  --planning-reunion: #6D28D9;
+  --planning-reunion-bg: color-mix(in srgb, var(--planning-reunion) 16%, white);
+  --planning-reunion-border: color-mix(in srgb, var(--planning-reunion) 32%, white);
+  --planning-autre: #64748B;
+  --planning-autre-bg: color-mix(in srgb, var(--planning-autre) 14%, white);
+  --planning-autre-border: color-mix(in srgb, var(--planning-autre) 30%, white);
+}
+
+/* Toolbar */
+.planning-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1rem;
+  padding: .75rem 1rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #E5EAF0);
+  border-radius: var(--radius, 10px);
+}
+
+.planning-toolbar__left,
+.planning-toolbar__center,
+.planning-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.planning-toolbar__title {
+  font-family: var(--font-display, 'Sora', sans-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink, #0F172A);
+}
+
+.planning-view-switch .btn.active {
+  background: var(--brand-tint, #EAF3F6);
+  border-color: var(--brand, #155E75);
+  color: var(--brand, #155E75);
+}
+
+/* Layout */
+.planning-layout {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.planning-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #E5EAF0);
+  border-radius: var(--radius, 10px);
+  position: relative;
+  transition: width 200ms ease, opacity 200ms ease;
+}
+
+.planning-sidebar.is-collapsed {
+  width: 0;
+  overflow: hidden;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#planning-sidebar-toggle.active {
+  background: var(--brand-tint, #EAF3F6);
+  border-color: var(--brand, #155E75);
+  color: var(--brand, #155E75);
+}
+
+.planning-sidebar__inner {
+  padding: 1rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.planning-mini-calendar-wrap {
+  margin-bottom: .75rem;
+}
+
+.planning-mini-calendar-wrap[hidden] {
+  display: none !important;
+}
+
+#planning-mini-cal-toggle.active {
+  background: var(--brand-tint, #EAF3F6);
+  border-color: var(--brand, #155E75);
+  color: var(--brand, #155E75);
+}
+
+.planning-filters__header {
+  margin-bottom: 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--line, #E5EAF0);
+}
+
+.planning-filters__toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+
+.planning-filters__toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  font-size: .75rem;
+  line-height: 1.2;
+  padding: .35rem .5rem;
+  white-space: nowrap;
+}
+
+.planning-filters__toolbar-btn .bi {
+  font-size: .875rem;
+  flex-shrink: 0;
+}
+
+.planning-filters__title {
+  font-size: .8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-soft, #64748B);
+  margin: 0;
+}
+.planning-filters__field {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.planning-filters .ts-wrapper,
+.planning-filters .ts-control {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.planning-filters .ts-control {
+  min-height: 32px;
+  padding: .25rem .5rem !important;
+}
+
+.planning-filters .ts-control .item {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planning-filters .ts-dropdown {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.planning-filters .mb-2,
+
+.form-label-sm {
+  font-size: .75rem;
+  color: var(--ink-soft);
+  margin-bottom: .25rem;
+}
+
+.planning-legend__item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8125rem;
+  color: var(--ink-soft);
+  margin-bottom: .375rem;
+}
+
+.planning-legend__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border-left: 3px solid;
+}
+
+.planning-legend__dot--cours { border-left-color: var(--planning-cours); background: var(--planning-cours-bg); }
+.planning-legend__dot--examen { border-left-color: var(--planning-examen); background: var(--planning-examen-bg); }
+.planning-legend__dot--reunion { border-left-color: var(--planning-reunion); background: var(--planning-reunion-bg); }
+.planning-legend__dot--autre { border-left-color: var(--planning-autre); background: var(--planning-autre-bg); }
+
+.planning-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.planning-calendar-wrap {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .5rem;
+  min-height: 520px;
+}
+
+#planning-calendar[data-max-overlap="2"] .fc-timegrid-event .fc-event-main,
+#planning-calendar[data-max-overlap="3"] .fc-timegrid-event .fc-event-main,
+#planning-calendar[data-max-overlap="4"] .fc-timegrid-event .fc-event-main,
+#planning-calendar[data-max-overlap="5"] .fc-timegrid-event .fc-event-main {
+  padding: 3px 5px;
+}
+
+#planning-calendar[data-max-overlap="3"] .planning-event-content__title,
+#planning-calendar[data-max-overlap="4"] .planning-event-content__title,
+#planning-calendar[data-max-overlap="5"] .planning-event-content__title {
+  font-size: .75rem;
+  -webkit-line-clamp: 3;
+}
+
+/* FullCalendar overrides */
+#planning-calendar .fc {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  --fc-border-color: #D8DEE6;
+  --fc-today-bg-color: color-mix(in srgb, var(--brand, #155E75) 8%, white);
+  --fc-now-indicator-color: var(--danger, #B91C1C);
+  --fc-event-text-color: var(--ink, #0F172A);
+  --fc-page-bg-color: var(--surface, #fff);
+  --fc-neutral-bg-color: #F1F5F9;
+}
+
+#planning-calendar .fc-col-header-cell {
+  background: var(--surface, #fff);
+  border-color: var(--fc-border-color);
+}
+
+#planning-calendar .fc-col-header-cell-cushion,
+#planning-calendar .fc-daygrid-day-number {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--ink, #0F172A);
+  text-decoration: none;
+  padding: .5rem .25rem;
+}
+
+#planning-calendar .fc-day-today .fc-col-header-cell-cushion {
+  color: var(--brand, #155E75);
+}
+
+#planning-calendar .fc-timegrid-slot-label-cushion {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--ink-soft, #475569);
+}
+
+#planning-calendar .fc-timegrid-slot {
+  border-color: #E8EDF2;
+}
+
+#planning-calendar .fc-timegrid-slot-minor {
+  border-top-style: dashed;
+  border-color: #EEF2F6;
+}
+
+/* Événements timegrid — un seul conteneur bordé pour éviter les débordements */
+#planning-calendar .fc-timegrid-event-harness {
+  overflow: hidden;
+}
+
+#planning-calendar .fc-timegrid-event-harness-inset .fc-timegrid-event-harness {
+  margin-inline-end: 1px;
+}
+
+#planning-calendar .fc-timegrid-event {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  height: 100%;
+}
+
+#planning-calendar .fc-timegrid-event .fc-event-main {
+  height: 100% !important;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid;
+  border-left-width: 3px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+#planning-calendar .fc-timegrid-event .fc-event-main-frame {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Événements — contraste forcé (FullCalendar applique du texte blanc par défaut) */
+#planning-calendar .fc-event,
+#planning-calendar .fc-daygrid-event,
+#planning-calendar .fc-list-event {
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid;
+  border-left-width: 3px;
+  padding: 3px 6px;
+  font-size: .8125rem;
+  line-height: 1.35;
+  color: var(--ink, #0F172A) !important;
+  --fc-event-text-color: var(--ink, #0F172A);
+  transition: box-shadow 150ms ease, opacity 150ms ease;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+  overflow: hidden;
+}
+
+#planning-calendar .fc-event .fc-event-main,
+#planning-calendar .fc-timegrid-event .fc-event-main {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+#planning-calendar .fc-event.fc-event--cours .fc-event-main,
+#planning-calendar .fc-timegrid-event.fc-event--cours .fc-event-main {
+  border-left-color: var(--planning-cours);
+  border-color: var(--planning-cours-border);
+  background: var(--planning-cours-bg) !important;
+}
+
+#planning-calendar .fc-event.fc-event--examen .fc-event-main,
+#planning-calendar .fc-timegrid-event.fc-event--examen .fc-event-main {
+  border-left-color: var(--planning-examen);
+  border-color: var(--planning-examen-border);
+  background: var(--planning-examen-bg) !important;
+}
+
+#planning-calendar .fc-event.fc-event--reunion .fc-event-main,
+#planning-calendar .fc-timegrid-event.fc-event--reunion .fc-event-main {
+  border-left-color: var(--planning-reunion);
+  border-color: var(--planning-reunion-border);
+  background: var(--planning-reunion-bg) !important;
+}
+
+#planning-calendar .fc-event.fc-event--autre .fc-event-main,
+#planning-calendar .fc-timegrid-event.fc-event--autre .fc-event-main {
+  border-left-color: var(--planning-autre);
+  border-color: var(--planning-autre-border);
+  background: var(--planning-autre-bg) !important;
+}
+
+#planning-calendar .fc-event .fc-event-main,
+#planning-calendar .fc-event *,
+#planning-calendar .fc-timegrid-event * {
+  color: inherit !important;
+}
+
+#planning-calendar .fc-event.fc-event--past,
+#planning-calendar .fc-timegrid-event.fc-event--past {
+  opacity: .72;
+}
+
+#planning-calendar .fc-event.fc-event--cours:not(.fc-timegrid-event),
+#planning-calendar .fc-daygrid-event.fc-event--cours {
+  border-left-color: var(--planning-cours);
+  border-color: var(--planning-cours-border);
+  background: var(--planning-cours-bg) !important;
+}
+
+#planning-calendar .fc-event.fc-event--examen:not(.fc-timegrid-event),
+#planning-calendar .fc-daygrid-event.fc-event--examen {
+  border-left-color: var(--planning-examen);
+  border-color: var(--planning-examen-border);
+  background: var(--planning-examen-bg) !important;
+}
+
+#planning-calendar .fc-event.fc-event--reunion:not(.fc-timegrid-event),
+#planning-calendar .fc-daygrid-event.fc-event--reunion {
+  border-left-color: var(--planning-reunion);
+  border-color: var(--planning-reunion-border);
+  background: var(--planning-reunion-bg) !important;
+}
+
+#planning-calendar .fc-event.fc-event--autre:not(.fc-timegrid-event),
+#planning-calendar .fc-daygrid-event.fc-event--autre {
+  border-left-color: var(--planning-autre);
+  border-color: var(--planning-autre-border);
+  background: var(--planning-autre-bg) !important;
+}
+
+#planning-calendar .fc-event:hover,
+#planning-calendar .fc-timegrid-event:hover {
+  box-shadow: var(--shadow-lift, 0 4px 12px rgba(15, 23, 42, .1));
+  filter: brightness(.98);
+}
+
+#planning-calendar .fc-event.fc-event-draggable,
+#planning-calendar .fc-timegrid-event.fc-event-draggable {
+  cursor: grab;
+}
+
+#planning-calendar .fc-event.fc-event-draggable:active,
+#planning-calendar .fc-timegrid-event.fc-event-draggable:active {
+  cursor: grabbing;
+}
+
+.planning-event-content {
+  overflow: hidden;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.25;
+  color: var(--ink, #0F172A);
+}
+
+.planning-event-content__time {
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--ink-soft, #475569);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planning-event-content__title {
+  font-weight: 600;
+  font-size: .75rem;
+  color: var(--ink, #0F172A);
+  overflow: hidden;
+  line-height: 1.2;
+  word-break: break-word;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.planning-event-content--compact .planning-event-content__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.planning-event-content--medium .planning-event-content__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.planning-event-content--full .planning-event-content__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.planning-event-content__lieu {
+  font-size: .6875rem;
+  font-weight: 500;
+  color: var(--ink-soft, #475569);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.planning-event-content__lieu svg {
+  flex-shrink: 0;
+}
+
+/* Vue liste */
+#planning-calendar .fc-list-event-title a {
+  color: var(--ink, #0F172A);
+  font-weight: 600;
+}
+
+#planning-calendar .fc-list-event-time {
+  color: var(--ink-soft, #475569);
+  font-weight: 500;
+}
+
+#planning-calendar .fc-list-event.fc-event--cours .fc-list-event-dot {
+  border-color: var(--planning-cours);
+  background: var(--planning-cours-bg);
+}
+
+#planning-calendar .fc-list-event.fc-event--examen .fc-list-event-dot {
+  border-color: var(--planning-examen);
+  background: var(--planning-examen-bg);
+}
+
+#planning-calendar .fc-list-event.fc-event--reunion .fc-list-event-dot {
+  border-color: var(--planning-reunion);
+  background: var(--planning-reunion-bg);
+}
+
+/* Mini calendrier */
+.planning-mini-calendar {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.planning-mini-calendar .fc {
+  font-size: .8125rem;
+  max-width: 100%;
+}
+
+.planning-mini-calendar .fc-header-toolbar {
+  flex-wrap: wrap;
+  gap: .25rem;
+  margin-bottom: .5rem !important;
+}
+
+.planning-mini-calendar .fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+}
+
+.planning-mini-calendar .fc-toolbar-title {
+  font-size: .8125rem !important;
+  font-weight: 600;
+  color: var(--ink, #0F172A);
+}
+
+.planning-mini-calendar .fc-button {
+  font-size: .6875rem;
+  padding: .15rem .35rem;
+  line-height: 1.2;
+}
+
+.planning-mini-calendar .fc-view-harness {
+  overflow: hidden;
+}
+
+.planning-mini-calendar .fc-daygrid-day-number {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--ink-soft, #475569);
+  padding: 2px;
+}
+
+.planning-mini-calendar .fc-day-today .fc-daygrid-day-number {
+  color: var(--brand, #155E75);
+  font-weight: 700;
+}
+
+.planning-mini-calendar .fc-day-today {
+  background: var(--brand-tint, #EAF3F6) !important;
+}
+
+.planning-mini-calendar .fc-col-header-cell-cushion {
+  font-size: .6875rem;
+  padding: .25rem 0;
+}
+
+/* Skeleton */
+.planning-skeleton {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  z-index: 5;
+  border-radius: var(--radius);
+  padding: 1rem;
+  transition: opacity 200ms ease;
+}
+
+.planning-skeleton.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.planning-skeleton__bar {
+  height: 24px;
+  width: 40%;
+  background: var(--line);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  animation: planning-pulse 1.2s ease-in-out infinite;
+}
+
+.planning-skeleton__grid {
+  height: calc(100% - 40px);
+  border-top: 1px solid var(--line);
+  opacity: .5;
+}
+
+@keyframes planning-pulse {
+  0%, 100% { opacity: .4; }
+  50% { opacity: .8; }
+}
+
+/* Empty state */
+.planning-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  background: rgba(255, 255, 255, .9);
+  border-radius: var(--radius);
+}
+
+.planning-empty__illus {
+  width: 120px;
+  color: var(--ink-faint);
+  margin-bottom: 1rem;
+}
+
+.planning-empty__text {
+  color: var(--ink-soft);
+  margin-bottom: 1rem;
+}
+
+/* Popover détail événement */
+.planning-popover {
+  position: fixed;
+  z-index: 1060;
+  width: 320px;
+  max-width: calc(100vw - 2rem);
+  border: 1px solid var(--line, #E5EAF0);
+  border-radius: var(--radius, 10px);
+  overflow: hidden;
+}
+
+.planning-popover__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: 1rem 1rem .75rem;
+  border-bottom: 1px solid var(--line, #E5EAF0);
+  background: var(--canvas, #F6F8FA);
+}
+
+.planning-popover__header-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.planning-popover__badge {
+  display: inline-block;
+  margin-bottom: .375rem;
+  font-size: .6875rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.planning-popover__badge.badge-cours {
+  background: var(--planning-cours-bg);
+  color: var(--planning-cours);
+}
+
+.planning-popover__badge.badge-examen {
+  background: var(--planning-examen-bg);
+  color: var(--planning-examen);
+}
+
+.planning-popover__badge.badge-reunion {
+  background: var(--planning-reunion-bg);
+  color: var(--planning-reunion);
+}
+
+.planning-popover__badge.badge-autre {
+  background: var(--planning-autre-bg);
+  color: var(--planning-autre);
+}
+
+.planning-popover__title {
+  font-family: var(--font-display, 'Sora', sans-serif);
+  font-size: .9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink, #0F172A);
+  margin: 0;
+  word-break: break-word;
+}
+
+.planning-popover__datetime {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1rem 0;
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--ink-soft, #475569);
+  font-variant-numeric: tabular-nums;
+}
+
+.planning-popover__datetime .bi {
+  color: var(--brand, #155E75);
+  font-size: .875rem;
+  flex-shrink: 0;
+}
+
+.planning-popover__meta {
+  padding: .75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+}
+
+.planning-popover__row {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+}
+
+.planning-popover__row .bi {
+  width: 16px;
+  margin-top: 2px;
+  color: var(--ink-faint, #94A3B8);
+  font-size: .875rem;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.planning-popover__row-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.planning-popover__label {
+  display: block;
+  font-size: .6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--ink-faint, #94A3B8);
+  margin-bottom: .125rem;
+}
+
+.planning-popover__value {
+  display: block;
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--ink, #0F172A);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.planning-popover__desc {
+  margin: 0 1rem .75rem;
+  padding: .625rem .75rem;
+  background: var(--canvas, #F6F8FA);
+  border-radius: var(--radius-sm, 6px);
+  border-left: 3px solid var(--line, #E5EAF0);
+}
+
+.planning-popover__desc-text {
+  font-size: .8125rem;
+  color: var(--ink-soft, #475569);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.planning-popover__actions {
+  display: flex;
+  gap: .5rem;
+  padding: .75rem 1rem 1rem;
+  border-top: 1px solid var(--line, #E5EAF0);
+  background: var(--surface, #fff);
+}
+
+.planning-popover__actions:empty {
+  display: none;
+  padding: 0;
+  border: none;
+}
+
+/* Offcanvas */
+.planning-offcanvas {
+  width: min(420px, 100vw);
+}
+
+/* Toasts planning */
+.planning-toast-container {
+  z-index: 1100;
+}
+
+.planning-toast-container .toast {
+  min-width: 280px;
+}
+
+/* Dashboard event links */
+.dashboard-event-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: background 150ms ease;
+}
+
+.dashboard-event-link:hover {
+  background: var(--brand-tint);
+  color: inherit;
+}
+
+.dashboard-event-link .event-type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-event-link .event-type-dot--cours { background: var(--brand); }
+.dashboard-event-link .event-type-dot--examen { background: var(--danger); }
+.dashboard-event-link .event-type-dot--reunion { background: #6D28D9; }
+.dashboard-event-link .event-type-dot--autre { background: var(--ink-faint); }
+
+/* Print */
+@media print {
+  .app-sidebar,
+  .app-topbar,
+  .planning-toolbar,
+  .planning-sidebar,
+  .planning-popover,
+  .planning-toast-container,
+  .offcanvas,
+  .page-header {
+    display: none !important;
+  }
+
+  .app-main { margin-left: 0 !important; }
+  .app-content { max-width: none; padding: 0; }
+
+  .planning-calendar-wrap {
+    border: none;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .planning-layout { flex-direction: column; }
+}
+
+@media (max-width: 767.98px) {
+  .planning-toolbar__center { order: 3; width: 100%; justify-content: center; }
+  .planning-toolbar__title { font-size: .875rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planning-skeleton__bar { animation: none; }
+}

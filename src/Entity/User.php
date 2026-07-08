@@ -44,19 +44,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, ForumPost>
      */
-    #[ORM\OneToMany(targetEntity: ForumPost::class, mappedBy: 'auteur')]
+    #[ORM\OneToMany(targetEntity: ForumPost::class, mappedBy: 'auteur', cascade: ['remove'], orphanRemoval: true)]
     private Collection $forumPosts;
 
     /**
      * @var Collection<int, Message>
      */
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'expediteur')]
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'expediteur', cascade: ['remove'], orphanRemoval: true)]
     private Collection $messages;
 
     /**
      * @var Collection<int, Progression>
      */
-    #[ORM\OneToMany(targetEntity: Progression::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Progression::class, mappedBy: 'user', cascade: ['remove'], orphanRemoval: true)]
     private Collection $progressions;
 
     /**
@@ -98,7 +98,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Note>
      */
-    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'etudiant')]
+    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'etudiant', cascade: ['remove'], orphanRemoval: true)]
     private Collection $notes;
 
     /**

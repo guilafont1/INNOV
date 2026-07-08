@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Évaluations — {{ cours.titre }}{% endblock %}
+
+{% block body %}
+{% set headerActions %}
+    <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Cours
+    </a>
+{% endset %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Évaluations',
+    title: cours.titre,
+    description: 'Contenu des évaluations disponibles pour ce cours.',
+    actions: headerActions
+} only %}
+
+{% if evaluations|length == 0 %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'clipboard-check',
+        text: 'Aucune évaluation disponible pour le moment.'
+    } only %}
+{% else %}
+    {% for evaluation in evaluations %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h5 mb-2">{{ evaluation.titre }}</h2>
+                {% if evaluation.createdBy %}
+                    <p class="text-muted small mb-3">
+                        Créée par {{ evaluation.createdBy.prenom }} {{ evaluation.createdBy.nom }}
+                    </p>
+                {% endif %}
+                <h3 class="h6 text-muted mb-2">Questions</h3>
+                <div class="reading-content">
+                    {{ evaluation.questions|nl2br }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

@@ -6,8 +6,11 @@ use App\Repository\CalendrierRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Cours;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CalendrierRepository::class)]
+#[Assert\Callback('validateDates')]
 class Calendrier
 {
     #[ORM\Id]
@@ -34,12 +37,15 @@ class Calendrier
     private ?string $type = 'cours';
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $enseignant = null;
     
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Classe $classe = null;
 
     #[ORM\ManyToOne(inversedBy: 'calendriers')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Cours $cours = null;
 
     public function getId(): ?int
@@ -114,17 +120,11 @@ class Calendrier
 
     public function setType(string $type): static
     {
-        // Debug pour tracer les appels à setType
-        error_log('Calendrier::setType appelé avec la valeur: "' . $type . '"');
-        
-        // Vérification de la valeur et traçage
-        if (!in_array($type, ['cours', 'examen', 'reunion', 'autre'])) {
-            error_log('ATTENTION: Type invalide reçu: "' . $type . '", utilisation de "cours" comme valeur par défaut');
-            $type = 'cours'; // Protection contre les valeurs invalides
+        if (!in_array($type, ['cours', 'examen', 'reunion', 'autre'], true)) {
+            $type = 'cours';
         }
-        
+
         $this->type = $type;
-        error_log('Type défini dans l\'entité: "' . $this->type . '"');
 
         return $this;
     }
@@ -163,5 +163,14 @@ class Calendrier
         $this->cours = $cours;
 
         return $this;
+    }
+
+    public function validateDates(ExecutionContextInterface $context): void
+    {
+        if ($this->dateDebut && $this->dateFin && $this->dateFin <= $this->dateDebut) {
+            $context->buildViolation('La date de fin doit être postérieure à la date de début.')
+                ->atPath('dateFin')
+                ->addViolation();
+        }
     }
 }

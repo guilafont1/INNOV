@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier — {{ module.titre }}{% endblock %}
+
+{% block body %}
+{% set headerActions %}
+    <a href="{{ path('app_module_show', {id: module.id}) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+{% endset %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Module',
+    title: 'Modifier le module',
+    description: module.titre,
+    actions: headerActions
+} only %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    {{ form_row(form.titre) }}
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> Enregistrer
+                        </button>
+                        <a href="{{ path('app_module_show', {id: module.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

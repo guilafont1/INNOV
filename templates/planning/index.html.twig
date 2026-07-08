@@ -1,0 +1,356 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planning{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="/css/planning.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: planningEyebrow,
+    title: 'Planning',
+    description: planningCanCreate ? 'Gérez les cours, examens et réunions.' : 'Consultez votre emploi du temps.'
+} only %}
+
+<div id="planning-app"
+     class="planning-app"
+     data-role="{{ planningRole }}"
+     data-can-create="{{ planningCanCreate ? '1' : '0' }}"
+     data-can-edit="{{ planningCanEdit ? '1' : '0' }}"
+     data-csrf-token="{{ csrf_token('planning_api') }}"
+     data-api-events="{{ path('api_planning_events') }}"
+     data-api-conflicts="{{ path('api_planning_conflicts') }}"
+     data-export-pdf-url="{{ path(planningExportRoute) }}"
+     data-export-ics-url="{{ path(planningExportIcsRoute) }}"
+     data-initial-date="{{ app.request.query.get('date', '') }}"
+     data-initial-view="{{ app.request.query.get('view', '') }}">
+
+    <div class="planning-toolbar">
+        <div class="planning-toolbar__left">
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm d-none d-lg-inline-flex active"
+                    id="planning-sidebar-toggle"
+                    aria-label="Replier le panneau filtres"
+                    aria-expanded="true"
+                    title="Replier le panneau filtres">
+                <i class="bi bi-layout-sidebar-inset"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="planning-today" aria-label="Aujourd'hui">Aujourd'hui</button>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Navigation période">
+                <button type="button" class="btn btn-outline-secondary" id="planning-prev" aria-label="Période précédente"><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="btn btn-outline-secondary" id="planning-next" aria-label="Période suivante"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <h2 class="planning-toolbar__title" id="planning-period-title"></h2>
+        </div>
+
+        <div class="planning-toolbar__center">
+            <div class="planning-view-switch btn-group btn-group-sm" role="group" aria-label="Vue du calendrier">
+                <button type="button" class="btn btn-outline-secondary" data-view="timeGridDay">Jour</button>
+                <button type="button" class="btn btn-outline-secondary active" data-view="timeGridWeek">Semaine</button>
+                <button type="button" class="btn btn-outline-secondary" data-view="dayGridMonth">Mois</button>
+                <button type="button" class="btn btn-outline-secondary" data-view="listWeek">Liste</button>
+            </div>
+        </div>
+
+        <div class="planning-toolbar__right">
+            <button type="button" class="btn btn-outline-secondary btn-sm d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#planningFiltersOffcanvas">
+                <i class="bi bi-funnel me-1"></i>Filtres
+            </button>
+            {% if planningCanCreate %}
+                <button type="button" class="btn btn-primary btn-sm" id="planning-new-btn">
+                    <i class="bi bi-plus-lg me-1"></i>Nouvel événement
+                </button>
+            {% endif %}
+            <div class="btn-group btn-group-sm">
+                <a href="#" class="btn btn-outline-secondary btn-sm" id="planning-export-pdf-btn" title="Exporter la période affichée en PDF">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </a>
+                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Autres formats d'export">
+                    <span class="visually-hidden">Autres formats</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="#" id="planning-export-ics-btn">
+                            <i class="bi bi-calendar-event me-2"></i>Exporter iCal (.ics)
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="planning-shortcuts-btn" title="Raccourcis clavier" aria-label="Raccourcis clavier">
+                <i class="bi bi-question-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="planning-layout">
+        <aside class="planning-sidebar d-none d-lg-flex" id="planning-sidebar">
+            <div class="planning-sidebar__inner">
+                <div id="planning-mini-calendar-wrap" class="planning-mini-calendar-wrap" hidden>
+                    <div id="planning-mini-calendar" class="planning-mini-calendar"></div>
+                </div>
+
+                <div class="planning-filters">
+                    <div class="planning-filters__header">
+                        <h3 class="planning-filters__title">Filtres</h3>
+                        <div class="planning-filters__toolbar" role="toolbar" aria-label="Actions des filtres">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm planning-filters__toolbar-btn"
+                                    id="planning-mini-cal-toggle"
+                                    title="Afficher le mini-calendrier"
+                                    aria-label="Afficher le mini-calendrier"
+                                    aria-expanded="false"
+                                    aria-controls="planning-mini-calendar-wrap">
+                                <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                <span>Calendrier</span>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm planning-filters__toolbar-btn"
+                                    id="planning-filters-reset"
+                                    title="Réinitialiser tous les filtres">
+                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                                <span>Réinitialiser</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 planning-filters__field">
+                        <label class="form-label form-label-sm" for="filter-type">Type</label>
+                        <select id="filter-type" class="form-select form-select-sm w-100" multiple placeholder="Tous les types…">
+                            <option value="cours">Cours</option>
+                            <option value="examen">Examen</option>
+                            <option value="reunion">Réunion</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+
+                    {% if filterClasses|length > 0 %}
+                    <div class="mb-2 planning-filters__field">
+                        <label class="form-label form-label-sm" for="filter-classe">Classe</label>
+                        <select id="filter-classe" class="form-select form-select-sm w-100" multiple placeholder="Toutes les classes…">
+                            {% for classe in filterClasses %}
+                                <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if planningRole == 'admin' and filterEnseignants|length > 0 %}
+                    <div class="mb-2 planning-filters__field">
+                        <label class="form-label form-label-sm" for="filter-enseignant">Enseignant</label>
+                        <select id="filter-enseignant" class="form-select form-select-sm w-100" multiple placeholder="Tous les enseignants…">
+                            {% for ens in filterEnseignants %}
+                                <option value="{{ ens.id }}">{{ user_full_name(ens) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if filterCours|length > 0 %}
+                    <div class="mb-2 planning-filters__field">
+                        <label class="form-label form-label-sm" for="filter-cours">Cours</label>
+                        <select id="filter-cours" class="form-select form-select-sm w-100" multiple placeholder="Tous les cours…">
+                            {% for c in filterCours %}
+                                <option value="{{ c.id }}">{{ c.titre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="filter-weekends">
+                        <label class="form-check-label form-label-sm" for="filter-weekends">Afficher le week-end</label>
+                    </div>
+                </div>
+
+                <div class="planning-legend mt-4">
+                    <h3 class="planning-filters__title mb-2">Légende</h3>
+                    <div class="planning-legend__item"><span class="planning-legend__dot planning-legend__dot--cours"></span>Cours</div>
+                    <div class="planning-legend__item"><span class="planning-legend__dot planning-legend__dot--examen"></span>Examen</div>
+                    <div class="planning-legend__item"><span class="planning-legend__dot planning-legend__dot--reunion"></span>Réunion</div>
+                    <div class="planning-legend__item"><span class="planning-legend__dot planning-legend__dot--autre"></span>Autre</div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="planning-main">
+            <div class="planning-calendar-wrap">
+                <div class="planning-skeleton" id="planning-skeleton" aria-hidden="true">
+                    <div class="planning-skeleton__bar"></div>
+                    <div class="planning-skeleton__grid"></div>
+                </div>
+                <div id="planning-calendar"></div>
+                <div class="planning-empty d-none" id="planning-empty">
+                    <svg class="planning-empty__illus" viewBox="0 0 120 80" aria-hidden="true">
+                        <rect x="10" y="15" width="100" height="55" rx="6" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/>
+                        <line x1="10" y1="30" x2="110" y2="30" stroke="currentColor" stroke-width="2" opacity=".2"/>
+                        <rect x="20" y="38" width="30" height="8" rx="2" fill="currentColor" opacity=".15"/>
+                        <rect x="55" y="38" width="40" height="8" rx="2" fill="currentColor" opacity=".1"/>
+                    </svg>
+                    <p class="planning-empty__text">Aucun événement sur cette période.</p>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="planning-empty-today">Aller à aujourd'hui</button>
+                        {% if planningCanCreate %}
+                            <button type="button" class="btn btn-primary btn-sm" id="planning-empty-create">Créer un événement</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Filtres mobile #}
+<div class="offcanvas offcanvas-start" tabindex="-1" id="planningFiltersOffcanvas" aria-labelledby="planningFiltersOffcanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="planningFiltersOffcanvasLabel">Filtres</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body" id="planning-filters-mobile-mount">
+        <p class="small text-muted d-lg-none">Utilisez le planning sur un écran plus large pour accéder aux filtres avancés, ou affinez la vue via les boutons de navigation.</p>
+    </div>
+</div>
+
+{# Offcanvas création / édition #}
+<div class="offcanvas offcanvas-end planning-offcanvas" tabindex="-1" id="planningEventOffcanvas" aria-labelledby="planningEventOffcanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="planningEventOffcanvasLabel">Nouvel événement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="alert alert-warning d-none" id="planning-conflict-banner" role="alert"></div>
+        <form id="planning-event-form" novalidate>
+            <input type="hidden" id="event-id" name="id">
+            <div class="mb-3">
+                <label for="event-titre" class="form-label">Titre</label>
+                <input type="text" class="form-control" id="event-titre" name="titre" required>
+                <div class="invalid-feedback" data-error="titre"></div>
+            </div>
+            <div class="mb-3">
+                <label for="event-type" class="form-label">Type</label>
+                <select id="event-type" name="type" class="form-select" required>
+                    <option value="cours">Cours</option>
+                    <option value="examen">Examen</option>
+                    <option value="reunion">Réunion</option>
+                    <option value="autre">Autre</option>
+                </select>
+                <div class="invalid-feedback" data-error="type"></div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label for="event-start" class="form-label">Début</label>
+                    <input type="datetime-local" class="form-control" id="event-start" name="start" required>
+                    <div class="invalid-feedback" data-error="start"></div>
+                </div>
+                <div class="col-6">
+                    <label for="event-end" class="form-label">Fin</label>
+                    <input type="datetime-local" class="form-control" id="event-end" name="end" required>
+                    <div class="invalid-feedback" data-error="end"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="event-lieu" class="form-label">Lieu</label>
+                <input type="text" class="form-control" id="event-lieu" name="lieu" list="lieux-datalist">
+                <datalist id="lieux-datalist">
+                    {% for lieu in lieux %}
+                        <option value="{{ lieu }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            {% if filterCours|length > 0 %}
+            <div class="mb-3">
+                <label for="event-cours" class="form-label">Cours</label>
+                <select id="event-cours" name="coursId" class="form-select" placeholder="Sélectionner un cours…">
+                    <option value=""></option>
+                    {% for c in filterCours %}
+                        <option value="{{ c.id }}">{{ c.titre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            {% if filterClasses|length > 0 %}
+            <div class="mb-3">
+                <label for="event-classe" class="form-label">Classe</label>
+                <select id="event-classe" name="classeId" class="form-select" placeholder="Sélectionner une classe…">
+                    <option value=""></option>
+                    {% for classe in filterClasses %}
+                        <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            {% if planningRole == 'admin' and filterEnseignants|length > 0 %}
+            <div class="mb-3">
+                <label for="event-enseignant" class="form-label">Enseignant</label>
+                <select id="event-enseignant" name="enseignantId" class="form-select" placeholder="Sélectionner un enseignant…">
+                    <option value=""></option>
+                    {% for ens in filterEnseignants %}
+                        <option value="{{ ens.id }}">{{ user_full_name(ens) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="mb-3">
+                <label for="event-description" class="form-label">Description</label>
+                <textarea class="form-control" id="event-description" name="description" rows="3"></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1" id="event-submit-btn">Enregistrer</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Popover détail événement #}
+<div class="planning-popover card shadow d-none" id="planning-event-popover" role="dialog" aria-labelledby="popover-title" aria-modal="false">
+    <div class="card-body p-0">
+        <div class="planning-popover__header">
+            <div class="planning-popover__header-text">
+                <span class="planning-popover__badge badge-role" id="popover-type-badge"></span>
+                <h6 class="planning-popover__title" id="popover-title"></h6>
+            </div>
+            <button type="button" class="btn-close" id="popover-close" aria-label="Fermer"></button>
+        </div>
+        <div class="planning-popover__datetime" id="popover-datetime"></div>
+        <div class="planning-popover__meta" id="popover-meta"></div>
+        <div class="planning-popover__desc d-none" id="popover-description-wrap">
+            <p class="planning-popover__desc-text" id="popover-description"></p>
+        </div>
+        <div class="planning-popover__actions" id="popover-actions"></div>
+    </div>
+</div>
+
+{# Modal raccourcis #}
+<div class="modal fade" id="planningShortcutsModal" tabindex="-1" aria-labelledby="planningShortcutsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="planningShortcutsModalLabel">Raccourcis clavier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row small mb-0 planning-shortcuts">
+                    <dt class="col-4">T</dt><dd class="col-8">Aujourd'hui</dd>
+                    <dt class="col-4">← / →</dt><dd class="col-8">Période précédente / suivante</dd>
+                    {% if planningCanCreate %}
+                    <dt class="col-4">N</dt><dd class="col-8">Nouvel événement</dd>
+                    {% endif %}
+                    <dt class="col-4">1–4</dt><dd class="col-8">Jour / Semaine / Mois / Liste</dd>
+                    <dt class="col-4">?</dt><dd class="col-8">Afficher cette aide</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container planning-toast-container position-fixed bottom-0 end-0 p-3" id="planning-toast-container"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/fr.global.min.js"></script>
+    <script src="/js/planning.js"></script>
+{% endblock %}

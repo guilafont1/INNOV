@@ -1,0 +1,117 @@
+{% set currentRoute = app.request.get('_route') %}
+
+<aside class="app-sidebar d-none d-lg-flex">
+    <a href="{{ path('app_home') }}" class="app-sidebar__brand text-decoration-none">MERJ</a>
+
+    <nav class="app-sidebar__nav" aria-label="Navigation principale">
+        {% if is_granted('ROLE_ADMIN_ECOLE') %}
+            <a href="{{ path('admin_dashboard') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'admin_dashboard') ? 'is-active' : '' }}">
+                <i class="bi bi-grid"></i> Dashboard
+            </a>
+            <a href="{{ path('admin_classes') }}" class="app-sidebar__link {{ route_is_active(currentRoute, ['admin_classes']) ? 'is-active' : '' }}">
+                <i class="bi bi-people"></i> Classes
+            </a>
+            <a href="{{ path('admin_users') }}" class="app-sidebar__link {{ route_is_active(currentRoute, ['admin_users']) ? 'is-active' : '' }}">
+                <i class="bi bi-person-badge"></i> Utilisateurs
+            </a>
+            <a href="{{ path('admin_planning') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'admin_planning') ? 'is-active' : '' }}">
+                <i class="bi bi-calendar3"></i> Planning
+            </a>
+        {% endif %}
+
+        {% if 'ROLE_ENSEIGNANT' in app.user.roles %}
+            <a href="{{ path('enseignant_dashboard') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'enseignant_dashboard') ? 'is-active' : '' }}">
+                <i class="bi bi-grid"></i> Dashboard
+            </a>
+            <a href="{{ path('enseignant_cours') }}" class="app-sidebar__link {{ route_is_active(currentRoute, ['enseignant_cours', 'app_cours', 'app_module', 'app_chapitre']) ? 'is-active' : '' }}">
+                <i class="bi bi-journal-text"></i> Mes cours
+            </a>
+            <a href="{{ path('enseignant_classes') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'enseignant_classe') ? 'is-active' : '' }}">
+                <i class="bi bi-people"></i> Classes
+            </a>
+            <a href="{{ path('enseignant_planning') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'enseignant_planning') ? 'is-active' : '' }}">
+                <i class="bi bi-calendar3"></i> Planning
+            </a>
+        {% endif %}
+
+        {% if 'ROLE_ETUDIANT' in app.user.roles %}
+            <a href="{{ path('etudiant_dashboard') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'etudiant_dashboard') ? 'is-active' : '' }}">
+                <i class="bi bi-grid"></i> Dashboard
+            </a>
+            <a href="{{ path('app_cours') }}" class="app-sidebar__link {{ route_is_active(currentRoute, ['app_cours', 'app_module', 'app_chapitre']) ? 'is-active' : '' }}">
+                <i class="bi bi-journal-text"></i> Cours
+            </a>
+            <a href="{{ path('etudiant_notes') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'etudiant_notes') ? 'is-active' : '' }}">
+                <i class="bi bi-clipboard-data"></i> Mes notes
+            </a>
+            <a href="{{ path('etudiant_planning') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'etudiant_planning') ? 'is-active' : '' }}">
+                <i class="bi bi-calendar3"></i> Planning
+            </a>
+        {% endif %}
+
+        <a href="{{ path('app_messages_inbox') }}" class="app-sidebar__link {{ route_is_active(currentRoute, 'app_messages_inbox') ? 'is-active' : '' }}">
+            <i class="bi bi-chat-dots"></i> Messages
+        </a>
+    </nav>
+
+    <div class="app-sidebar__user">
+        <div class="app-sidebar__user-card">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="avatar">{{ user_initials(app.user) }}</span>
+                <div>
+                    <div class="app-sidebar__user-name">{{ user_full_name(app.user) }}</div>
+                    {% include 'partials/_role_badge.html.twig' %}
+                </div>
+            </div>
+            <div class="app-sidebar__user-links">
+                <a href="{{ path('app_account') }}">Mon compte</a>
+                <a href="{{ path('app_logout') }}">Se déconnecter</a>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="offcanvas offcanvas-start app-sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel" style="background: var(--sidebar); color: #E2E8F0; width: var(--sidebar-width);">
+    <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+        <h5 class="offcanvas-title font-display" id="sidebarOffcanvasLabel" style="font-family: var(--font-display); font-weight: 700;">MERJ</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body p-0 d-flex flex-column">
+        <nav class="app-sidebar__nav flex-grow-1" aria-label="Navigation mobile">
+            {% if is_granted('ROLE_ADMIN_ECOLE') %}
+                <a href="{{ path('admin_dashboard') }}" class="app-sidebar__link"><i class="bi bi-grid"></i> Dashboard</a>
+                <a href="{{ path('admin_classes') }}" class="app-sidebar__link"><i class="bi bi-people"></i> Classes</a>
+                <a href="{{ path('admin_users') }}" class="app-sidebar__link"><i class="bi bi-person-badge"></i> Utilisateurs</a>
+                <a href="{{ path('admin_planning') }}" class="app-sidebar__link"><i class="bi bi-calendar3"></i> Planning</a>
+            {% endif %}
+            {% if 'ROLE_ENSEIGNANT' in app.user.roles %}
+                <a href="{{ path('enseignant_dashboard') }}" class="app-sidebar__link"><i class="bi bi-grid"></i> Dashboard</a>
+                <a href="{{ path('enseignant_cours') }}" class="app-sidebar__link"><i class="bi bi-journal-text"></i> Mes cours</a>
+                <a href="{{ path('enseignant_classes') }}" class="app-sidebar__link"><i class="bi bi-people"></i> Classes</a>
+                <a href="{{ path('enseignant_planning') }}" class="app-sidebar__link"><i class="bi bi-calendar3"></i> Planning</a>
+            {% endif %}
+            {% if 'ROLE_ETUDIANT' in app.user.roles %}
+                <a href="{{ path('etudiant_dashboard') }}" class="app-sidebar__link"><i class="bi bi-grid"></i> Dashboard</a>
+                <a href="{{ path('app_cours') }}" class="app-sidebar__link"><i class="bi bi-journal-text"></i> Cours</a>
+                <a href="{{ path('etudiant_notes') }}" class="app-sidebar__link"><i class="bi bi-clipboard-data"></i> Mes notes</a>
+                <a href="{{ path('etudiant_planning') }}" class="app-sidebar__link"><i class="bi bi-calendar3"></i> Planning</a>
+            {% endif %}
+            <a href="{{ path('app_messages_inbox') }}" class="app-sidebar__link"><i class="bi bi-chat-dots"></i> Messages</a>
+        </nav>
+        <div class="app-sidebar__user">
+            <div class="app-sidebar__user-card">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="avatar">{{ user_initials(app.user) }}</span>
+                    <div>
+                        <div class="app-sidebar__user-name">{{ user_full_name(app.user) }}</div>
+                        {% include 'partials/_role_badge.html.twig' %}
+                    </div>
+                </div>
+                <div class="app-sidebar__user-links">
+                    <a href="{{ path('app_account') }}">Mon compte</a>
+                    <a href="{{ path('app_logout') }}">Se déconnecter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

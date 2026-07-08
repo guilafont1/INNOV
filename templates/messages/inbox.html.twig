@@ -1,0 +1,170 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messages{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="/css/messages.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div id="messages-app"
+     class="messages-app"
+     data-csrf-token="{{ csrf_token('message_api') }}"
+     data-initial-partner="{{ initialPartnerId }}"
+     data-api-conversations="{{ path('api_messages_conversations') }}"
+     data-api-contacts="{{ path('api_messages_contacts') }}"
+     data-api-thread="{{ path('api_messages_thread', {partnerId: 0}) }}"
+     data-api-send="{{ path('api_messages_send') }}"
+     data-api-read="{{ path('api_messages_read', {partnerId: 0}) }}"
+     data-current-user-id="{{ app.user.id }}">
+
+    <div class="messages-shell">
+        {# Liste des conversations #}
+        <aside class="messages-list-panel" id="messages-list-panel">
+            <header class="messages-list-panel__header">
+                <div>
+                    <h1 class="messages-list-panel__title">Messages</h1>
+                    <p class="messages-list-panel__subtitle">Conversations avec votre classe</p>
+                </div>
+                <button type="button"
+                        class="btn btn-primary btn-sm messages-list-panel__new"
+                        id="messages-new-btn"
+                        title="Nouvelle conversation"
+                        aria-label="Nouvelle conversation"
+                        {% if contacts|length == 0 %}disabled{% endif %}>
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+            </header>
+
+            <div class="messages-search">
+                <i class="bi bi-search messages-search__icon" aria-hidden="true"></i>
+                <input type="search"
+                       class="form-control form-control-sm messages-search__input"
+                       id="messages-search"
+                       placeholder="Rechercher une conversation…"
+                       autocomplete="off"
+                       aria-label="Rechercher une conversation">
+            </div>
+
+            <div class="messages-list" id="messages-list" role="listbox" aria-label="Conversations">
+                <div class="messages-list__loading" id="messages-list-loading">
+                    <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                        <span class="visually-hidden">Chargement…</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        {# Zone conversation #}
+        <section class="messages-thread-panel" id="messages-thread-panel">
+            <div class="messages-thread-empty" id="messages-thread-empty">
+                <div class="messages-thread-empty__icon">
+                    <i class="bi bi-chat-dots"></i>
+                </div>
+                <h2 class="messages-thread-empty__title">Vos messages</h2>
+                <p class="messages-thread-empty__text">
+                    Sélectionnez une conversation ou démarrez-en une nouvelle pour échanger avec vos camarades ou enseignants.
+                </p>
+                {% if contacts|length > 0 %}
+                    <button type="button" class="btn btn-primary btn-sm" id="messages-empty-new-btn">
+                        <i class="bi bi-pencil-square me-1"></i>Nouvelle conversation
+                    </button>
+                {% else %}
+                    <p class="text-muted small mb-0">Aucun contact disponible pour le moment.</p>
+                {% endif %}
+            </div>
+
+            <div class="messages-thread d-none" id="messages-thread">
+                <header class="messages-thread__header">
+                    <button type="button"
+                            class="btn btn-link messages-thread__back d-lg-none"
+                            id="messages-back-btn"
+                            aria-label="Retour aux conversations">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="messages-thread__contact">
+                        <div class="messages-avatar" id="messages-thread-avatar" aria-hidden="true"></div>
+                        <div class="messages-thread__meta">
+                            <h2 class="messages-thread__name" id="messages-thread-name"></h2>
+                            <p class="messages-thread__role" id="messages-thread-role"></p>
+                        </div>
+                    </div>
+                    <div class="messages-thread__actions">
+                        <button type="button" class="btn btn-link btn-sm text-secondary" id="messages-info-btn" title="Informations" aria-label="Informations">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <div class="messages-thread__body" id="messages-thread-body" role="log" aria-live="polite" aria-relevant="additions">
+                    <div class="messages-thread__loading" id="messages-thread-loading">
+                        <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                            <span class="visually-hidden">Chargement…</span>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="messages-compose">
+                    <form id="messages-compose-form" class="messages-compose__form">
+                        <div class="messages-compose__input-wrap">
+                            <textarea id="messages-compose-input"
+                                      class="messages-compose__input"
+                                      rows="1"
+                                      placeholder="Écrire un message…"
+                                      maxlength="5000"
+                                      aria-label="Votre message"></textarea>
+                        </div>
+                        <button type="submit" class="messages-compose__send" id="messages-send-btn" aria-label="Envoyer" disabled>
+                            <i class="bi bi-arrow-up-circle-fill"></i>
+                        </button>
+                    </form>
+                </footer>
+            </div>
+        </section>
+    </div>
+</div>
+
+{# Modal nouvelle conversation #}
+<div class="modal fade" id="messagesNewModal" tabindex="-1" aria-labelledby="messagesNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messagesNewModalLabel">Nouvelle conversation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="messages-modal-search px-3 py-2 border-bottom">
+                    <input type="search"
+                           class="form-control form-control-sm"
+                           id="messages-contact-search"
+                           placeholder="Rechercher un contact…"
+                           autocomplete="off">
+                </div>
+                <div class="messages-contact-list" id="messages-contact-list" role="listbox" aria-label="Contacts">
+                    {% for contact in contacts %}
+                        <button type="button"
+                                class="messages-contact-item"
+                                data-partner-id="{{ contact.id }}"
+                                role="option">
+                            <span class="messages-avatar messages-avatar--md">{{ user_initials(contact) }}</span>
+                            <span class="messages-contact-item__info">
+                                <span class="messages-contact-item__name">{{ user_full_name(contact) }}</span>
+                                <span class="messages-contact-item__meta">{{ contact.email }}</span>
+                            </span>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </button>
+                    {% else %}
+                        <p class="text-muted small p-3 mb-0">Aucun contact disponible.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="/js/messages.js"></script>
+{% endblock %}

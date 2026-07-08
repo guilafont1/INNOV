@@ -3,199 +3,214 @@
 {% block title %}Notes - {{ classe.nom }}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>📋 Notes - {{ classe.nom }}</h2>
-            <p class="text-muted">Gérez les notes des étudiants pour chaque module</p>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: classe.nom,
+    title: 'Notes',
+    description: 'Saisissez et consultez les notes par module.',
+    actions: '<a href="' ~ path('enseignant_classe_show', {id: classe.id}) ~ '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>'
+} %}
+
+{% if modules|length > 0 and etudiants|length > 0 %}
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3">
+            <h2 class="h6 mb-0">Saisie des notes</h2>
         </div>
-        <a href="{{ path('enseignant_classe_show', {id: classe.id}) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la classe
-        </a>
+        <div class="card-body">
+            <form method="post" id="notesForm">
+                <input type="hidden" name="_token" value="{{ csrf_token('notes_save_' ~ classe.id) }}">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="module_id" class="form-label">Module</label>
+                        <select name="module_id" id="module_id" class="form-select" required>
+                            <option value="">Sélectionner un module</option>
+                            {% for module in modules %}
+                                <option value="{{ module.id }}" {{ selectedModuleId == module.id ? 'selected' : '' }}>
+                                    {{ module.cours.titre }} — {{ module.titre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div id="notesTable" class="{{ selectedModuleId > 0 ? '' : 'd-none' }}">
+                    <div class="table-responsive">
+                        <table class="table-app">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th class="num">Note</th>
+                                    <th class="num">Note max</th>
+                                    <th class="num">%</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for etudiant in etudiants %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-medium">{{ etudiant.prenom }} {{ etudiant.nom }}</div>
+                                            <div class="small text-muted">{{ etudiant.email }}</div>
+                                        </td>
+                                        <td>
+                                            <input type="number"
+                                                   name="notes[{{ etudiant.id }}][note]"
+                                                   class="form-control form-control-sm note-input"
+                                                   step="0.5" min="0"
+                                                   data-etudiant="{{ etudiant.id }}"
+                                                   placeholder="0"
+                                                   value="">
+                                        </td>
+                                        <td>
+                                            <input type="number"
+                                                   name="notes[{{ etudiant.id }}][note_max]"
+                                                   class="form-control form-control-sm note-max-input"
+                                                   step="0.01" min="0.01"
+                                                   data-etudiant="{{ etudiant.id }}"
+                                                   placeholder="20"
+                                                   value="20">
+                                        </td>
+                                        <td class="num">
+                                            <span id="percentage-{{ etudiant.id }}" class="text-muted">—</span>
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   name="notes[{{ etudiant.id }}][commentaire]"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Optionnel">
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3 d-flex align-items-center gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Enregistrer</button>
+                        <span class="small text-muted">La note sur 20 est utilisée par défaut si le barème est vide.</span>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    {% if modules|length > 0 and etudiants|length > 0 %}
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Sélectionner un module</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" id="notesForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="module_id" class="form-label">Module :</label>
-                            <select name="module_id" id="module_id" class="form-select" required onchange="showNotesTable()">
-                                <option value="">-- Sélectionner un module --</option>
-                                {% for module in modules %}
-                                    <option value="{{ module.id }}">{{ module.cours.titre }} - {{ module.titre }}</option>
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h2 class="h6 mb-0">Notes existantes</h2>
+        </div>
+        <div class="card-body">
+            {% set hasNotes = false %}
+            {% for module in modules %}
+                {% if notesExistantes[module.id]|default([])|length > 0 %}
+                    {% set hasNotes = true %}
+                    <h3 class="h6 text-muted mb-3">{{ module.cours.titre }} — {{ module.titre }}</h3>
+                    <div class="table-responsive mb-4">
+                        <table class="table-app">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th class="num">Note</th>
+                                    <th class="num">%</th>
+                                    <th>Commentaire</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for note in notesExistantes[module.id] %}
+                                    {% set percentage = note.pourcentage %}
+                                    {% set gradeClass = percentage >= 80 ? 'note-grade--ok' : (percentage >= 60 ? 'note-grade--mid' : 'note-grade--low') %}
+                                    <tr>
+                                        <td>{{ note.etudiant.prenom }} {{ note.etudiant.nom }}</td>
+                                        <td class="num note-value">{{ note.note }} / {{ note.noteMax }}</td>
+                                        <td class="num {{ gradeClass }} fw-medium">{{ percentage }}%</td>
+                                        <td>{{ note.commentaire ?? '—' }}</td>
+                                        <td class="text-muted">{{ note.createdAt|date('d/m/Y') }}</td>
+                                    </tr>
                                 {% endfor %}
-                            </select>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div id="notesTable" style="display: none;">
-                        <h6>Saisie des notes :</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Étudiant</th>
-                                        <th>Note</th>
-                                        <th>Note Max</th>
-                                        <th>Pourcentage</th>
-                                        <th>Commentaire</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for etudiant in etudiants %}
-                                        <tr>
-                                            <td>
-                                                <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong><br>
-                                                <small class="text-muted">{{ etudiant.email }}</small>
-                                            </td>
-                                            <td>
-                                                <input type="number" 
-                                                       name="notes[{{ etudiant.id }}][note]" 
-                                                       class="form-control note-input" 
-                                                       step="0.01" 
-                                                       min="0" 
-                                                       data-etudiant="{{ etudiant.id }}"
-                                                       onchange="calculatePercentage({{ etudiant.id }})"
-                                                       placeholder="Note">
-                                            </td>
-                                            <td>
-                                                <input type="number" 
-                                                       name="notes[{{ etudiant.id }}][note_max]" 
-                                                       class="form-control note-max-input" 
-                                                       step="0.01" 
-                                                       min="0" 
-                                                       data-etudiant="{{ etudiant.id }}"
-                                                       onchange="calculatePercentage({{ etudiant.id }})"
-                                                       placeholder="Note max">
-                                            </td>
-                                            <td>
-                                                <span id="percentage-{{ etudiant.id }}" class="badge bg-secondary">-</span>
-                                            </td>
-                                            <td>
-                                                <input type="text" 
-                                                       name="notes[{{ etudiant.id }}][commentaire]" 
-                                                       class="form-control" 
-                                                       placeholder="Commentaire optionnel">
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="mt-3">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Enregistrer les notes
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Affichage des notes existantes -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">📊 Notes existantes</h5>
-            </div>
-            <div class="card-body">
-                {% for module in modules %}
-                    {% if notesExistantes[module.id]|default([])|length > 0 %}
-                        <h6>{{ module.cours.titre }} - {{ module.titre }}</h6>
-                        <div class="table-responsive mb-4">
-                            <table class="table table-sm table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Étudiant</th>
-                                        <th>Note</th>
-                                        <th>Pourcentage</th>
-                                        <th>Commentaire</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for note in notesExistantes[module.id] %}
-                                        <tr>
-                                            <td>{{ note.etudiant.prenom }} {{ note.etudiant.nom }}</td>
-                                            <td>{{ note.note }} / {{ note.noteMax }}</td>
-                                            <td>
-                                                {% set percentage = note.pourcentage %}
-                                                <span class="badge bg-{% if percentage >= 80 %}success{% elseif percentage >= 60 %}warning{% else %}danger{% endif %}">
-                                                    {{ percentage }}%
-                                                </span>
-                                            </td>
-                                            <td>{{ note.commentaire ?? '-' }}</td>
-                                            <td>{{ note.createdAt.format('d/m/Y') }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-    {% else %}
-        <div class="alert alert-warning">
-            {% if modules|length == 0 %}
-                <h5>Aucun module disponible</h5>
-                <p>Il n'y a aucun module dans les cours de cette classe.</p>
-            {% elseif etudiants|length == 0 %}
-                <h5>Aucun étudiant</h5>
-                <p>Il n'y a aucun étudiant dans cette classe.</p>
+                {% endif %}
+            {% endfor %}
+            {% if not hasNotes %}
+                {% include 'partials/_empty_state.html.twig' with { icon: 'clipboard-data', text: 'Aucune note enregistrée pour le moment.' } %}
             {% endif %}
         </div>
-    {% endif %}
-</div>
+    </div>
+{% else %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'clipboard-data',
+        text: modules|length == 0 ? 'Aucun module disponible dans les cours de cette classe.' : 'Aucun étudiant dans cette classe.'
+    } %}
+{% endif %}
+{% endblock %}
 
-<script>
-function showNotesTable() {
-    const moduleSelect = document.getElementById('module_id');
-    const notesTable = document.getElementById('notesTable');
-    
-    if (moduleSelect.value) {
-        notesTable.style.display = 'block';
-        loadExistingNotes(moduleSelect.value);
-    } else {
-        notesTable.style.display = 'none';
-    }
-}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const notesPrefill = {{ notesPrefill|json_encode|raw }};
 
-function calculatePercentage(etudiantId) {
-    const noteInput = document.querySelector(`input[name="notes[${etudiantId}][note]"]`);
-    const noteMaxInput = document.querySelector(`input[name="notes[${etudiantId}][note_max]"]`);
-    const percentageSpan = document.getElementById(`percentage-${etudiantId}`);
-    
-    const note = parseFloat(noteInput.value) || 0;
-    const noteMax = parseFloat(noteMaxInput.value) || 0;
-    
-    if (note > 0 && noteMax > 0) {
-        const percentage = Math.round((note / noteMax) * 100);
-        percentageSpan.textContent = percentage + '%';
-        
-        // Changer la couleur selon la note
-        percentageSpan.className = 'badge ';
-        if (percentage >= 80) {
-            percentageSpan.className += 'bg-success';
-        } else if (percentage >= 60) {
-            percentageSpan.className += 'bg-warning';
-        } else {
-            percentageSpan.className += 'bg-danger';
+        function showNotesTable() {
+            const moduleSelect = document.getElementById('module_id');
+            const notesTable = document.getElementById('notesTable');
+            const moduleId = moduleSelect.value;
+
+            if (moduleId) {
+                notesTable.classList.remove('d-none');
+                prefillNotes(moduleId);
+            } else {
+                notesTable.classList.add('d-none');
+            }
         }
-    } else {
-        percentageSpan.textContent = '-';
-        percentageSpan.className = 'badge bg-secondary';
-    }
-}
 
-function loadExistingNotes(moduleId) {
-    // Cette fonction pourrait charger les notes existantes via AJAX si nécessaire
-    // Pour l'instant, on laisse vide
-}
-</script>
+        function prefillNotes(moduleId) {
+            const moduleNotes = notesPrefill[moduleId] || {};
+
+            document.querySelectorAll('#notesTable tbody tr').forEach((row) => {
+                const noteInput = row.querySelector('.note-input');
+                const noteMaxInput = row.querySelector('.note-max-input');
+                const commentInput = row.querySelector('input[name*="[commentaire]"]');
+                const etudiantId = noteInput?.dataset.etudiant;
+                const existing = moduleNotes[etudiantId];
+
+                if (existing) {
+                    noteInput.value = existing.note ?? '';
+                    noteMaxInput.value = existing.note_max ?? '20';
+                    commentInput.value = existing.commentaire ?? '';
+                } else {
+                    noteInput.value = '';
+                    noteMaxInput.value = '20';
+                    commentInput.value = '';
+                }
+
+                if (etudiantId) {
+                    calculatePercentage(etudiantId);
+                }
+            });
+        }
+
+        function calculatePercentage(etudiantId) {
+            const noteInput = document.querySelector('input[name="notes[' + etudiantId + '][note]"]');
+            const noteMaxInput = document.querySelector('input[name="notes[' + etudiantId + '][note_max]"]');
+            const percentageSpan = document.getElementById('percentage-' + etudiantId);
+            const note = parseFloat(noteInput.value);
+            const noteMax = parseFloat(noteMaxInput.value);
+
+            if (!Number.isNaN(note) && note >= 0 && !Number.isNaN(noteMax) && noteMax > 0) {
+                const percentage = Math.round((note / noteMax) * 100);
+                percentageSpan.textContent = percentage + '%';
+                percentageSpan.className = percentage >= 80 ? 'note-grade--ok fw-medium' : (percentage >= 60 ? 'note-grade--mid fw-medium' : 'note-grade--low fw-medium');
+            } else {
+                percentageSpan.textContent = '—';
+                percentageSpan.className = 'text-muted';
+            }
+        }
+
+        document.getElementById('module_id')?.addEventListener('change', showNotesTable);
+        document.querySelectorAll('.note-input, .note-max-input').forEach((input) => {
+            input.addEventListener('input', () => calculatePercentage(input.dataset.etudiant));
+        });
+
+        if (document.getElementById('module_id')?.value) {
+            showNotesTable();
+        }
+    </script>
 {% endblock %}

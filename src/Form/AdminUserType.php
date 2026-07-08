@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Security\UserRole;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -19,6 +20,16 @@ class AdminUserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $roleChoices = [
+            'Étudiant' => UserRole::ETUDIANT,
+            'Enseignant' => UserRole::ENSEIGNANT,
+            'Administration école' => UserRole::ADMIN_ECOLE,
+        ];
+
+        if ($options['allow_super_admin']) {
+            $roleChoices['Super administrateur'] = UserRole::SUPER_ADMIN;
+        }
+
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
@@ -65,11 +76,7 @@ class AdminUserType extends AbstractType
             ->add('roleChoice', ChoiceType::class, [
                 'label' => 'Rôle',
                 'mapped' => false,
-                'choices' => [
-                    'Étudiant' => 'ROLE_ETUDIANT',
-                    'Enseignant' => 'ROLE_ENSEIGNANT',
-                    'Administrateur' => 'ROLE_ADMIN',
-                ],
+                'choices' => $roleChoices,
                 'placeholder' => 'Choisissez un rôle',
                 'constraints' => [
                     new NotBlank([
@@ -110,6 +117,9 @@ class AdminUserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'allow_super_admin' => false,
         ]);
+
+        $resolver->setAllowedTypes('allow_super_admin', 'bool');
     }
 }

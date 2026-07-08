@@ -3,105 +3,80 @@
 {% block title %}Mes Cours{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h2 class="mb-4">📚 Gestion des cours</h2>
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Espace enseignant',
+    title: 'Mes cours',
+    description: 'Créez et gérez l\'ensemble de vos contenus pédagogiques.',
+    actions: '<a href="' ~ path('app_cours_new') ~ '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nouveau cours</a>'
+} %}
 
-    <a href="{{ path('app_cours_new') }}" class="btn btn-success mb-3">➕ Créer un nouveau cours</a>
-
-    <div class="row">
+{% if cours|length > 0 %}
+    <div class="row g-3">
         {% for c in cours %}
-            <div class="col-md-6 mb-4">
+            {% set totalChapitres = 0 %}
+            {% for module in c.modules %}
+                {% set totalChapitres = totalChapitres + module.chapitres|length %}
+            {% endfor %}
+            {% set isConfigured = c.modules|length > 0 %}
+            <div class="col-md-6 col-xl-4">
                 <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ c.titre }}</h5>
-                        <p class="card-text text-muted">{{ c.description|slice(0, 120) ~ '...' }}</p>
-                        
-                        <!-- Statistiques du cours -->
-                        <div class="row text-center mb-3">
-                            <div class="col-4">
-                                <small class="text-muted">Modules</small>
-                                <div class="fw-bold text-primary">{{ c.modules.count }}</div>
-                            </div>
-                            <div class="col-4">
-                                <small class="text-muted">Chapitres</small>
-                                <div class="fw-bold text-success">
-                                    {% set totalChapitres = 0 %}
-                                    {% for module in c.modules %}
-                                        {% set totalChapitres = totalChapitres + module.chapitres.count %}
-                                    {% endfor %}
-                                    {{ totalChapitres }}
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <small class="text-muted">Classes</small>
-                                <div class="fw-bold text-info">{{ c.classes.count }}</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Statut de configuration -->
-                        {% set isConfigured = c.modules.count > 0 %}
-                        {% if isConfigured %}
-                            <div class="alert alert-success py-2 mb-3">
-                                <i class="fas fa-check-circle"></i> <small>Cours configuré</small>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-warning py-2 mb-3">
-                                <i class="fas fa-exclamation-triangle"></i> <small>Configuration incomplète</small>
-                            </div>
-                        {% endif %}
-                        
-                        <div class="d-flex flex-wrap gap-1">
-                            <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-eye"></i> Voir
-                            </a>
-                            {% if not isConfigured %}
-                                <a href="{{ path('app_cours_setup', {id: c.id}) }}" class="btn btn-success btn-sm">
-                                    <i class="fas fa-cogs"></i> Configurer
-                                </a>
-                            {% else %}
-                                <a href="{{ path('app_module_new') }}?coursId={{ c.id }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Module
-                                </a>
-                            {% endif %}
-                            <a href="{{ path('app_cours_edit', {id: c.id}) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit"></i> Modifier
-                            </a>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h6 mb-2">{{ c.titre }}</h2>
+                        <p class="text-muted small flex-grow-1">{{ c.description|slice(0, 120) }}{% if c.description|length > 120 %}…{% endif %}</p>
 
-            <!-- Modal de confirmation de suppression -->
-            <div class="modal fade" id="deleteModal{{ c.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ c.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteModalLabel{{ c.id }}">Confirmer la suppression</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            Êtes-vous sûr de vouloir supprimer le cours <strong>"{{ c.titre }}"</strong> ?
-                            <br><br>
-                            <div class="alert alert-warning">
-                                ⚠️ Cette action est irréversible et supprimera également tous les modules et chapitres associés.
+                        <div class="row text-center g-2 mb-3 mt-2">
+                            <div class="col-4">
+                                <div class="small text-muted">Modules</div>
+                                <div class="fw-semibold tabular-nums">{{ c.modules|length }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted">Chapitres</div>
+                                <div class="fw-semibold tabular-nums">{{ totalChapitres }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted">Classes</div>
+                                <div class="fw-semibold tabular-nums">{{ c.classes|length }}</div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <form method="post" action="{{ path('app_cours_delete', {id: c.id}) }}" style="display: inline;">
+
+                        <div class="mb-3">
+                            {% if isConfigured %}
+                                <span class="badge-role badge-role--etudiant"><i class="bi bi-check-circle me-1"></i>Configuré</span>
+                            {% else %}
+                                <span class="badge-role badge-role--enseignant"><i class="bi bi-gear me-1"></i>À configurer</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary btn-sm"><i class="bi bi-eye"></i> Voir</a>
+                            {% if not isConfigured %}
+                                <a href="{{ path('app_cours_setup', {id: c.id}) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-gear"></i> Configurer</a>
+                            {% else %}
+                                <a href="{{ path('app_module_new') }}?coursId={{ c.id }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus"></i> Module</a>
+                            {% endif %}
+                            <a href="{{ path('app_cours_edit', {id: c.id}) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
+                            <form id="delete-cours-{{ c.id }}" method="post" action="{{ path('app_cours_delete', {id: c.id}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
-                                <button type="submit" class="btn btn-danger">🗑️ Supprimer définitivement</button>
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-confirm-delete
+                                        data-confirm-form="delete-cours-{{ c.id }}"
+                                        data-confirm-name="{{ c.titre }}"
+                                        data-confirm-message="Ce cours et tout son contenu seront supprimés définitivement.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-        {% else %}
-            <p>Aucun cours disponible.</p>
         {% endfor %}
     </div>
-</div>
+{% else %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'book',
+        text: 'Aucun cours disponible.',
+        cta_url: path('app_cours_new'),
+        cta_label: 'Créer un cours'
+    } %}
+{% endif %}
 {% endblock %}

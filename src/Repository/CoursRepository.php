@@ -24,8 +24,9 @@ class CoursRepository extends ServiceEntityRepository
     public function findByUser(User $user): array
     {
         return $this->createQueryBuilder('c')
-            ->innerJoin('c.progressions', 'p')
-            ->andWhere('p.user = :user')
+            ->innerJoin('c.classes', 'cl')
+            ->innerJoin('cl.etudiants', 'e')
+            ->andWhere('e = :user')
             ->setParameter('user', $user)
             ->orderBy('c.titre', 'ASC')
             ->getQuery()
@@ -39,9 +40,31 @@ class CoursRepository extends ServiceEntityRepository
      */
     public function findForEnseignant(User $user): array
     {
-        // Pour l'instant, on retourne tous les cours pour les enseignants
-        // car il n'y a pas de relation directe createdBy
-        return $this->findAll();
+        $coursCreeParEnseignant = $this->createQueryBuilder('c')
+            ->andWhere('c.createdBy = :user')
+            ->setParameter('user', $user)
+            ->orderBy('c.titre', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $coursDesClassesEnseignees = $this->createQueryBuilder('c')
+            ->innerJoin('c.classes', 'cl')
+            ->innerJoin('cl.professeurs', 'p')
+            ->andWhere('p = :user')
+            ->setParameter('user', $user)
+            ->orderBy('c.titre', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Dédoublonnage par id
+        $byId = [];
+        foreach (array_merge($coursCreeParEnseignant, $coursDesClassesEnseignees) as $cours) {
+            if ($cours->getId() !== null) {
+                $byId[$cours->getId()] = $cours;
+            }
+        }
+
+        return array_values($byId);
     }
 
     /**

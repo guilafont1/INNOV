@@ -19,13 +19,19 @@ class Message
     private ?string $contenu = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?User $expediteur = null;
 
-    #[ORM\ManyToOne(inversedBy: 'messages')]
+    // Relation unidirectionnelle : les messages reçus ne sont pas exposés via User::$messages.
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?User $destinataire = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $sentAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $readAt = null;
 
     public function getId(): ?int
     {
@@ -78,5 +84,22 @@ class Message
         $this->sentAt = $sentAt;
 
         return $this;
+    }
+
+    public function getReadAt(): ?\DateTimeImmutable
+    {
+        return $this->readAt;
+    }
+
+    public function setReadAt(?\DateTimeImmutable $readAt): static
+    {
+        $this->readAt = $readAt;
+
+        return $this;
+    }
+
+    public function isRead(): bool
+    {
+        return $this->readAt !== null;
     }
 }

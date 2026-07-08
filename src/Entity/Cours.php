@@ -28,31 +28,31 @@ class Cours
     /**
      * @var Collection<int, Module>
      */
-    #[ORM\OneToMany(targetEntity: Module::class, mappedBy: 'cours')]
+    #[ORM\OneToMany(targetEntity: Module::class, mappedBy: 'cours', cascade: ['remove'], orphanRemoval: true)]
     private Collection $modules;
 
     /**
      * @var Collection<int, ForumPost>
      */
-    #[ORM\OneToMany(targetEntity: ForumPost::class, mappedBy: 'cours')]
+    #[ORM\OneToMany(targetEntity: ForumPost::class, mappedBy: 'cours', cascade: ['remove'], orphanRemoval: true)]
     private Collection $forumPosts;
 
     /**
      * @var Collection<int, Progression>
      */
-    #[ORM\OneToMany(targetEntity: Progression::class, mappedBy: 'cours')]
+    #[ORM\OneToMany(targetEntity: Progression::class, mappedBy: 'cours', cascade: ['remove'], orphanRemoval: true)]
     private Collection $progressions;
 
     /**
      * @var Collection<int, Evaluation>
      */
-    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'cours')]
+    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'cours', cascade: ['remove'], orphanRemoval: true)]
     private Collection $evaluations;
 
     /**
      * @var Collection<int, Calendrier>
      */
-    #[ORM\OneToMany(targetEntity: Calendrier::class, mappedBy: 'cours')]
+    #[ORM\OneToMany(targetEntity: Calendrier::class, mappedBy: 'cours', cascade: ['remove'], orphanRemoval: true)]
     private Collection $calendriers;
 
     /**
@@ -62,7 +62,7 @@ class Cours
     private Collection $classes;
 
     #[ORM\ManyToOne(inversedBy: 'coursCreated')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $createdBy = null;
 
     public function __construct()

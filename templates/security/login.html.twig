@@ -1,109 +1,61 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_public.html.twig' %}
 
-{% block title %}Connexion - JEAI Learn{% endblock %}
+{% block title %}Connexion — MERJ{% endblock %}
 
-{% block body %}
-<div class="container mt-5" style="max-width: 500px;">
-    <div class="card shadow">
-        <div class="card-header text-center bg-primary text-white">
-            <h2 class="mb-0">🔐 Connexion</h2>
-            <p class="mb-0 mt-2">Accédez à votre espace personnel</p>
-        </div>
-        <div class="card-body p-4">
-            <!-- Messages de succès après inscription -->
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+{% block layout %}
+    <div class="login-layout">
+        <aside class="login-panel">
+            <div class="login-panel__logo">MERJ</div>
+            <p class="login-panel__baseline">
+                Plateforme pédagogique de gestion des cours, classes et plannings.
+            </p>
+        </aside>
 
-            {% if error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error.messageKey|trans(error.messageData, 'security') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endif %}
+        <div class="login-form-side">
+            <div class="login-form-wrap">
+                <h1 class="h4 mb-1">Connexion</h1>
+                <p class="text-muted mb-4">Accédez à votre espace personnel</p>
 
-            {% if app.user %}
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    Vous êtes déjà connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>. 
-                    <a href="{{ path('app_logout') }}" class="alert-link">Se déconnecter</a>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% else %}
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="username" class="form-label fw-bold">Email *</label>
-                        <input type="email" name="_username" id="username" class="form-control" 
-                               value="{{ last_username }}" required autofocus autocomplete="email"
-                               placeholder="votre.email@exemple.com">
+                {% if error %}
+                    <div class="alert-tint-danger mb-3" role="alert">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
                     </div>
+                {% endif %}
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label fw-bold">Mot de passe *</label>
-                        <input type="password" name="_password" id="password" class="form-control" 
-                               required autocomplete="current-password"
-                               placeholder="Votre mot de passe">
-                    </div>
+                {% if app.user %}
+                    <p class="text-muted mb-3">
+                        Vous êtes connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>.
+                    </p>
+                    <a href="{{ path('app_logout') }}" class="btn btn-outline-secondary">Se déconnecter</a>
+                {% else %}
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Email</label>
+                            <input type="email" name="_username" id="username" class="form-control"
+                                   value="{{ last_username }}" required autofocus autocomplete="email"
+                                   placeholder="votre.email@exemple.com">
+                        </div>
 
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <input type="password" name="_password" id="password" class="form-control"
+                                   required autocomplete="current-password"
+                                   placeholder="Votre mot de passe">
+                        </div>
 
-                    <div class="d-grid">
-                        <button class="btn btn-primary btn-lg" type="submit">
-                            <i class="bi bi-key-fill me-2"></i>Se connecter
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
                         </button>
-                    </div>
-                </form>
-            {% endif %}
+                    </form>
 
-            <div class="text-center mt-4">
-                <hr>
-                <p class="mb-0">
-                    <small>Pas encore de compte ? 
-                        <a href="{{ path('app_register') }}" class="text-decoration-none fw-bold">
-                            Inscrivez-vous gratuitement
-                        </a>
-                    </small>
-                </p>
+                    <p class="text-center text-muted small mt-4 mb-0">
+                        Pas encore de compte ?
+                        <a href="{{ path('app_register') }}">Inscrivez-vous</a>
+                    </p>
+                {% endif %}
             </div>
         </div>
     </div>
-    
-    <div class="text-center mt-3">
-        <small class="text-muted">
-            <i class="bi bi-shield-check me-1"></i>
-            Connexion sécurisée
-        </small>
-    </div>
-</div>
-
-<style>
-.alert {
-    border-left: 4px solid;
-}
-.alert-danger {
-    border-left-color: #dc3545;
-}
-.alert-success {
-    border-left-color: #198754;
-}
-.alert-info {
-    border-left-color: #0dcaf0;
-}
-.card {
-    border: none;
-    border-radius: 15px;
-}
-.card-header {
-    border-radius: 15px 15px 0 0 !important;
-}
-.btn-primary {
-    border-radius: 8px;
-}
-.form-control {
-    border-radius: 8px;
-}
-</style>
 {% endblock %}

@@ -1,0 +1,7 @@
+<div class="empty-state">
+    <div class="empty-state__icon"><i class="bi bi-{{ icon|default('inbox') }}"></i></div>
+    <p class="empty-state__text">{{ text }}</p>
+    {% if cta_url is defined and cta_url and cta_label is defined and cta_label %}
+        <a href="{{ cta_url }}" class="btn btn-primary">{{ cta_label }}</a>
+    {% endif %}
+</div>

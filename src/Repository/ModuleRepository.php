@@ -25,8 +25,9 @@ class ModuleRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('m')
             ->innerJoin('m.cours', 'c')
-            ->innerJoin('c.progressions', 'p')
-            ->andWhere('p.user = :user')
+            ->innerJoin('c.classes', 'cl')
+            ->innerJoin('cl.etudiants', 'e')
+            ->andWhere('e = :user')
             ->setParameter('user', $user)
             ->orderBy('c.titre', 'ASC')
             ->addOrderBy('m.titre', 'ASC')

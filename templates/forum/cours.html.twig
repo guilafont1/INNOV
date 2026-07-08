@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Forum — {{ cours.titre }}{% endblock %}
+
+{% block body %}
+{% set headerActions %}
+    <a href="{{ path('app_cours_show', {id: cours.id}) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Cours
+    </a>
+{% endset %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Forum',
+    title: cours.titre,
+    description: canPost ? 'Discussions entre étudiants.' : 'Consultation des discussions du cours.',
+    actions: headerActions
+} only %}
+
+{% if posts|length == 0 %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'chat-left-text',
+        text: canPost ? 'Aucun message pour le moment. Soyez le premier à publier.' : 'Aucun message pour le moment.'
+    } only %}
+{% else %}
+    {% for item in posts %}
+        {% set post = item.post %}
+        <div class="forum-post">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                    <div class="fw-medium">
+                        {{ post.auteur.prenom }} {{ post.auteur.nom }}
+                        {% include 'partials/_role_badge.html.twig' with { role: item.roleLabel } only %}
+                    </div>
+                    <div class="text-muted small">{{ item.relativeDate }}</div>
+                </div>
+
+                {% set canDelete = post.auteur == app.user or is_granted('ROLE_ADMIN_ECOLE') %}
+                {% if canDelete %}
+                    <form method="post" action="{{ path('app_forum_post_delete', {id: post.id}) }}" id="delete-post-{{ post.id }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('forum_post_delete_' ~ post.id) }}">
+                        <button type="button" class="btn btn-icon-ghost text-danger" title="Supprimer"
+                                data-confirm-delete
+                                data-confirm-form="delete-post-{{ post.id }}"
+                                data-confirm-name="ce message">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="mb-0">{{ post.contenu|nl2br }}</div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if canPost %}
+<div class="forum-compose">
+    <h2 class="h6 mb-3">Publier un message</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label for="contenu" class="form-label">Votre message</label>
+            <textarea id="contenu" name="contenu" class="form-control" rows="4" required></textarea>
+        </div>
+        <input type="hidden" name="_token" value="{{ csrf_token('forum_post_add_' ~ cours.id) }}">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send me-1"></i> Publier
+        </button>
+    </form>
+</div>
+{% elseif is_granted('ROLE_ENSEIGNANT') %}
+    <p class="text-muted small mt-4 mb-0">
+        <i class="bi bi-info-circle me-1"></i> En tant qu'enseignant, vous pouvez consulter le forum en lecture seule.
+    </p>
+{% endif %}
+{% endblock %}

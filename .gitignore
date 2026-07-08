@@ -12,9 +12,3 @@
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
-
-
-echo "/.env.local" >> .gitignore
-echo "/.env.*.local" >> .gitignore
-echo "/var/" >> .gitignore
-echo "/vendor/" >> .gitignore

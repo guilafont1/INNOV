@@ -1,100 +1,43 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-    {% if cours %}
-        Nouveau module - {{ cours.titre }}
-    {% else %}
-        Nouveau Module
-    {% endif %}
-{% endblock %}
+{% block title %}{% if cours %}Nouveau module — {{ cours.titre }}{% else %}Nouveau module{% endif %}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">
-                        <i class="fas fa-layer-group"></i> 
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: cours ? cours.titre : 'Module',
+    title: 'Nouveau module',
+    description: cours ? 'Ce module sera associé au cours sélectionné.' : 'Créez un nouveau module.'
+} only %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    {{ form_row(form.titre) }}
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> Créer le module
+                        </button>
                         {% if cours %}
-                            Nouveau module pour "{{ cours.titre }}"
+                            <a href="{{ path('app_cours_setup', {id: cours.id}) }}" class="btn btn-outline-secondary">Annuler</a>
                         {% else %}
-                            Créer un nouveau module
+                            <a href="{{ path('app_module_index') }}" class="btn btn-outline-secondary">Annuler</a>
                         {% endif %}
-                    </h3>
-                </div>
-                <div class="card-body">
-                    {% if cours %}
-                        <nav aria-label="breadcrumb" class="mb-4">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ path('enseignant_dashboard') }}">Dashboard</a></li>
-                                <li class="breadcrumb-item"><a href="{{ path('enseignant_cours') }}">Mes cours</a></li>
-                                <li class="breadcrumb-item"><a href="{{ path('app_cours_setup', {id: cours.id}) }}">{{ cours.titre }}</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Nouveau module</li>
-                            </ol>
-                        </nav>
-                        
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            <strong>Information :</strong> Ce module sera automatiquement associé au cours "{{ cours.titre }}".
-                        </div>
-                    {% endif %}
-
-                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
-                        <div class="mb-3">
-                            {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Introduction, Théorie avancée, Travaux pratiques...'}}) }}
-                            {{ form_errors(form.titre) }}
-                            <div class="form-text">Choisissez un titre clair qui décrit le contenu du module.</div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-plus"></i> Créer le module
-                            </button>
-                            {% if cours %}
-                                <a href="{{ path('app_cours_setup', {id: cours.id}) }}" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left"></i> Retour à la configuration
-                                </a>
-                            {% else %}
-                                <a href="{{ path('enseignant_dashboard') }}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Annuler
-                                </a>
-                            {% endif %}
-                        </div>
-                    {{ form_end(form) }}
-                </div>
-            </div>
-            
-            <!-- Informations sur les modules -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Qu'est-ce qu'un module ?</h5>
-                </div>
-                <div class="card-body">
-                    <p>Un module est une grande section thématique de votre cours qui contient plusieurs chapitres.</p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-check-circle text-success"></i> Exemples de bons modules :</h6>
-                            <ul>
-                                <li>Introduction aux concepts</li>
-                                <li>Théorie fondamentale</li>
-                                <li>Applications pratiques</li>
-                                <li>Études de cas</li>
-                                <li>Évaluations</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-lightbulb text-warning"></i> Conseils :</h6>
-                            <ul>
-                                <li>Limitez-vous à 3-7 modules par cours</li>
-                                <li>Organisez du plus simple au plus complexe</li>
-                                <li>Chaque module devrait avoir 2-10 chapitres</li>
-                                <li>Utilisez des noms courts et explicites</li>
-                            </ul>
-                        </div>
                     </div>
-                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h2 class="h6 mb-2">Conseils</h2>
+                <ul class="text-muted small mb-0 ps-3">
+                    <li>Limitez-vous à 3–7 modules par cours</li>
+                    <li>Organisez du plus simple au plus complexe</li>
+                    <li>Utilisez des titres courts et explicites</li>
+                </ul>
             </div>
         </div>
     </div>

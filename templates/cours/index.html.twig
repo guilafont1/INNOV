@@ -1,25 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Cours{% endblock %}
 
 {% block body %}
-<div class="container">
-    <h2 class="mb-4">📚 Dashboard</h2>
+{% include 'partials/_page_header.html.twig' with {
+    title: 'Cours',
+    description: is_granted('ROLE_ENSEIGNANT') ? 'Gérez et consultez vos cours.' : 'Vos cours inscrits.'
+} only %}
 
-    <div class="row">
+{% if cours is empty %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'journal-bookmark',
+        text: 'Aucun cours disponible pour le moment.'
+    } only %}
+{% else %}
+    <div class="row g-3">
         {% for c in cours %}
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 col-lg-4">
                 <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ c.titre }}</h5>
-                        <p class="card-text">{{ c.description|slice(0, 100) ~ '...' }}</p>
-                        <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-primary">Voir le cours</a>
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h5 mb-2">{{ c.titre }}</h2>
+                        <p class="text-muted small flex-grow-1 mb-3">
+                            {{ c.description|slice(0, 120) }}{% if c.description|length > 120 %}…{% endif %}
+                        </p>
+                        <a href="{{ path('app_cours_show', {id: c.id}) }}" class="btn btn-outline-primary btn-sm align-self-start">
+                            <i class="bi bi-arrow-right me-1"></i> Voir le cours
+                        </a>
                     </div>
                 </div>
             </div>
-        {% else %}
-            <p>Aucun cours trouvé.</p>
         {% endfor %}
     </div>
-</div>
+{% endif %}
 {% endblock %}

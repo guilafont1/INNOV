@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ module.titre }}{% endblock %}
+
+{% block body %}
+{% set headerActions %}
+    <a href="{{ path('app_module_index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Liste
+    </a>
+    {% if is_granted('ROLE_ENSEIGNANT') %}
+        <a href="{{ path('app_module_edit', {id: module.id}) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Modifier
+        </a>
+    {% endif %}
+{% endset %}
+
+{% include 'partials/_page_header.html.twig' with {
+    eyebrow: 'Module',
+    title: module.titre,
+    description: module.cours ? 'Cours : ' ~ module.cours.titre : null,
+    actions: headerActions
+} only %}
+
+{% if module.chapitres is empty %}
+    {% include 'partials/_empty_state.html.twig' with {
+        icon: 'file-text',
+        text: 'Aucun chapitre dans ce module.',
+        cta_url: is_granted('ROLE_ENSEIGNANT') ? path('app_chapitre_new_from_module', {id: module.id}) : null,
+        cta_label: is_granted('ROLE_ENSEIGNANT') ? 'Ajouter un chapitre' : null
+    } only %}
+{% else %}
+    <div class="card">
+        <ul class="list-group list-group-flush">
+            {% for chapitre in module.chapitres %}
+                <li class="list-group-item d-flex align-items-center justify-content-between">
+                    <a href="{{ path('app_chapitre_show', {id: chapitre.id}) }}">{{ chapitre.titre }}</a>
+                    {% if is_granted('ROLE_ENSEIGNANT') %}
+                        <a href="{{ path('app_chapitre_edit', {id: chapitre.id}) }}" class="btn btn-icon-ghost" title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% if is_granted('ROLE_ENSEIGNANT') %}
+    <div class="mt-3">
+        <a href="{{ path('app_chapitre_new_from_module', {id: module.id}) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Ajouter un chapitre
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

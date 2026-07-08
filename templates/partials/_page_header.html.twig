@@ -1,0 +1,14 @@
+<div class="page-header">
+    <div>
+        {% if eyebrow is defined and eyebrow %}
+            <div class="page-header__eyebrow">{{ eyebrow }}</div>
+        {% endif %}
+        <h1 class="page-header__title">{{ title }}</h1>
+        {% if description is defined and description %}
+            <p class="page-header__desc">{{ description }}</p>
+        {% endif %}
+    </div>
+    {% if actions is defined and actions %}
+        <div class="page-header__actions">{{ actions|raw }}</div>
+    {% endif %}
+</div>

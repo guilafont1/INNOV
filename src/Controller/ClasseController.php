@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Classe;
+use App\Entity\Module;
 use App\Entity\Note;
 use App\Repository\ClasseRepository;
 use App\Repository\UserRepository;
@@ -58,12 +59,13 @@ class ClasseController extends AbstractController
         ]);
     }
 
-    #[Route('/enseignant/classe/{id}/notes', name: 'enseignant_classe_notes')]
+    #[Route('/enseignant/classe/{id}/notes', name: 'enseignant_classe_notes', methods: ['GET', 'POST'])]
     public function notes(
         Classe $classe, 
         Request $request,
         NoteRepository $noteRepository,
         ModuleRepository $moduleRepository,
+        UserRepository $userRepository,
         EntityManagerInterface $em
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
@@ -73,57 +75,123 @@ class ClasseController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas professeur de cette classe.');
         }
 
+        $etudiants = $classe->getEtudiants();
+        $modules = $this->getModulesForClasse($classe);
+        $moduleIds = array_map(static fn ($m) => $m->getId(), $modules);
+        $etudiantIds = [];
+        foreach ($etudiants as $etudiant) {
+            $etudiantIds[$etudiant->getId()] = true;
+        }
+
+        $selectedModuleId = (int) $request->query->get('module', 0);
+
         if ($request->isMethod('POST')) {
-            $moduleId = $request->request->get('module_id');
+            $token = (string) $request->request->get('_token');
+            if (!$this->isCsrfTokenValid('notes_save_' . $classe->getId(), $token)) {
+                $this->addFlash('error', 'Session expirée. Veuillez réessayer.');
+                return $this->redirectToRoute('enseignant_classe_notes', [
+                    'id' => $classe->getId(),
+                ]);
+            }
+
+            $moduleId = (int) $request->request->get('module_id');
             $notes = $request->request->all('notes') ?? [];
-            
-            if ($moduleId && is_array($notes)) {
+            $savedCount = 0;
+
+            if ($moduleId <= 0) {
+                $this->addFlash('error', 'Veuillez sélectionner un module.');
+            } elseif (!in_array($moduleId, $moduleIds, true)) {
+                $this->addFlash('error', 'Module invalide pour cette classe.');
+            } elseif (!is_array($notes)) {
+                $this->addFlash('error', 'Données de notes invalides.');
+            } else {
                 $module = $moduleRepository->find($moduleId);
-                
-                foreach ($notes as $etudiantId => $noteData) {
-                    if (is_array($noteData) && !empty($noteData['note']) && !empty($noteData['note_max'])) {
-                        $etudiant = $em->getRepository('App:User')->find($etudiantId);
-                        
-                        // Vérifier si une note existe déjà
+                if ($module === null) {
+                    $this->addFlash('error', 'Module introuvable.');
+                } else {
+                    foreach ($notes as $etudiantId => $noteData) {
+                        if (!is_array($noteData)) {
+                            continue;
+                        }
+
+                        $etudiantId = (int) $etudiantId;
+                        if (!isset($etudiantIds[$etudiantId])) {
+                            continue;
+                        }
+
+                        $noteValue = $this->normalizeNoteValue($noteData['note'] ?? null);
+                        $noteMaxValue = $this->normalizeNoteValue($noteData['note_max'] ?? null);
+
+                        if ($noteValue === null) {
+                            continue;
+                        }
+
+                        if ($noteMaxValue === null || $noteMaxValue <= 0) {
+                            $noteMaxValue = '20';
+                        }
+
+                        if ((float) $noteValue < 0 || (float) $noteValue > (float) $noteMaxValue) {
+                            continue;
+                        }
+
+                        $etudiant = $userRepository->find($etudiantId);
+                        if ($etudiant === null) {
+                            continue;
+                        }
+
+                        $commentaire = trim((string) ($noteData['commentaire'] ?? ''));
                         $noteExistante = $noteRepository->findByEtudiantAndModule($etudiant, $module);
-                        
+
                         if ($noteExistante) {
-                            $noteExistante->setNote($noteData['note']);
-                            $noteExistante->setNoteMax($noteData['note_max']);
-                            $noteExistante->setCommentaire($noteData['commentaire'] ?? null);
+                            $noteExistante->setNote((string) $noteValue);
+                            $noteExistante->setNoteMax((string) $noteMaxValue);
+                            $noteExistante->setCommentaire($commentaire !== '' ? $commentaire : null);
+                            $noteExistante->setProfesseur($this->getUser());
                         } else {
                             $note = new Note();
                             $note->setEtudiant($etudiant);
                             $note->setModule($module);
-                            $note->setNote($noteData['note']);
-                            $note->setNoteMax($noteData['note_max']);
-                            $note->setCommentaire($noteData['commentaire'] ?? null);
+                            $note->setNote((string) $noteValue);
+                            $note->setNoteMax((string) $noteMaxValue);
+                            $note->setCommentaire($commentaire !== '' ? $commentaire : null);
                             $note->setProfesseur($this->getUser());
-                            
                             $em->persist($note);
                         }
+
+                        ++$savedCount;
+                    }
+
+                    if ($savedCount > 0) {
+                        $em->flush();
+                        $this->addFlash('success', $savedCount === 1 ? '1 note enregistrée.' : $savedCount . ' notes enregistrées.');
+                        $selectedModuleId = $moduleId;
+                    } else {
+                        $this->addFlash('error', 'Aucune note valide à enregistrer. Saisissez au moins une note.');
+                        $selectedModuleId = $moduleId;
                     }
                 }
-                
-                $em->flush();
-                $this->addFlash('success', 'Notes enregistrées avec succès !');
             }
-        }
 
-        $etudiants = $classe->getEtudiants();
-        $modules = [];
-        
-        // Récupérer tous les modules des cours de la classe
-        foreach ($classe->getCours() as $cours) {
-            foreach ($cours->getModules() as $module) {
-                $modules[] = $module;
-            }
+            return $this->redirectToRoute('enseignant_classe_notes', [
+                'id' => $classe->getId(),
+                'module' => $selectedModuleId > 0 ? $selectedModuleId : null,
+            ]);
         }
 
         // Récupérer les notes existantes
         $notesExistantes = [];
+        $notesPrefill = [];
         foreach ($modules as $module) {
-            $notesExistantes[$module->getId()] = $noteRepository->findByModule($module);
+            $moduleNotes = $noteRepository->findByModule($module);
+            $notesExistantes[$module->getId()] = $moduleNotes;
+            $notesPrefill[$module->getId()] = [];
+            foreach ($moduleNotes as $note) {
+                $notesPrefill[$module->getId()][$note->getEtudiant()->getId()] = [
+                    'note' => $note->getNote(),
+                    'note_max' => $note->getNoteMax(),
+                    'commentaire' => $note->getCommentaire(),
+                ];
+            }
         }
 
         return $this->render('enseignant/classes/notes.html.twig', [
@@ -131,7 +199,37 @@ class ClasseController extends AbstractController
             'etudiants' => $etudiants,
             'modules' => $modules,
             'notesExistantes' => $notesExistantes,
+            'notesPrefill' => $notesPrefill,
+            'selectedModuleId' => $selectedModuleId,
         ]);
+    }
+
+    /**
+     * @return Module[]
+     */
+    private function getModulesForClasse(Classe $classe): array
+    {
+        $modules = [];
+        foreach ($classe->getCours() as $cours) {
+            foreach ($cours->getModules() as $module) {
+                $modules[] = $module;
+            }
+        }
+
+        return $modules;
+    }
+
+    private function normalizeNoteValue(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     #[Route('/enseignant/classe/{id}/etudiants', name: 'enseignant_classe_etudiants')]
@@ -141,7 +239,7 @@ class ClasseController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $em
     ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ENSEIGNANT');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN_ECOLE');
 
         // Vérifier que l'utilisateur est professeur de cette classe
         if (!$classe->getProfesseurs()->contains($this->getUser())) {
