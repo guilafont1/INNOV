@@ -1,0 +1,25 @@
+﻿# Blueprint Render — https://render.com/docs/infrastructure-as-code
+# Déploiement : connecter le dépôt GitHub, Render détecte ce fichier.
+# Pensez à définir DATABASE_URL (Aiven MySQL) dans le dashboard.
+
+services:
+  - type: web
+    name: merj-learn
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /login
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: "0"
+      - key: APP_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: TRUSTED_PROXIES
+        value: REMOTE_ADDR
+      - key: TRUSTED_HOSTS
+        value: ^.+$

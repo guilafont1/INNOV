@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 
 
@@ -52,7 +52,7 @@ class PlanningExportController extends AbstractController
 
             'Content-Type' => 'text/calendar; charset=utf-8',
 
-            'Content-Disposition' => 'attachment; filename="jeai-planning.ics"',
+            'Content-Disposition' => 'attachment; filename="merj-planning.ics"',
 
         ]);
 
@@ -130,7 +130,7 @@ class PlanningExportController extends AbstractController
 
 
 
-        $filename = sprintf('jeai-planning-%s.pdf', $start->format('Y-m-d'));
+        $filename = sprintf('merj-planning-%s.pdf', $start->format('Y-m-d'));
 
 
 
@@ -436,7 +436,7 @@ class PlanningExportController extends AbstractController
 
             'VERSION:2.0',
 
-            'PRODID:-//MERJ LEARN//Planning//FR',
+            'PRODID:-//MERJ Learn//Planning//FR',
 
             'CALSCALE:GREGORIAN',
 
@@ -462,7 +462,7 @@ class PlanningExportController extends AbstractController
 
             $lines[] = 'BEGIN:VEVENT';
 
-            $lines[] = 'UID:jeai-event-' . $event->getId() . '@jeai.fr';
+            $lines[] = 'UID:merj-event-' . $event->getId() . '@merj.fr';
 
             $lines[] = 'DTSTAMP:' . gmdate('Ymd\THis\Z');
 

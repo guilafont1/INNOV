@@ -1,7 +1,7 @@
 {% set currentRoute = app.request.get('_route') %}
 
 <aside class="app-sidebar d-none d-lg-flex">
-    <a href="{{ path('app_home') }}" class="app-sidebar__brand text-decoration-none">MERJ LEARN</a>
+    <a href="{{ path('app_home') }}" class="app-sidebar__brand text-decoration-none">MERJ Learn</a>
 
     <nav class="app-sidebar__nav" aria-label="Navigation principale">
         {% if is_granted('ROLE_ADMIN_ECOLE') %}
@@ -73,7 +73,7 @@
 
 <div class="offcanvas offcanvas-start app-sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel" style="background: var(--sidebar); color: #E2E8F0; width: var(--sidebar-width);">
     <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-        <h5 class="offcanvas-title font-display" id="sidebarOffcanvasLabel" style="font-family: var(--font-display); font-weight: 700;">MERJ LEARN</h5>
+        <h5 class="offcanvas-title font-display" id="sidebarOffcanvasLabel" style="font-family: var(--font-display); font-weight: 700;">MERJ Learn</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
     </div>
     <div class="offcanvas-body p-0 d-flex flex-column">

@@ -1,5 +1,5 @@
 /**
- * MERJ LEARN — Messagerie type WhatsApp / iMessage
+ * MERJ Learn — Messagerie type WhatsApp / iMessage
  */
 (function () {
   'use strict';

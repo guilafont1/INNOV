@@ -1,5 +1,5 @@
 /**
- * MERJ LEARN — Planning FullCalendar
+ * MERJ Learn — Planning FullCalendar
  * Calendrier interactif unifié (admin / enseignant / étudiant)
  */
 (function () {

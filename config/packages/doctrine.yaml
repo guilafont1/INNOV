@@ -3,9 +3,6 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
         driver: 'pdo_mysql'
         server_version: '8.0'
-        options:
-            # PDO::MYSQL_ATTR_SSL_CA — connexion SSL exigée par Aiven
-            1006: '%kernel.project_dir%/config/certs/ca.pem'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -31,6 +28,10 @@ when@test:
 
 when@prod:
     doctrine:
+        dbal:
+            options:
+                # PDO::MYSQL_ATTR_SSL_CA — certificat Aiven (config/certs/ca.pem)
+                1006: '%kernel.project_dir%/config/certs/ca.pem'
         orm:
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'

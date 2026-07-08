@@ -1,4 +1,4 @@
-# MERJ LEARN
+﻿# MERJ Learn
 
 Plateforme e-learning pour établissements : cours, classes, notes, planning, forum, messagerie et évaluations.
 
@@ -82,39 +82,39 @@ ROLE_ETUDIANT     →  ROLE_USER
 
 | Nom | Email | Rôle |
 | --- | ----- | ---- |
-| Super Administrateur | `admin@jeai.fr` | Super admin (développeur) |
-| Sophie Rousseau | `admin.ecole@jeai.fr` | Administration école |
-| Pierre Lambert | `scolarite@jeai.fr` | Administration école (scolarité) |
-| Amélie Gérard | `vie.scolaire@jeai.fr` | Administration école (vie scolaire) |
+| Super Administrateur | `admin@merj.fr` | Super admin (développeur) |
+| Sophie Rousseau | `admin.ecole@merj.fr` | Administration école |
+| Pierre Lambert | `scolarite@merj.fr` | Administration école (scolarité) |
+| Amélie Gérard | `vie.scolaire@merj.fr` | Administration école (vie scolaire) |
 
 ### Enseignants
 
 | Nom | Email | Classe(s) principale(s) |
 | --- | ----- | ----------------------- |
-| Marie Dupont | `prof1@jeai.fr` | M1 Dev Web |
-| Karim Benali | `prof2@jeai.fr` | M2 EISI |
-| Julie Martin | `prof3@jeai.fr` | B3 DevOps |
+| Marie Dupont | `prof1@merj.fr` | M1 Dev Web |
+| Karim Benali | `prof2@merj.fr` | M2 EISI |
+| Julie Martin | `prof3@merj.fr` | B3 DevOps |
 
 ### Étudiants
 
 | Nom | Email | Classe |
 | --- | ----- | ------ |
-| Alice Bernard | `etudiant1@jeai.fr` | M1 Dev Web |
-| Hugo Lefèvre | `etudiant2@jeai.fr` | M1 Dev Web |
-| Maya Nguyen | `etudiant3@jeai.fr` | M1 Dev Web |
-| Nathan Moreau | `etudiant4@jeai.fr` | M1 Dev Web |
-| Sarah Petit | `etudiant5@jeai.fr` | M2 EISI |
-| Yanis Said | `etudiant6@jeai.fr` | M2 EISI |
-| Emma Robin | `etudiant7@jeai.fr` | M2 EISI |
-| Louis Giraud | `etudiant8@jeai.fr` | M2 EISI |
-| Chloé Fournier | `etudiant9@jeai.fr` | B3 DevOps |
-| Samir Kacem | `etudiant10@jeai.fr` | B3 DevOps |
-| Zoé Chevalier | `etudiant11@jeai.fr` | B3 DevOps |
-| Thomas Marchand | `etudiant12@jeai.fr` | B3 DevOps |
-| Léa Fontaine | `etudiant13@jeai.fr` | L3 Alternance Web |
-| Noah Perrin | `etudiant14@jeai.fr` | L3 Alternance Web |
-| Inès Blanc | `etudiant15@jeai.fr` | L3 Alternance Web |
-| Lucas Renard | `etudiant16@jeai.fr` | L3 Alternance Web |
+| Alice Bernard | `etudiant1@merj.fr` | M1 Dev Web |
+| Hugo Lefèvre | `etudiant2@merj.fr` | M1 Dev Web |
+| Maya Nguyen | `etudiant3@merj.fr` | M1 Dev Web |
+| Nathan Moreau | `etudiant4@merj.fr` | M1 Dev Web |
+| Sarah Petit | `etudiant5@merj.fr` | M2 EISI |
+| Yanis Said | `etudiant6@merj.fr` | M2 EISI |
+| Emma Robin | `etudiant7@merj.fr` | M2 EISI |
+| Louis Giraud | `etudiant8@merj.fr` | M2 EISI |
+| Chloé Fournier | `etudiant9@merj.fr` | B3 DevOps |
+| Samir Kacem | `etudiant10@merj.fr` | B3 DevOps |
+| Zoé Chevalier | `etudiant11@merj.fr` | B3 DevOps |
+| Thomas Marchand | `etudiant12@merj.fr` | B3 DevOps |
+| Léa Fontaine | `etudiant13@merj.fr` | L3 Alternance Web |
+| Noah Perrin | `etudiant14@merj.fr` | L3 Alternance Web |
+| Inès Blanc | `etudiant15@merj.fr` | L3 Alternance Web |
+| Lucas Renard | `etudiant16@merj.fr` | L3 Alternance Web |
 
 ---
 
@@ -195,21 +195,21 @@ Ouvrir : [http://localhost:8000/login](http://localhost:8000/login)
 
 ## Parcours de démonstration
 
-### Super admin — `admin@jeai.fr`
+### Super admin — `admin@merj.fr`
 
 1. Connexion → `/admin/dashboard`
 2. **Utilisateurs** : créer un compte, changer les rôles (y compris super admin)
 3. **Classes** : créer une classe, y ajouter élèves, profs et cours
 4. **Planning** (`/admin/planning`) : vue globale, filtres par classe / cours / enseignant, export PDF
 
-### Administration école — `admin.ecole@jeai.fr`, `scolarite@jeai.fr` ou `vie.scolaire@jeai.fr`
+### Administration école — `admin.ecole@merj.fr`, `scolarite@merj.fr` ou `vie.scolaire@merj.fr`
 
 1. Connexion → `/admin/dashboard`
 2. Gérer les **classes** et les **utilisateurs** (sans toucher aux super admins)
 3. **Planning global** : créer ou modifier un examen pour n'importe quelle classe
 4. Exporter le planning en PDF ou iCal
 
-### Enseignant — `prof1@jeai.fr`
+### Enseignant — `prof1@merj.fr`
 
 1. Dashboard → `/enseignant/dashboard`
 2. **Mes cours** → créer / modifier modules et chapitres
@@ -218,7 +218,7 @@ Ouvrir : [http://localhost:8000/login](http://localhost:8000/login)
 5. **Forum** → lire les discussions (sans publier)
 6. **Messages** → conversation avec un élève de sa classe
 
-### Étudiant — `etudiant1@jeai.fr`
+### Étudiant — `etudiant1@merj.fr`
 
 1. Dashboard → progression par cours
 2. Consulter un **chapitre** (la progression augmente)
@@ -262,6 +262,73 @@ public/css/              # app.css, planning.css, messages.css
 public/js/               # planning.js, messages.js
 migrations/              # Migrations Doctrine
 ```
+
+---
+
+## Déploiement Render (Docker)
+
+Le projet inclut un `Dockerfile` et un `render.yaml` prêts pour [Render](https://render.com).
+
+### Prérequis
+
+- Dépôt GitHub connecté à Render
+- Base **MySQL 8** (Aiven recommandé) accessible depuis Internet
+- Certificat CA Aiven déjà présent dans `config/certs/ca.pem` (SSL activé en `APP_ENV=prod`)
+
+### Étapes
+
+1. **Créer un Web Service** sur Render → *Docker* → repo `INNOV`
+2. Render détecte `render.yaml` ou utilise le `Dockerfile` à la racine
+3. **Variables d'environnement** (dashboard Render) :
+
+| Variable | Valeur |
+| -------- | ------ |
+| `APP_ENV` | `prod` |
+| `APP_DEBUG` | `0` |
+| `APP_SECRET` | générer une clé aléatoire (32+ caractères) |
+| `DATABASE_URL` | URL Aiven MySQL complète |
+| `TRUSTED_PROXIES` | `REMOTE_ADDR` |
+| `TRUSTED_HOSTS` | `^.+$` |
+
+Exemple `DATABASE_URL` Aiven :
+
+```dotenv
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/defaultdb?serverVersion=8.0&charset=utf8mb4"
+```
+
+4. **Appliquer les migrations** (manuellement, avant ou après le premier déploiement) :
+
+```bash
+php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+```
+
+Sur Render : *Shell* du service web, ou en local avec `DATABASE_URL` pointant vers Aiven.
+
+5. **Déployer** — au démarrage le conteneur :
+   - vérifie `APP_SECRET` et `DATABASE_URL`
+   - attend la base de données (30 tentatives)
+   - réchauffe le cache Symfony (`cache:warmup` + `assets:install`)
+   - lance le serveur PHP sur le port `PORT` (Render)
+
+6. **Données de démo** (optionnel, une seule fois en local ou via console Render) :
+
+```bash
+php bin/console doctrine:fixtures:load --no-interaction --env=prod
+```
+
+> Ne pas charger les fixtures automatiquement en production.
+
+### Vérification locale de l'image Docker
+
+```bash
+docker build -t merj-learn .
+docker run --rm -p 10000:10000 \
+  -e APP_SECRET=change-me \
+  -e DATABASE_URL="mysql://..." \
+  merj-learn
+```
+
+Health check Render : `/login`
 
 ---
 
@@ -318,4 +385,4 @@ docs: mettre à jour le README des comptes démo
 
 ## Licence
 
-Projet propriétaire — usage interne MERJ LEARN.
+Projet propriétaire — usage interne MERJ Learn.

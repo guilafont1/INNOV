@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\DataFixtures;
 
@@ -31,7 +31,7 @@ class AppFixtures extends Fixture
 
         // --- USERS ---
         $admin = $this->createUser(
-            email: 'admin@jeai.fr',
+            email: 'admin@merj.fr',
             nom: 'Administrateur',
             prenom: 'Super',
             roles: ['ROLE_SUPER_ADMIN'],
@@ -40,9 +40,9 @@ class AppFixtures extends Fixture
         $manager->persist($admin);
 
         $adminsEcoleData = [
-            'ae1' => ['email' => 'admin.ecole@jeai.fr', 'prenom' => 'Sophie', 'nom' => 'Rousseau'],
-            'ae2' => ['email' => 'scolarite@jeai.fr', 'prenom' => 'Pierre', 'nom' => 'Lambert'],
-            'ae3' => ['email' => 'vie.scolaire@jeai.fr', 'prenom' => 'Amélie', 'nom' => 'Gérard'],
+            'ae1' => ['email' => 'admin.ecole@merj.fr', 'prenom' => 'Sophie', 'nom' => 'Rousseau'],
+            'ae2' => ['email' => 'scolarite@merj.fr', 'prenom' => 'Pierre', 'nom' => 'Lambert'],
+            'ae3' => ['email' => 'vie.scolaire@merj.fr', 'prenom' => 'Amélie', 'nom' => 'Gérard'],
         ];
         $adminsEcole = [];
         foreach ($adminsEcoleData as $key => $data) {
@@ -62,9 +62,9 @@ class AppFixtures extends Fixture
         }
 
         $teachersData = [
-            't1' => ['email' => 'prof1@jeai.fr', 'prenom' => 'Marie', 'nom' => 'Dupont'],
-            't2' => ['email' => 'prof2@jeai.fr', 'prenom' => 'Karim', 'nom' => 'Benali'],
-            't3' => ['email' => 'prof3@jeai.fr', 'prenom' => 'Julie', 'nom' => 'Martin'],
+            't1' => ['email' => 'prof1@merj.fr', 'prenom' => 'Marie', 'nom' => 'Dupont'],
+            't2' => ['email' => 'prof2@merj.fr', 'prenom' => 'Karim', 'nom' => 'Benali'],
+            't3' => ['email' => 'prof3@merj.fr', 'prenom' => 'Julie', 'nom' => 'Martin'],
         ];
         $teachers = [];
         foreach ($teachersData as $key => $data) {
@@ -79,22 +79,22 @@ class AppFixtures extends Fixture
         }
 
         $studentsData = [
-            's1' => ['email' => 'etudiant1@jeai.fr', 'prenom' => 'Alice', 'nom' => 'Bernard'],
-            's2' => ['email' => 'etudiant2@jeai.fr', 'prenom' => 'Hugo', 'nom' => 'Lefèvre'],
-            's3' => ['email' => 'etudiant3@jeai.fr', 'prenom' => 'Maya', 'nom' => 'Nguyen'],
-            's4' => ['email' => 'etudiant4@jeai.fr', 'prenom' => 'Nathan', 'nom' => 'Moreau'],
-            's5' => ['email' => 'etudiant5@jeai.fr', 'prenom' => 'Sarah', 'nom' => 'Petit'],
-            's6' => ['email' => 'etudiant6@jeai.fr', 'prenom' => 'Yanis', 'nom' => 'Said'],
-            's7' => ['email' => 'etudiant7@jeai.fr', 'prenom' => 'Emma', 'nom' => 'Robin'],
-            's8' => ['email' => 'etudiant8@jeai.fr', 'prenom' => 'Louis', 'nom' => 'Giraud'],
-            's9' => ['email' => 'etudiant9@jeai.fr', 'prenom' => 'Chloé', 'nom' => 'Fournier'],
-            's10' => ['email' => 'etudiant10@jeai.fr', 'prenom' => 'Samir', 'nom' => 'Kacem'],
-            's11' => ['email' => 'etudiant11@jeai.fr', 'prenom' => 'Zoé', 'nom' => 'Chevalier'],
-            's12' => ['email' => 'etudiant12@jeai.fr', 'prenom' => 'Thomas', 'nom' => 'Marchand'],
-            's13' => ['email' => 'etudiant13@jeai.fr', 'prenom' => 'Léa', 'nom' => 'Fontaine'],
-            's14' => ['email' => 'etudiant14@jeai.fr', 'prenom' => 'Noah', 'nom' => 'Perrin'],
-            's15' => ['email' => 'etudiant15@jeai.fr', 'prenom' => 'Inès', 'nom' => 'Blanc'],
-            's16' => ['email' => 'etudiant16@jeai.fr', 'prenom' => 'Lucas', 'nom' => 'Renard'],
+            's1' => ['email' => 'etudiant1@merj.fr', 'prenom' => 'Alice', 'nom' => 'Bernard'],
+            's2' => ['email' => 'etudiant2@merj.fr', 'prenom' => 'Hugo', 'nom' => 'Lefèvre'],
+            's3' => ['email' => 'etudiant3@merj.fr', 'prenom' => 'Maya', 'nom' => 'Nguyen'],
+            's4' => ['email' => 'etudiant4@merj.fr', 'prenom' => 'Nathan', 'nom' => 'Moreau'],
+            's5' => ['email' => 'etudiant5@merj.fr', 'prenom' => 'Sarah', 'nom' => 'Petit'],
+            's6' => ['email' => 'etudiant6@merj.fr', 'prenom' => 'Yanis', 'nom' => 'Said'],
+            's7' => ['email' => 'etudiant7@merj.fr', 'prenom' => 'Emma', 'nom' => 'Robin'],
+            's8' => ['email' => 'etudiant8@merj.fr', 'prenom' => 'Louis', 'nom' => 'Giraud'],
+            's9' => ['email' => 'etudiant9@merj.fr', 'prenom' => 'Chloé', 'nom' => 'Fournier'],
+            's10' => ['email' => 'etudiant10@merj.fr', 'prenom' => 'Samir', 'nom' => 'Kacem'],
+            's11' => ['email' => 'etudiant11@merj.fr', 'prenom' => 'Zoé', 'nom' => 'Chevalier'],
+            's12' => ['email' => 'etudiant12@merj.fr', 'prenom' => 'Thomas', 'nom' => 'Marchand'],
+            's13' => ['email' => 'etudiant13@merj.fr', 'prenom' => 'Léa', 'nom' => 'Fontaine'],
+            's14' => ['email' => 'etudiant14@merj.fr', 'prenom' => 'Noah', 'nom' => 'Perrin'],
+            's15' => ['email' => 'etudiant15@merj.fr', 'prenom' => 'Inès', 'nom' => 'Blanc'],
+            's16' => ['email' => 'etudiant16@merj.fr', 'prenom' => 'Lucas', 'nom' => 'Renard'],
         ];
         $students = [];
         foreach ($studentsData as $key => $data) {
@@ -526,7 +526,7 @@ class AppFixtures extends Fixture
                     $post->setAuteur($adminsEcole['ae2']);
                     $post->setContenu(
                         "Annonce scolarité — Les créneaux d'examens du mois sont publiés sur le planning.\n\n"
-                        . "Merci de vérifier vos convocations et de signaler tout chevauchement à vie.scolaire@jeai.fr avant vendredi."
+                        . "Merci de vérifier vos convocations et de signaler tout chevauchement à vie.scolaire@merj.fr avant vendredi."
                     );
                 } else {
                     $post->setAuteur($studentsPool[($i - 1) % max(1, count($studentsPool))]);
@@ -558,7 +558,7 @@ class AppFixtures extends Fixture
             ['from' => 's6', 'to' => 's7', 'days' => 2, 'text' => "Emma, tu as testé fetch avec les headers CSRF pour le planning admin ?"],
             ['from' => 's7', 'to' => 's6', 'days' => 1, 'text' => "Oui Yanis, il faut passer X-CSRF-Token dans les requêtes POST JSON."],
             ['from' => 's13', 'to' => 't1', 'days' => 2, 'text' => "Bonjour, pour l'alternance L3, le planning affiche deux cours en même temps mardi matin — c'est normal ?"],
-            ['from' => 't1', 'to' => 's13', 'days' => 1, 'text' => "Léa, non : signale-le à la scolarité via scolarite@jeai.fr, ils corrigeront le planning global."],
+            ['from' => 't1', 'to' => 's13', 'days' => 1, 'text' => "Léa, non : signale-le à la scolarité via scolarite@merj.fr, ils corrigeront le planning global."],
             ['from' => 's14', 'to' => 's15', 'days' => 3, 'text' => "Inès, tu as commencé le module sécurité ? Les exercices CSRF sont costauds."],
             ['from' => 's15', 'to' => 's14', 'days' => 2, 'text' => "Oui Noah, j'ai fini le chapitre validation — je t'envoie mes notes ce soir."],
             ['from' => 's16', 'to' => 't1', 'days' => 4, 'text' => "Professeur, puis-je déposer mon projet Symfony sur le forum ou uniquement par message ?"],
